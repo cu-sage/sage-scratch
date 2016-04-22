@@ -35,6 +35,10 @@ import flash.geom.Rectangle;
 import flash.net.FileReference;
 import flash.net.FileReferenceList;
 import flash.net.LocalConnection;
+import flash.net.URLLoader;
+import flash.net.URLLoaderDataFormat;
+import flash.net.URLRequest;
+import flash.net.URLRequestMethod;
 import flash.system.*;
 import flash.text.*;
 import flash.utils.*;
@@ -172,6 +176,67 @@ public class Scratch extends Sprite {
 		//Analyze.collectAssets(0, 119110);
 		//Analyze.checkProjects(56086, 64220);
 		//Analyze.countMissingAssets();
+
+		getIds();
+	}
+
+	private function getIds():void {
+		function cancel():void { d.cancel(); }
+		function ok():void {
+			var sid:String = d.getField("Student ID");
+			var aid:String = d.getField("Assignment ID");
+
+			startTimer(sid, aid);
+		}
+
+		var d:DialogBox = new DialogBox();
+		d.addTitle("Welcome to SAGE!");
+		d.addField("Student ID", 100, "", true);
+		d.addField("Assignment ID", 100, "", true);
+		d.addButton('Ok', ok);
+		d.addButton('Cancel', cancel);
+		d.showOnStage(stage);
+	}
+
+	private function startTimer(sid:String, aid:String):void {
+		function timerPop(e:TimerEvent):void {
+			postJson(stagePane, sid, aid)
+		}
+
+		var myTimer:Timer = new Timer(10000);
+		myTimer.start();
+		myTimer.addEventListener(TimerEvent.TIMER, timerPop)
+	}
+
+	private function postJson(proj:*, sid:String, aid:String):void {
+		// Sending JSON project via HTTP POST
+		var request:URLRequest = new URLRequest("http://localhost:8080/students/"+sid+"/assignments/"+aid);
+
+		var loader:URLLoader = new URLLoader();
+		loader.dataFormat = URLLoaderDataFormat.TEXT;
+		request.method = URLRequestMethod.POST;
+
+		// assign the data to be sent by POST
+		request.data = util.JSON.stringify(proj);
+
+		function onComplete(e:Event):void {
+			trace("LOAD COMPLETE: " + loader.data);
+		}
+		function onError(e:IOErrorEvent):void {
+			trace("error: " + e.toString());
+		}
+		function onSecurityErr(e:SecurityErrorEvent):void {
+			trace("security error: " + e.text );
+		}
+
+		loader.addEventListener(Event.COMPLETE,onComplete);
+		loader.addEventListener(IOErrorEvent.IO_ERROR , onError);
+		loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR ,onSecurityErr);
+
+		trace("request: " + request)
+
+		// send the request
+		loader.load(request);
 	}
 
 	protected function initTopBarPart():void {
