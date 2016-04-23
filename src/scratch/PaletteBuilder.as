@@ -78,8 +78,7 @@ public class PaletteBuilder {
 		app.getViewedObject().updateScriptsAfterTranslation(); // resest ScriptsPane
 	}
 	
-	public function updateBlock(block:Block, included:Boolean):void {
-		var spec:String = block.spec;
+	public function updateBlock(spec:String, included:Boolean):void {
 		if (spec == 'when Stage clicked') spec = 'whenClicked'; // special case
 		sageIncludedBlocks[spec] = included;
 		updateBlocks();

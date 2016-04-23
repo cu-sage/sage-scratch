@@ -181,7 +181,10 @@ public class Scratch extends Sprite {
 	}
 
 	private function getIds():void {
-		function cancel():void { d.cancel(); }
+		function cancel():void {
+			d.cancel();
+		}
+
 		function ok():void {
 			var sid:String = d.getField("Student ID");
 			var aid:String = d.getField("Assignment ID");
@@ -219,24 +222,66 @@ public class Scratch extends Sprite {
 		// assign the data to be sent by POST
 		request.data = util.JSON.stringify(proj);
 
-		function onComplete(e:Event):void {
-			trace("LOAD COMPLETE: " + loader.data);
-		}
-		function onError(e:IOErrorEvent):void {
-			trace("error: " + e.toString());
-		}
-		function onSecurityErr(e:SecurityErrorEvent):void {
-			trace("security error: " + e.text );
+		function onPostComplete(e:Event):void {
+			trace("Successfully posted the assignment: " + loader.data);
+			getAssessmentResults(sid, aid);
 		}
 
-		loader.addEventListener(Event.COMPLETE,onComplete);
-		loader.addEventListener(IOErrorEvent.IO_ERROR , onError);
-		loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR ,onSecurityErr);
+		function onPostError(e:IOErrorEvent):void {
+			trace("Error posting the assignment: " + e.toString());
+		}
 
-		trace("request: " + request)
+		loader.addEventListener(Event.COMPLETE, onPostComplete);
+		loader.addEventListener(IOErrorEvent.IO_ERROR, onPostError);
+
+		trace("Posting assignment: " + request)
 
 		// send the request
 		loader.load(request);
+	}
+
+	private function getAssessmentResults(sid:String, aid:String):void {
+		var request:URLRequest = new URLRequest("http://localhost:8080/students/"+sid+"/assessments/"+aid+"/results");
+		var loader:URLLoader = new URLLoader();
+
+		request.method = URLRequestMethod.GET;
+
+		function onGetComplete(e:Event):void {
+			trace("Successfully got the assessment results: " + loader.data);
+
+			var results:Object = util.JSON.parse(e.target.data);
+			processAssessmentResults(results);
+		}
+
+		function onGetError(e:Event):void {
+			trace("Error getting the assignment results: " + e.toString());
+		}
+
+		loader.addEventListener(Event.COMPLETE, onGetComplete);
+		loader.addEventListener(IOErrorEvent.IO_ERROR, onGetError);
+
+		trace("Getting assessment results: " + request);
+
+		// send the request
+		loader.load(request);
+	}
+
+	private function processAssessmentResults(results:*):void {
+		for(var i:int = 0; i < results.length; i++) {
+			var result:* = results[i];
+
+			for(var j:int = 0; j < result.actions.length; j++) {
+				var action:* = result.actions[j];
+
+				if (action.type == "action_block_include") {
+					paletteBuilder.updateBlock(action.command, true);
+				}
+
+				if (action.type == "action_block_exclude") {
+					paletteBuilder.updateBlock(action.command, false);
+				}
+			}
+		}
 	}
 
 	protected function initTopBarPart():void {

@@ -812,11 +812,11 @@ public class Block extends Sprite {
 	}
 	
 	public function sageInclude():void {
-		Scratch.app.paletteBuilder.updateBlock(this, true);		
+		Scratch.app.paletteBuilder.updateBlock(this.spec, true);
 	}
 	
 	public function sageExclude():void {
-		Scratch.app.paletteBuilder.updateBlock(this, false);
+		Scratch.app.paletteBuilder.updateBlock(this.spec, false);
 	}
 
 	public function duplicateStack(deltaX:Number, deltaY:Number):void {
