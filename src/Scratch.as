@@ -270,15 +270,17 @@ public class Scratch extends Sprite {
 		for(var i:int = 0; i < results.length; i++) {
 			var result:* = results[i];
 
-			for(var j:int = 0; j < result.actions.length; j++) {
-				var action:* = result.actions[j];
+			if (result.actions != null) {
+				for (var j:int = 0; j < result.actions.length; j++) {
+					var action:* = result.actions[j];
 
-				if (action.type == "action_block_include") {
-					paletteBuilder.updateBlock(action.command, true);
-				}
+					if (action.type == "action_block_include") {
+						paletteBuilder.updateBlock(action.command, true);
+					}
 
-				if (action.type == "action_block_exclude") {
-					paletteBuilder.updateBlock(action.command, false);
+					if (action.type == "action_block_exclude") {
+						paletteBuilder.updateBlock(action.command, false);
+					}
 				}
 			}
 		}
@@ -320,7 +322,7 @@ public class Scratch extends Sprite {
 	public function getStage():StagePart { return stagePart; } 
 
 	protected function startInEditMode():Boolean {
-		return isOffline;
+		return true;
 	}
 
 	public function getMediaLibrary(type:String, whenDone:Function):MediaLibrary {
