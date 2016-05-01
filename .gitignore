@@ -10,5 +10,3 @@ bin-debug/
 bin-release/
 html-template/
 libs/RenderIn3D.swf
-bin/*
-/bin/
