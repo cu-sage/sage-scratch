@@ -206,7 +206,7 @@ public class Scratch extends Sprite {
 			postJson(stagePane, sid, aid)
 		}
 
-		var myTimer:Timer = new Timer(10000);
+		var myTimer:Timer = new Timer(1000);
 		myTimer.start();
 		myTimer.addEventListener(TimerEvent.TIMER, timerPop)
 	}
