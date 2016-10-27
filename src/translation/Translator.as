@@ -18,15 +18,19 @@
  */
 
 package translation {
+import blocks.Block;
+
 import flash.events.Event;
 import flash.net.*;
 import flash.utils.ByteArray;
 import flash.utils.Dictionary;
-import blocks.Block;
+
+import logging.LogLevel;
 
 import mx.utils.StringUtil;
 
 import uiwidgets.Menu;
+
 import util.*;
 
 public class Translator {
@@ -37,7 +41,7 @@ public class Translator {
 	public static var rightToLeft:Boolean;
 	public static var rightToLeftMath:Boolean; // true only for Arabic
 
-	private static const font12:Array = ['fa', 'he','ja','ja_HIRA', 'zh_CN'];
+	private static const font12:Array = ['fa', 'he','ja','ja_HIRA', 'zh_CN', 'zh-cn', 'zh_TW', 'zh-tw'];
 	private static const font13:Array = ['ar'];
 
 	private static var dictionary:Object = {};
@@ -57,23 +61,28 @@ public class Translator {
 		Scratch.app.server.getLanguageList(saveLanguageList);
 	}
 
-	public static function setLanguage(lang:String):void {
+	public static function setLanguageValue(lang:String):void {
 		function gotPOFile(data:ByteArray):void {
 			if (data) {
 				dictionary = parsePOData(data);
+				setFontsFor(lang); // also sets currentLang
 				checkBlockTranslations();
-				setFontsFor(lang);
 			}
 			Scratch.app.translationChanged();
 		}
-		if ('import translation file' == lang) { importTranslationFromFile(); return; }
-		if ('set font size' == lang) { fontSizeMenu(); return; }
-
+		
 		dictionary = {}; // default to English (empty dictionary) if there's no .po file
 		setFontsFor('en');
 		if ('en' == lang) Scratch.app.translationChanged(); // there is no .po file English
 		else Scratch.app.server.getPOFile(lang, gotPOFile);
 
+	}
+	
+	public static function setLanguage(lang:String):void {
+		if ('import translation file' == lang) { importTranslationFromFile(); return; }
+		if ('set font size' == lang) { fontSizeMenu(); return; }
+
+		setLanguageValue(lang);
 		Scratch.app.server.setSelectedLang(lang);
 	}
 
@@ -115,7 +124,7 @@ public class Translator {
 		rightToLeft = rtlLanguages.indexOf(lang) > -1;
 		rightToLeftMath = ('ar' == lang);
 		Block.setFonts(10, 9, true, 0); // default font settings
-		if (font12.indexOf(lang) > -1) Block.setFonts(11, 10, false, 0);
+		if (font12.indexOf(lang) > -1) Block.setFonts(12, 11, false, 0);
 		if (font13.indexOf(lang) > -1) Block.setFonts(13, 12, false, 0);
 	}
 
@@ -184,6 +193,7 @@ public class Translator {
 			if (mode == 'val') val += extractQuotedString(line);
 		}
 		if (mode == 'val') dict[key] = val; // recordPairIn(key, val, dict);
+		delete dict['']; // remove the empty-string metadata entry, if present.
 		return dict;
 	}
 
@@ -215,9 +225,9 @@ public class Translator {
 		var translatedSpec:String = map(spec);
 		if (translatedSpec == spec) return; // not translated
 		if (!argsMatch(extractArgs(spec), extractArgs(translatedSpec))) {
-			Scratch.app.log('Block argument mismatch:');
-			Scratch.app.log('    ' + spec);
-			Scratch.app.log('    ' + translatedSpec);
+			Scratch.app.log(
+					LogLevel.WARNING, 'Block argument mismatch',
+					{language: currentLang, spec: spec, translated: translatedSpec});
 			delete dictionary[spec]; // remove broken entry from dictionary
 		}
 	}

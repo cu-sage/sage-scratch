@@ -182,7 +182,8 @@ public class ScratchObj extends Sprite {
 	}
 
 	protected function updateRenderDetails(reason:uint):void {
-		if(((parent && parent is ScratchStage) || this is ScratchStage)) {
+	SCRATCH::allow3d {
+		if(this is ScratchStage || this is ScratchSprite || (parent && parent is ScratchStage)) {
 			var renderOpts:Object = {};
 			var costume:ScratchCostume = currentCostume();
 
@@ -210,12 +211,9 @@ public class ScratchObj extends Sprite {
 				else
 					renderOpts.bounds = getBounds(this);
 			}
-
-			if(parent is ScratchStage)
-				(parent as ScratchStage).updateRender(this, id, renderOpts);
-			else
-				(this as ScratchStage).updateRender(img, id, renderOpts);
+			if (Scratch.app.isIn3D) Scratch.app.render3D.updateRender((this is ScratchStage ? img : this), id, renderOpts);
 		}
+	}
 	}
 
 	protected function adjustForRotationCenter():void {
@@ -259,11 +257,11 @@ public class ScratchObj extends Sprite {
 			img.transform.colorTransform = cTrans;
 		}
 		else {
-			updateEffects();
+			updateEffectsFor3D();
 		}
 	}
 
-	protected function updateEffects():void {
+	public function updateEffectsFor3D():void {
 		SCRATCH::allow3d {
 			if((parent && parent is ScratchStage) || this is ScratchStage) {
 				if(parent is ScratchStage)
@@ -316,7 +314,7 @@ public class ScratchObj extends Sprite {
 
 		if ((['broadcast:', 'doBroadcastAndWait', 'whenIReceive'].indexOf(op)) > -1) {
 			var msgs:Array = Scratch.app.runtime.collectBroadcasts();
-			return (msgs.length > 0) ? [msgs[0]] : ['message1'];
+			return [msgs[0]];
 		}
 		if ((['lookLike:', 'startScene', 'startSceneAndWait', 'whenSceneStarts'].indexOf(op)) > -1) {
 			return [costumes[costumes.length - 1].costumeName];
@@ -441,6 +439,11 @@ public class ScratchObj extends Sprite {
 			if (v.name == varName) return true;
 		}
 		return false;
+	}
+
+	public function hasName(varName:String):Boolean {
+		var p:ScratchObj = parent as ScratchObj;
+		return ownsVar(varName) || ownsList(varName) || p && (p.ownsVar(varName) || p.ownsList(varName));
 	}
 
 	public function lookupOrCreateVar(varName:String):Variable {

@@ -31,7 +31,6 @@ package ui {
 	import uiwidgets.*;
 	import scratch.ScratchObj;
 	import scratch.ScratchComment;
-	
 
 public class BlockPalette extends ScrollFrameContents {
 

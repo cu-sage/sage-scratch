@@ -27,67 +27,35 @@ package ui {
 	import flash.display.*;
 	import flash.events.MouseEvent;
 	import flash.text.*;
-	import uiwidgets.*;
 
 public class PaletteSelectorItem extends Sprite {
 
 	public var categoryID:int;
 	public var label:TextField;
 	public var isSelected:Boolean;
-	public var checkbox:IconButton;
-	public var isSageSelected:Boolean;
-	
 
 	private var color:uint;
-	private var enabled:Boolean;
 
-	public function PaletteSelectorItem(id: int, s:String, c:uint, sageDesignMode:Boolean, sagePlayMode:Boolean, sageSelected:Boolean) {
-		isSageSelected = sageSelected;
-		enabled = !(sagePlayMode && !isSageSelected);
+	public function PaletteSelectorItem(id: int, s:String, c:uint) {
 		categoryID = id;
 		addLabel(s);
-		
-		if(sageDesignMode)
-			addCheckbox();
 		color = c;
-		
-		if(enabled)
-		{
-			addEventListener(MouseEvent.MOUSE_OVER, mouseOver);
-			addEventListener(MouseEvent.MOUSE_OUT, mouseOut);
-			addEventListener(MouseEvent.MOUSE_UP, mouseUp);
-		}
-		else
-			color = CSS.sagePlayRestricted;		
-		
 		setSelected(false);
-		//doubleClickEnabled = true;
-		//addEventListener(MouseEvent.DOUBLE_CLICK, mouseDoubleClick)
+		addEventListener(MouseEvent.MOUSE_OVER, mouseOver);
+		addEventListener(MouseEvent.MOUSE_OUT, mouseOut);
+		addEventListener(MouseEvent.CLICK, mouseUp);
 	}
 
 	private function addLabel(s:String):void {
 		label = new TextField();
 		label.autoSize = TextFieldAutoSize.LEFT;
 		label.selectable = false;
-		//if(!enabled)
-			//label.textColor = 0x000000;
 		label.text = s;
 		addChild(label);
 	}
-	
-	private function addCheckbox():void {
-		checkbox = new IconButton(sageSelect, 'checkbox');
-		checkbox.disableMouseover();
-		checkbox.x += 91;
-		checkbox.y += 5;
-		if(isSageSelected)
-			checkbox.turnOn();
-		addChild(checkbox);
-	}
 
 	public function setSelected(flag:Boolean):void {
-		var w:int = 108;
-		//var w:int = 88;
+		var w:int = 100;
 		var h:int = label.height + 2;
 		var tabInset:int = 8;
 		var tabW:int = 7;
@@ -119,19 +87,5 @@ public class PaletteSelectorItem extends Sprite {
 			PaletteSelector(parent).select(categoryID, event.shiftKey);
 		}
 	}
-	
-	/*
-	private function mouseDoubleClick(event:MouseEvent):void {
-		if(Scratch.app.interp.sageDesignMode)
-			DialogBox.notify('test', 'test');
-	}
-	 */
 
-	private function sageSelect(b:IconButton):void {
-		if (parent is PaletteSelector) {
-			PaletteSelector(parent).sageSelect(label.text, checkbox);
-		}
-	}
-
-}
-}
+}}

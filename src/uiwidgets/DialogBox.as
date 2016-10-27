@@ -25,8 +25,6 @@ package uiwidgets {
 	import flash.utils.Dictionary;
 	import translation.Translator;
 	import ui.parts.UIPart;
-	//import spark.components;
-	//import mx.controls.*;
 
 public class DialogBox extends Sprite {
 
@@ -38,6 +36,7 @@ public class DialogBox extends Sprite {
 
 	private var context:Dictionary;
 	private var title:TextField;
+	private var xButton:IconButton;
 	protected var buttons:Array = [];
 	private var labelsAndFields:Array = [];
 	private var booleanLabelsAndFields:Array = [];
@@ -85,7 +84,20 @@ public class DialogBox extends Sprite {
 		d.addTitle(title);
 		d.addText(msg);
 		d.addButton('OK', d.accept);
-		
+		if (context) d.updateContext(context);
+		d.showOnStage(stage ? stage : Scratch.app.stage);
+	}
+	
+	public static function close(title:String, msg:String = null, widget:DisplayObject = null, button:String = "OK", stage:Stage = null, okFunction:Function = null, cancelFunction:Function = null, context:Dictionary = null,inverted:Boolean = false):void {
+		var d:DialogBox = new DialogBox(okFunction, cancelFunction);
+		d.leftJustify = false;
+		d.addTitle(title);
+		if (widget) d.addWidget(widget);
+		if (msg) d.addText(msg);
+		if (inverted) d.addInvertedButton(button,d.accept);
+		else d.addButton(button, d.accept);
+		d.xButton = new IconButton(d.cancel,"close");
+		d.addChild(d.xButton);
 		if (context) d.updateContext(context);
 		d.showOnStage(stage ? stage : Scratch.app.stage);
 	}
@@ -167,10 +179,10 @@ public class DialogBox extends Sprite {
 		return spr;
 	}
 
-	public function addAcceptCancelButtons(acceptLabel:String = null):void {
+	public function addAcceptCancelButtons(acceptLabel:String = null,cancelLabel:String='Cancel'):void {
 		// Add a cancel button and an optional accept button with the given label.
 		if (acceptLabel != null) addButton(acceptLabel, accept);
-		addButton('Cancel', cancel);
+		addButton(cancelLabel, cancel);
 	}
 
 	public function addButton(label:String, action:Function):void {
@@ -178,16 +190,19 @@ public class DialogBox extends Sprite {
 			remove();
 			if (action != null) action();
 		}
-		var b:uiwidgets.Button = new uiwidgets.Button(Translator.map(label), doAction);
+		var b:Button = new Button(Translator.map(label), doAction);
 		addChild(b);
 		buttons.push(b);
-		
-		//var c:ComboBox = new ComboBox();
-		//addChild(c);
-		
-		//this.createClassObject(mx.controls.ComboBox, "my_cb", 10);
-		//my_cb.addItem({data:1, label:"One"});
-		//my_cb.addItem({data:2, label:"Two"});
+	}
+	
+	public function addInvertedButton(label:String, action:Function):void {
+		function doAction():void {
+			remove();
+			if (action != null) action();
+		}
+		var b:ButtonInverted = new ButtonInverted(Translator.map(label), doAction);
+		addChild(b);
+		buttons.push(b);
 	}
 
 	public function showOnStage(stage:Stage, center:Boolean = true):void {
@@ -231,7 +246,7 @@ public class DialogBox extends Sprite {
 		remove();
 	}
 
-	public function cancel():void {
+	public function cancel(e:* = null):void {
 		if (cancelFunction != null) cancelFunction(this);
 		remove();
 	}
@@ -290,6 +305,10 @@ public class DialogBox extends Sprite {
 			title.x = (w - title.width) / 2;
 			title.y = 5;
 			fieldY = title.y + title.height + 20;
+		}
+		if (xButton != null) {
+			xButton.x = this.width-20;
+			xButton.y = 10;
 		}
 		// fields
 		for (i = 0; i < labelsAndFields.length; i++) {
@@ -431,6 +450,7 @@ public class DialogBox extends Sprite {
 
 	private function keyDown(evt:KeyboardEvent):void {
 		if ((evt.keyCode == 10) || (evt.keyCode == 13)) accept();
+		if (evt.keyCode == 27) cancel();
 	}
 
 }}

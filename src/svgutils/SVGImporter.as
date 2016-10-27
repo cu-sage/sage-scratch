@@ -45,12 +45,14 @@
 //	* support for the "use" construct in gradients
 
 package svgutils {
+import flash.display.Loader;
+import flash.events.Event;
 import flash.events.IOErrorEvent;
+import flash.geom.*;
+
+import logging.LogLevel;
 
 import util.Base64Encoder;
-	import flash.display.Loader;
-	import flash.events.Event;
-	import flash.geom.*;
 
 public class SVGImporter {
 
@@ -70,7 +72,7 @@ public class SVGImporter {
 		}
 		root = extractElement(svg, []);
 		if (!root) {
-			Scratch.app.log('No SVG root (empty file?)');
+			Scratch.app.log(LogLevel.WARNING, 'No SVG root (empty file?)');
 			root = new SVGElement('svg');
 		}
 		resolveGradientLinks();
@@ -269,7 +271,7 @@ public class SVGImporter {
 			imagesLoaded++;
 			if ((imagesLoaded == imageCount) && (whenDone != null)) whenDone(root);
 		}
-		var imageCount:int, imagesLoaded:int;
+		var imageCount:int = 0, imagesLoaded:int = 0;
 		for each (var el:SVGElement in root.allElements()) {
 			if (('image' == el.tag) && (el.bitmap == null)) {
 				imageCount++;
