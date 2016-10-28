@@ -823,7 +823,7 @@ public class Block extends Sprite {
 
 	public function sageAddPoints():void {
 		//Scratch.app.paletteBuilder.updateBlock(this.spec, true);
-		trace("sageaddpoints called");
+		/*trace("sageaddpoints called");
 		var text:TextField = new TextField();
 		text.autoSize = TextFieldAutoSize.LEFT;
 		text.selectable = false;
@@ -834,7 +834,7 @@ public class Block extends Sprite {
 			text.antiAliasType = AntiAliasType.ADVANCED;
 			text.embedFonts = true;
 		}
-		text.mouseEnabled = false;
+		text.mouseEnabled = false;*/
 		/*
 		field = text;
 		if ((type == 'm') && !editable) field.textColor = 0xFFFFFF;
