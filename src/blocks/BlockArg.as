@@ -145,6 +145,7 @@ public class BlockArg extends Sprite {
 	public function labelOrNull():String { return field ? field.text : null }
 
 	public function setArgValue(value:*, label:String = null):void {
+		trace("setargvalue valled");
 		// if provided, label is displayed in field, rather than the value
 		// this is used for sprite names and to support translation
 		argValue = value;
@@ -172,6 +173,8 @@ public class BlockArg extends Sprite {
 	}
 
 	public function startEditing():void {
+		trace("startediting called");
+
 		if (isEditable) {
 			field.type = TextFieldType.INPUT;
 			field.selectable = true;
@@ -182,6 +185,8 @@ public class BlockArg extends Sprite {
 	}
 
 	private function stopEditing(ignore:*):void {
+		trace("stopediting called");
+
 		field.type = TextFieldType.DYNAMIC;
 		field.selectable = false;
 	}
@@ -214,6 +219,8 @@ public class BlockArg extends Sprite {
 	}
 
 	private function textChanged(evt:*):void {
+		trace("textchanged called");
+
 		argValue = field.text;
 		if (isNumber) {
 			// optimization: coerce to a number if possible

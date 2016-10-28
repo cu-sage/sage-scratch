@@ -415,6 +415,7 @@ public class Block extends Sprite {
 	}
 
 	public function setArg(i:int, newArg:*):void {
+		trace("setarg called");
 		// called on newly-created block (assumes argument being set is a BlockArg)
 		// newArg can be either a reporter block or a literal value (string, number, etc.)
 		collectArgs();
@@ -764,6 +765,7 @@ public class Block extends Sprite {
 	}
 
 	private function makeLabel(label:String):TextField {
+		trace("makelabel called");
 		var text:TextField = new TextField();
 		text.autoSize = TextFieldAutoSize.LEFT;
 		text.selectable = false;
@@ -817,6 +819,36 @@ public class Block extends Sprite {
 	
 	public function sageExclude():void {
 		Scratch.app.paletteBuilder.updateBlock(this.spec, false);
+	}
+
+	public function sageAddPoints():void {
+		//Scratch.app.paletteBuilder.updateBlock(this.spec, true);
+		trace("sageaddpoints called");
+		var text:TextField = new TextField();
+		text.autoSize = TextFieldAutoSize.LEFT;
+		text.selectable = false;
+		text.background = false;
+		text.defaultTextFormat = blockLabelFormat;
+		text.text = "lololol";
+		if (useEmbeddedFont) {
+			text.antiAliasType = AntiAliasType.ADVANCED;
+			text.embedFonts = true;
+		}
+		text.mouseEnabled = false;
+		/*
+		field = text;
+		if ((type == 'm') && !editable) field.textColor = 0xFFFFFF;
+		else base.setWidthAndTopHeight(30, Block.argTextFormat.size + 5); // 14 for normal arg font
+		field.text = isNumber ? '10' : '';
+		if (isNumber) field.restrict = '0-9e.\\-'; // restrict to numeric characters
+		if (editable) {
+			base.setColor(0xFFFFFF); // if editable, set color to white
+			isEditable = true;
+		}
+		field.addEventListener(FocusEvent.FOCUS_OUT, stopEditing);
+		addChild(field);
+		//return text;
+		*/
 	}
 
 	public function duplicateStack(deltaX:Number, deltaY:Number):void {

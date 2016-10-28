@@ -113,7 +113,7 @@ public class Specs {
 		// block specification					type, cat, opcode			default args (optional)
 		// motion
 		["move %n steps",						" ", 1, "forward:",					10],
-		["turn @turnRight %n degrees",			" ", 1, "turnRight:",				15],
+		["turn @turnRight!!!!!!!!!!!!!!!!!! %n degrees",			" ", 1, "turnRight:",				15],
 		["turn @turnLeft %n degrees",			" ", 1, "turnLeft:",				15],
 		["--"],
 		["point in direction %d.direction",		" ", 1, "heading:",					90],
@@ -147,7 +147,7 @@ public class Specs {
 		["-"],
 		["switch costume to %m.costume",		" ", 2, "lookLike:",				"costume1"],
 		["next costume",						" ", 2, "nextCostume"],
-		["switch backdrop to %m.backdrop",		" ", 2, "startScene", 				"backdrop1"],
+		["switch!!!!!!! backdrop to %m.backdrop",		" ", 2, "startScene", 				"backdrop1"],
 		["-"],
 		["change %m.effect effect by %n",		" ", 2, "changeGraphicEffect:by:",	"color", 25],
 		["set %m.effect effect to %n",			" ", 2, "setGraphicEffect:to:",		"color", 0],
@@ -164,9 +164,9 @@ public class Specs {
 		["size",								"r", 2, "scale"],
 
 		// stage looks
-		["switch backdrop to %m.backdrop",			" ", 102, "startScene", 			"backdrop1"],
-		["switch backdrop to %m.backdrop and wait", " ", 102, "startSceneAndWait",		"backdrop1"],
-		["next backdrop",							" ", 102, "nextScene"],
+		["switch!!!!! backdrop to %m.backdrop",			" ", 102, "startScene", 			"backdrop1"],
+		["switch!!! backdrop to %m.backdrop and wait", " ", 102, "startSceneAndWait",		"backdrop1"],
+		["next!!! backdrop",							" ", 102, "nextScene"],
 		["-"],
 		["change %m.effect effect by %n",		" ", 102, "changeGraphicEffect:by:",	"color", 25],
 		["set %m.effect effect to %n",			" ", 102, "setGraphicEffect:to:",		"color", 0],
@@ -314,6 +314,7 @@ public class Specs {
 		["current %m.timeAndDate", 				"r", 107, "timeAndDate",		"minute"],
 		["days since 2000", 					"r", 107, "timestamp"],
 		["username",							"r", 107, "getUserName"],
+
 
 		// operators
 		["%n + %n",								"r", 8, "+",					"", ""],

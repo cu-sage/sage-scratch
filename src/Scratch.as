@@ -228,13 +228,13 @@ public class Scratch extends Sprite {
 		}
 
 		function onPostError(e:IOErrorEvent):void {
-			trace("Error posting the assignment: " + e.toString());
+			//trace("Error posting the assignment: " + e.toString());
 		}
 
 		loader.addEventListener(Event.COMPLETE, onPostComplete);
 		loader.addEventListener(IOErrorEvent.IO_ERROR, onPostError);
 
-		trace("Posting assignment: " + request)
+		//trace("Posting assignment: " + request)
 
 		// send the request
 		loader.load(request);

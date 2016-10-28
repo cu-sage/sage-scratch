@@ -45,6 +45,7 @@ public class BlockMenus implements DragClient {
 	private static const stageAttributes:Array = ['backdrop #', 'backdrop name', 'volume'];
 
 	public static function BlockMenuHandler(evt:MouseEvent, block:Block, blockArg:BlockArg = null, menuName:String = null):void {
+		trace("blockmenuhandler called");
 		var menuHandler:BlockMenus = new BlockMenus(block, blockArg);
 		var op:String = block.op;
 		if (menuName == null) { // menu gesture on a block (vs. an arg)
@@ -496,8 +497,11 @@ public class BlockMenus implements DragClient {
 	}
 
 	private function addGenericBlockItems(m:Menu):void {
+		trace("addgeneric blockitems called");
+
 		if (!block) return;
 		m.addLine();
+		// if block's not in palette, so it's in menu
 		if (!isInPalette(block)) {
 			if (!block.isProcDef() && (!(!stackIncluded(block) && app.interp.sagePlayMode))) {
 				m.addItem('duplicate', duplicateStack);
@@ -508,6 +512,7 @@ public class BlockMenus implements DragClient {
 				m.addItem('add comment', block.addComment);
 			}
 		}
+		// if block is in palette
 		else // SAGE restrict in palette
 		{
 			var category:int = app.getPaletteBuilder().getBlockCategory(block.spec);
@@ -517,10 +522,12 @@ public class BlockMenus implements DragClient {
 					m.addItem('exclude', block.sageExclude);
 				else
 					m.addItem('include', block.sageInclude);
+				m.addItem('add points', block.sageAddPoints);
 			}
 		}
 		if(!(!app.getPaletteBuilder().blockIncluded(block) && app.interp.sagePlayMode))
 			m.addItem('help', block.showHelp);
+
 		m.addLine();
 	}	
 	
