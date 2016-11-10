@@ -35,12 +35,12 @@ public class PaletteSelector extends Sprite {
 
 	private static const categories:Array = [
 		'Motion', 'Looks', 'Sound', 'Pen', 'Data', // column 1
-		'Events', 'Control', 'Sensing', 'Operators', 'More Blocks']; // column 2
-
+		'Events', 'Control', 'Sensing', 'Operators', 'More Blocks', 'Parsons']; // column 2
+	//true against category id for
 	public var sageCategories:Array = [
 		false, // placeholder
 		true, true, true, true, true, // column 1
-		true, true, true, true, true]; // column 2
+		true, true, true, true, true, true, true, true]; // column 2
 		
 	public var sageBlockIncludes:Dictionary;
 
@@ -101,15 +101,22 @@ public class PaletteSelector extends Sprite {
 			app.getViewedObject().updateScriptsAfterTranslation(); // resest ScriptsPane
 		}
 	}
-
+	//sm4241 - changing numberOfRows -> 6 (categories table)
 	private function initCategories():void {
-		const numberOfRows:int = 5;
+		const numberOfRows:int = 6; //initially was 5
 		const w:int = 208;
 		const startY:int = 3;
 		var itemH:int;
 		var x:int, i:int;
 		var y:int = startY;
 		while (numChildren > 0) removeChildAt(0); // remove old contents
+
+//		if(app.interp.sagePlayMode){
+//			sageCategories[13] = true;
+//			for(var i:int=1; i<sageCategories.length-1; ++i){
+//				sageCategories[i] = false;
+//			}
+//		}
 
 		for (i = 0; i < categories.length; i++) {
 			if (i == numberOfRows) {

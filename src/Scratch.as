@@ -189,6 +189,7 @@ public class Scratch extends Sprite {
 			var sid:String = d.getField("Student ID");
 			var aid:String = d.getField("Assignment ID");
 
+			// sm4241: Most probably its polling timer
 			startTimer(sid, aid);
 		}
 

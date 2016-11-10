@@ -907,6 +907,21 @@ public class ScratchRuntime {
 			}
 		}
 
+		if ('parsons' == data.type) {
+			var w:Watcher = findParsonsWatcher(data);
+			if (w) {
+				app.removeChild(w);
+				w.visible = showFlag;
+			} else {
+				if (showFlag) {
+					w = new Watcher();
+					w.initWatcher(data.targetObj, data.cmd, data.param, data.color);
+					app.addChild(w);
+					w.visible = false;
+				}
+			}
+		}
+
 		app.setSaveNeeded();
 	}
 
@@ -987,6 +1002,15 @@ public class ScratchRuntime {
 			var w:Watcher = findReporterWatcher(data);
 			return w && w.visible;
 		}
+		if ('parsons' == data.type) {
+			var w:Watcher = findParsonsWatcher(data);
+//			return w && w.visible;
+			if(w != null){
+				return true;
+			}else return false;
+
+		}
+
 		return false;
 	}
 
@@ -994,6 +1018,14 @@ public class ScratchRuntime {
 		var uiLayer:Sprite = app.stagePane.getUILayer();
 		for (var i:int = 0; i < uiLayer.numChildren; i++) {
 			var w:Watcher = uiLayer.getChildAt(i) as Watcher;
+			if (w && w.isReporterWatcher(data.targetObj, data.cmd, data.param)) return w;
+		}
+		return null;
+	}
+
+	private function findParsonsWatcher(data:Object):Watcher {
+		for (var i:int = 0; i < app.numChildren; i++) {
+			var w:Watcher = app.getChildAt(i) as Watcher;
 			if (w && w.isReporterWatcher(data.targetObj, data.cmd, data.param)) return w;
 		}
 		return null;
