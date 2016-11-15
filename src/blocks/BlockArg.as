@@ -69,10 +69,15 @@ public class BlockArg extends Sprite {
 	public function BlockArg(type:String, color:int, editable:Boolean = false, menuName:String = '') {
 		this.type = type;
 
+		trace("type " + type);
+		trace("menuname " + menuName);
+
 		if (color == -1) { // copy for clone; omit graphics
 			if ((type == 'd') || (type == 'n')) isNumber = true;
 			return;
 		}
+		trace("color " + color.toString());
+
 		var c:int = Color.scaleBrightness(color, 0.92);
 		if (type == 'b') {
 			base = new BlockShape(BlockShape.BooleanShape, c);
@@ -172,6 +177,7 @@ public class BlockArg extends Sprite {
 		base.redraw();
 	}
 
+	// called when user starts editing a text field
 	public function startEditing():void {
 		trace("startediting called");
 

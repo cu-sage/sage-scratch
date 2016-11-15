@@ -147,7 +147,7 @@ public class Specs {
 		["-"],
 		["switch costume to %m.costume",		" ", 2, "lookLike:",				"costume1"],
 		["next costume",						" ", 2, "nextCostume"],
-		["switch!!!!!!! backdrop to %m.backdrop",		" ", 2, "startScene", 				"backdrop1"],
+		["switch backdrop to %m.backdrop",		" ", 2, "startScene", 				"backdrop1"],
 		["-"],
 		["change %m.effect effect by %n",		" ", 2, "changeGraphicEffect:by:",	"color", 25],
 		["set %m.effect effect to %n",			" ", 2, "setGraphicEffect:to:",		"color", 0],
@@ -164,9 +164,9 @@ public class Specs {
 		["size",								"r", 2, "scale"],
 
 		// stage looks
-		["switch!!!!! backdrop to %m.backdrop",			" ", 102, "startScene", 			"backdrop1"],
-		["switch!!! backdrop to %m.backdrop and wait", " ", 102, "startSceneAndWait",		"backdrop1"],
-		["next!!! backdrop",							" ", 102, "nextScene"],
+		["switch backdrop to %m.backdrop",			" ", 102, "startScene", 			"backdrop1"],
+		["switch backdrop to %m.backdrop and wait", " ", 102, "startSceneAndWait",		"backdrop1"],
+		["next backdrop",							" ", 102, "nextScene"],
 		["-"],
 		["change %m.effect effect by %n",		" ", 102, "changeGraphicEffect:by:",	"color", 25],
 		["set %m.effect effect to %n",			" ", 102, "setGraphicEffect:to:",		"color", 0],
@@ -399,4 +399,5 @@ public class Specs {
 
 	public static var extensionSpecs:Array = ["when %m.booleanSensor", "when %m.sensor %m.lessMore %n", "sensor %m.booleanSensor?", "%m.sensor sensor value", "turn %m.motor on for %n secs", "turn %m.motor on", "turn %m.motor off", "set %m.motor power to %n", "set %m.motor2 direction to %m.motorDirection", "when distance %m.lessMore %n", "when tilt %m.eNe %n", "distance", "tilt"];
 
+	public static var pointDict:Object = {"backdrop #": 88, "backdrop name": 99 };
 }}

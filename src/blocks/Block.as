@@ -108,6 +108,10 @@ public class Block extends Sprite {
 	private var originalParent:DisplayObjectContainer, originalRole:int, originalIndex:int, originalPosition:Point;
 
 	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null) {
+		trace("block constructor called");
+
+		trace("spec: " + spec);
+		trace("type: " + type);
 		this.spec = Translator.map(spec);
 		this.type = type;
 		this.op = op;
@@ -180,11 +184,13 @@ public class Block extends Sprite {
 		}
 	}
 
+	//juliesetspec
 	public function setSpec(newSpec:String, defaultArgs:Array = null):void {
 		for each (var o:DisplayObject in labelsAndArgs) {
 			if (o.parent != null) o.parent.removeChild(o);
 		}
 		spec = newSpec;
+		trace ("setspec called, op: " + op);
 		if (op == Specs.PROCEDURE_DEF) {
 			// procedure hat: make an icon from my spec and use that as the label
 			indentTop = 20;
@@ -216,6 +222,16 @@ public class Block extends Sprite {
 			argTypes.reverse();
 			if (defaultArgs) defaultArgs.reverse();
 		}
+
+		trace("from pointdict: " + Specs.pointDict[spec]);
+		var pointVal:int = Specs.pointDict[spec];
+		//julie
+		if (Scratch.app.interp.sageDesignMode) {
+			labelsAndArgs.push(new PointArg(spec, pointVal));
+		} else {
+			labelsAndArgs.push(makeLabel(pointVal.toString()));
+		}
+
 		for each (var item:* in labelsAndArgs) addChild(item);
 		if (defaultArgs) setDefaultArgs(defaultArgs);
 		fixArgLayout();
@@ -742,6 +758,7 @@ public class Block extends Sprite {
 		return result;
 	}
 
+	//julieargorlabel
 	private function argOrLabelFor(s:String, c:int):DisplayObject {
 		// Possible token formats:
 		//	%<single letter>
@@ -814,41 +831,12 @@ public class Block extends Sprite {
 	}
 	
 	public function sageInclude():void {
+		trace("sageinclude called");
 		Scratch.app.paletteBuilder.updateBlock(this.spec, true);
 	}
 	
 	public function sageExclude():void {
 		Scratch.app.paletteBuilder.updateBlock(this.spec, false);
-	}
-
-	public function sageAddPoints():void {
-		//Scratch.app.paletteBuilder.updateBlock(this.spec, true);
-		/*trace("sageaddpoints called");
-		var text:TextField = new TextField();
-		text.autoSize = TextFieldAutoSize.LEFT;
-		text.selectable = false;
-		text.background = false;
-		text.defaultTextFormat = blockLabelFormat;
-		text.text = "lololol";
-		if (useEmbeddedFont) {
-			text.antiAliasType = AntiAliasType.ADVANCED;
-			text.embedFonts = true;
-		}
-		text.mouseEnabled = false;*/
-		/*
-		field = text;
-		if ((type == 'm') && !editable) field.textColor = 0xFFFFFF;
-		else base.setWidthAndTopHeight(30, Block.argTextFormat.size + 5); // 14 for normal arg font
-		field.text = isNumber ? '10' : '';
-		if (isNumber) field.restrict = '0-9e.\\-'; // restrict to numeric characters
-		if (editable) {
-			base.setColor(0xFFFFFF); // if editable, set color to white
-			isEditable = true;
-		}
-		field.addEventListener(FocusEvent.FOCUS_OUT, stopEditing);
-		addChild(field);
-		//return text;
-		*/
 	}
 
 	public function duplicateStack(deltaX:Number, deltaY:Number):void {
