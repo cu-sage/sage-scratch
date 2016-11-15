@@ -522,7 +522,6 @@ public class BlockMenus implements DragClient {
 					m.addItem('exclude', block.sageExclude);
 				else
 					m.addItem('include', block.sageInclude);
-				m.addItem('add points', block.sageAddPoints);
 			}
 		}
 		if(!(!app.getPaletteBuilder().blockIncluded(block) && app.interp.sagePlayMode))
