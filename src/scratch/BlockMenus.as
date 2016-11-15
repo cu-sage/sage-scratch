@@ -723,6 +723,7 @@ public class BlockMenus implements DragClient {
 	public function dragBegin(evt:MouseEvent):void { }
 
 	public function dragEnd(evt:MouseEvent):void {
+		trace("dragend");
 		if (pickingColor) {
 			pickingColor = false;
 			Mouse.cursor = MouseCursor.AUTO;

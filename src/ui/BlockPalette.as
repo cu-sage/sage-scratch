@@ -54,6 +54,7 @@ public class BlockPalette extends ScrollFrameContents {
 	}
 
 	public function handleDrop(obj:*):Boolean {
+		trace("handledrop called");
 		// Delete blocks and stacks dropped onto the palette.
 		var c:ScratchComment = obj as ScratchComment;
 		if (c) {
@@ -63,6 +64,7 @@ public class BlockPalette extends ScrollFrameContents {
 		}
 		var b:Block = obj as Block;
 		if (b) {
+			Scratch.app.decrementPoints(Specs.pointDict[b.spec]);
 			return b.deleteStack();
 		}
 		return false;
