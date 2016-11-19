@@ -197,7 +197,10 @@ public class ScriptsPane extends ScrollFrameContents {
 	}
 
 	private function blockDropped(b:Block):void {
+		trace("scriptspane.blockdropped called");
 		if (nearestTarget == null) {
+			trace("scriptspane.blockdropped 1");
+
 			b.cacheAsBitmap = true;
 		} else {
 			if(app.editMode) b.hideRunFeedback();
