@@ -38,7 +38,8 @@ import flash.display.*;
 	import flash.filters.GlowFilter;
 	import flash.geom.*;
 	import flash.net.URLLoader;
-	import flash.text.*;
+import flash.net.URLRequest;
+import flash.text.*;
 	import assets.Resources;
 	import translation.Translator;
 	import util.*;
@@ -53,6 +54,7 @@ public class Block extends Sprite {
 
 	public static var argTextFormat:TextFormat;
 	public static var blockLabelFormat:TextFormat;
+	public static var pointLabelFormat:TextFormat;
 	private static var vOffset:int;
 
 //	private static const blockLabelFormat:TextFormat = new TextFormat('LucidaBoldEmbedded', 10, 0xFFFFFF, true);
@@ -229,7 +231,7 @@ public class Block extends Sprite {
 		if (Scratch.app.interp.sageDesignMode) {
 			labelsAndArgs.push(new PointArg(spec, pointVal));
 		} else {
-			labelsAndArgs.push(makeLabel(pointVal.toString()));
+			labelsAndArgs.push(makePointLabel(pointVal));
 		}
 
 		for each (var item:* in labelsAndArgs) addChild(item);
@@ -256,6 +258,7 @@ public class Block extends Sprite {
 		var font:String = Resources.chooseFont([
 			'Lucida Grande', 'Verdana', 'Arial', 'DejaVu Sans']);
 		blockLabelFormat = new TextFormat(font, labelSize, 0xFFFFFF, boldFlag);
+		pointLabelFormat = new TextFormat(font, labelSize-2, 0x777777, boldFlag);
 		argTextFormat = new TextFormat(font, argSize, 0x505050, false);
 		Block.vOffset = vOffset;
 	}
@@ -289,10 +292,24 @@ public class Block extends Sprite {
 		return Block(parent).op == 'proc_declaration';
 	}
 
+	//block is currently in scripts pane
 	public function isInPalette():Boolean {
 		var o:DisplayObject = parent;
 		while (o) {
 			if ('isBlockPalette' in o) return true;
+			o = o.parent;
+		}
+		return false;
+	}
+
+	//block is currently in scripts pane
+	public function isInScriptsPane():Boolean {
+		var o:DisplayObject = parent;
+		while (o) {
+			if ('isScriptsPane' in o) {
+				trace("Block.isinscriptspane true");
+				return true;
+			}
 			o = o.parent;
 		}
 		return false;
@@ -322,6 +339,7 @@ public class Block extends Sprite {
 		}
 	}
 
+	// call f on all blocks
 	public function allBlocksDo(f:Function):void {
 		f(this);
 		for each (var arg:* in args) {
@@ -485,7 +503,7 @@ public class Block extends Sprite {
 		if (['h'].indexOf(type) >= 0) x = Math.max(x, minHatWidth); // minimum width for hat blocks
 		if (elseLabel) x = Math.max(x, indentLeft + elseLabel.width + 2);
 
-		base.setWidthAndTopHeight(x + indentRight, indentTop + maxH + indentBottom);
+		base.setWidthAndTopHeight(x + indentRight + 10, indentTop + maxH + indentBottom);
 		if ((type == "c") || (type == "e")) fixStackLayout();
 		base.redraw();
 		fixElseLabel();
@@ -778,11 +796,30 @@ public class Block extends Sprite {
 			var icon:* = Specs.IconNamed(s.slice(1));
 			return (icon) ? icon : makeLabel(s);
 		}
+		//return makePointLabel(66);
 		return makeLabel(ReadStream.unescape(s));
+	}
+
+	private function makePointLabel(pointValue:Number):Sprite {
+		var pLoad:Loader = new Loader();
+		pLoad.load(new URLRequest("star.png"))
+
+		var background = new Sprite();
+		var text = makeLabel(pointValue.toString());
+		text.setTextFormat(pointLabelFormat);
+		//background.addChild(t);
+		background.addChild(pLoad)
+		background.addChild(text);
+		text.x = 5;
+		text.y = 2;
+		//addChild(background);
+		base.setWidth(base.width + 100);
+		return background;
 	}
 
 	private function makeLabel(label:String):TextField {
 		trace("makelabel called");
+
 		var text:TextField = new TextField();
 		text.autoSize = TextFieldAutoSize.LEFT;
 		text.selectable = false;
@@ -900,14 +937,25 @@ public class Block extends Sprite {
 
 	/* Dragging */
 
+	//yc2937
 	public function objToGrab(evt:MouseEvent):Block {
+		trace("block.objtograb called-------------------------------------------------------------------------------");
 		//if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
+		if (isInPalette()) {
+			trace("block.objtograb is in palette true");
+			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_PALETTE;
+		}
+		if (isInScriptsPane()) {
+			trace("block.objtograb is inscriptsname true");
+			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_SCRIPTS_PANE;
+		}
 		if (isEmbeddedParameter() || isInPalette()) 
 		{
 			if (!Scratch.app.getPaletteBuilder().blockIncluded(this) && Scratch.app.interp.sagePlayMode)
 				return null; // block should not respond when restricted
-			else
+			else {
 				return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
+			}
 		}
 		return this;
 	}

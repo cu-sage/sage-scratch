@@ -324,12 +324,29 @@ public class ScratchRuntime {
 		triggeredHats = activeHats;
 	}
 
+	//yc2937
 	// Called when a block is dropped in the scripts pane (work area)
 	public function blockDropped(stack:Block):void {
 		trace("blockdropped called");
 		trace("block dropped: " + stack.spec);
 
-		Scratch.app.incrementPoints(Specs.pointDict[stack.spec]);
+		// if block was dragged from palette to scripts pane, increment points
+		if (stack.isInScriptsPane() && app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_PALETTE) {
+
+			 stack.allBlocksDo(function(b:Block):void {
+				 trace ("dragged from palette to scripts pane: " + b.spec);
+				 Scratch.app.incrementPoints(Specs.pointDict[b.spec]);
+			 });
+		}
+
+		// if block was dragged from scripts pane to palette, decrement points
+		/*
+		if (stack.isInPalette() && app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
+			stack.allBlocksDo(function(b:Block):void {
+				trace ("dragged from scripts pane to palette: " + b.spec);
+				Scratch.app.decrementPoints(Specs.pointDict[b.spec]);
+			});
+		}*/
 
 		// Turn on video the first time a video sensor reporter or hat block is added.
 		stack.allBlocksDo(function(b:Block):void {
@@ -345,6 +362,9 @@ public class ScratchRuntime {
 					app.go3D();
 			}
 		});
+
+		//reset draggedfrom flag
+		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 	}
 
 	// -----------------------------

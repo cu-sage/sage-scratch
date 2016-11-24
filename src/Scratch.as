@@ -32,6 +32,7 @@ import flash.errors.IllegalOperationError;
 import flash.events.*;
 import flash.geom.Point;
 import flash.geom.Rectangle;
+import flash.net.FileFilter;
 import flash.net.FileReference;
 import flash.net.FileReferenceList;
 import flash.net.LocalConnection;
@@ -119,6 +120,8 @@ public class Scratch extends Sprite {
 	public const tipsBarClosedWidth:int = 17;
 
 	// Points
+
+
 	protected var points:int = 0;
 	public function setPoints(points:int):void {
 		this.points = points;
@@ -138,6 +141,13 @@ public class Scratch extends Sprite {
 		stagePart.updatePointsLabel();
 	}
 
+	public static const K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE:int = 0;
+	public static const K_DRAGGED_FROM_PALETTE:int = 1;
+	public static const K_DRAGGED_FROM_SCRIPTS_PANE:int = 2;
+
+	//for detecting where a block you're currently dragging was dragged from. For determining if points should be added/subtracted.
+	public var blockDraggedFrom = K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
+
 	public var sagePalettesDefault:Array = [
 		false, // placeholder
 		true, true, true, true, true, // column 1
@@ -151,8 +161,67 @@ public class Scratch extends Sprite {
 		determineJSAccess();
 	}
 
+	function onFileLoaded(event:Event):void {
+		trace("onfileloaded called");
+		var fileReference:FileReference = event.target as FileReference;
+
+		// These steps below are to pass the data as DisplayObject
+		// These steps below are specific to this example.
+		var data:ByteArray = fileReference["data"];
+		var lol:Object = JSON.parse(data.readUTF());
+		Specs.pointDict = lol;
+		trace(lol);
+	}
 	protected function initialize():void {
 		trace("editor initializing");
+
+		/*
+		var buttonShape:Shape = new Shape();
+		buttonShape.graphics.beginFill(0x336699);
+		buttonShape.graphics.drawCircle(50, 50, 25);
+		var button = new SimpleButton(buttonShape, buttonShape, buttonShape, buttonShape);
+		addChild(button);
+		*/
+
+		/*
+		var fileRef:FileReference= new FileReference();
+		button.addEventListener(MouseEvent.CLICK, onButtonClick);
+
+		function onButtonClick(e:MouseEvent):void {
+			fileRef.browse([new FileFilter("JSON Files", "*.json")]);
+			fileRef.addEventListener(Event.SELECT, onFileSelected);
+		}
+
+		function onFileSelected(e:Event):void {
+			fileRef.addEventListener(Event.COMPLETE, onFileLoaded);
+			fileRef.load();
+		}
+
+		function onFileLoaded(e:Event):void {
+			//var loader:URLLoader = new URLLoader();
+			//loader.load(e.target.data);
+
+			//addChild(loader);
+
+			//var data:ByteArray = fileReference["data"];
+			var lol:Object = JSON.parse(e.target.data);
+			Specs.pointDict = lol;
+			trace(lol);
+		}*/
+
+		//load point config
+		/*
+		 var jsonString = JSON.stringify(Specs.pointDict);
+		trace("jsonstring: " + jsonString);
+		var f:FileReference = new FileReference();
+		f.save(jsonString, "lol.txt");
+		*/
+		/*
+		var f:FileReference = new FileReference();
+		f.addEventListener(Event.COMPLETE, onFileLoaded);
+		f.load();
+*/
+
 
 		isOffline = loaderInfo.url.indexOf('http:') == -1;
 		checkFlashVersion();
@@ -868,6 +937,74 @@ public class Scratch extends Sprite {
 	protected function addFileMenuItems(b:*, m:Menu):void {
 		m.addItem('Load Project', runtime.selectProjectFile);
 		m.addItem('Save Project', exportProjectToFile);
+
+		if (Scratch.app.interp.sageDesignMode) {
+			/*
+			var fileRef:FileReference= new FileReference();
+//			button.addEventListener(MouseEvent.CLICK, onButtonClick);
+
+
+			function onButtonClick(e:MouseEvent):void {
+				trace("onbutonclick called");
+				//fileRef.browse([new FileFilter("Documents", "*.json")]);
+				fileRef.browse([new FileFilter("All Files (*.*)","*.*")]);
+
+				fileRef.addEventListener(Event.SELECT, onFileSelected);
+			}
+
+			function onFileSelected(e:Event):void {
+				trace("onfileselected called");
+				fileRef.addEventListener(Event.COMPLETE, onFileLoaded);
+				fileRef.load();
+			}
+
+			function onFileLoaded(e:Event):void {
+				//var loader:URLLoader = new URLLoader();
+				//loader.load(e.target.data);
+
+				//addChild(loader);
+
+				//var data:ByteArray = fileReference["data"];
+				var lol:Object = JSON.parse(e.target.data);
+				Specs.pointDict = lol;
+				trace(lol);
+			}*/
+
+		//	m.addItem('Save Point Configuration');
+
+			function configFileLoaded(e:Event):void {
+				trace("lolfunc called");
+				var lol:Object = JSON.parse(e.target.data);
+				Specs.pointDict = lol;
+				trace("json: " + lol);
+			}
+
+			function selectConfigFile():void {
+				trace("selectconfigfile called");
+				// Prompt user for a file name and load that file.
+				var fileName:String, data:ByteArray;
+				function fileLoadHandler(event:Event):void {
+					var file:FileReference = FileReference(event.target);
+					fileName = file.name;
+					data = file.data;
+					trace(data);
+				}
+
+				Scratch.loadSingleFile(configFileLoaded, [new FileFilter('Scratch 1.4 Project', '*.json')]);
+			}
+
+			function saveConfigFile():void {
+				var jsonString = JSON.stringify(Specs.pointDict);
+				trace("jsonstring: " + jsonString);
+				var f:FileReference = new FileReference();
+				f.save(jsonString, "0points_config.json");
+			}
+
+			m.addItem('Load Point Configuration', selectConfigFile);
+			m.addItem('Save Point Configuration', saveConfigFile);
+
+		}
+
 		if (canUndoRevert()) {
 			m.addLine();
 			m.addItem('Undo Revert', undoRevert);

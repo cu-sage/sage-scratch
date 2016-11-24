@@ -35,6 +35,9 @@ package uiwidgets {
 
 public class ScriptsPane extends ScrollFrameContents {
 
+	public const isScriptsPane:Boolean = true;
+
+
 	private const INSERT_NORMAL:int = 0;
 	private const INSERT_ABOVE:int = 1;
 	private const INSERT_SUB1:int = 2;
@@ -367,6 +370,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
+		trace("scriptspanel.handledropped called ============================")
 		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
 
 		var info:MediaInfo = obj as MediaInfo;
