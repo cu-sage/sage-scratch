@@ -227,8 +227,14 @@ public class Block extends Sprite {
 
 		trace("from pointdict: " + Specs.pointDict[spec]);
 		var pointVal:int = Specs.pointDict[spec];
-		//julie
-		if (Scratch.app.interp.sageDesignMode) {
+		//yc2937
+		if (!isInScriptsPane()) {
+			trace("block.setspec not in scripts pane");
+		} else {
+			trace("block.setspec is in scripts pane");
+
+		}
+		if (Scratch.app.interp.sageDesignMode && !isInScriptsPane()) {
 			labelsAndArgs.push(new PointArg(spec, pointVal));
 		} else {
 			labelsAndArgs.push(makePointLabel(pointVal));
@@ -252,6 +258,42 @@ public class Block extends Sprite {
 		op = newOp;
 		opFunction = null;
 		fixArgLayout();
+	}
+
+	//yc2937
+	//changes the point argument to a label, if a point arg exists
+	public function changePointArgToLabel():void {
+		trace("block.changepointargtolabel called");
+		for (var i:int = 0; i < labelsAndArgs.length; i++) {
+			if (labelsAndArgs[i] is PointArg) {
+				var item:PointArg = labelsAndArgs[i] as PointArg;
+				if (item) {
+					trace("block.changepointargtolabel changed");
+					removeChild(item);
+					labelsAndArgs[i] = makePointLabel(Specs.getPointsForSpec(item.getSpec()));
+					addChildAt(labelsAndArgs[i],i);
+					/*
+					labelsAndArgs.push(makePointLabel(888));
+					item.argValue = 999;
+					base.redraw()
+					*/
+
+
+				}
+			}
+		}
+		/*
+		for each (var item:* in labelsAndArgs) {
+			if (item is PointArg) {
+				var itemPointArg:PointArg = item as PointArg;
+
+				item = makeLabel(itemPointArg.argValue);
+			}
+		}
+		*/
+
+		fixArgLayout();
+
 	}
 
 	public static function setFonts(labelSize:int, argSize:int, boldFlag:Boolean, vOffset:int):void {

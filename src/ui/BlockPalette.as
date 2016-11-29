@@ -63,10 +63,27 @@ public class BlockPalette extends ScrollFrameContents {
 			return true;
 		}
 		var b:Block = obj as Block;
+
+		//yc2937 if block was dragged from scripts pane to palette, decrement points
+
 		if (b) {
-			Scratch.app.decrementPoints(Specs.pointDict[b.spec]);
+			if (Scratch.app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
+				obj.allBlocksDo(function(b:Block):void {
+					trace ("dragged from scripts pane to palette: " + b.spec);
+					Scratch.app.decrementPoints(Specs.pointDict[b.spec]);
+				});
+			}
+
+			trace("blockpalette.handledrop resetting flag ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+			Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
+
 			return b.deleteStack();
 		}
+		trace("blockpalette.handledrop resetting flag ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
+
 		return false;
 	}
 

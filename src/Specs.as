@@ -409,6 +409,10 @@ public class Specs {
 
 
 	public static function getPointsForSpec(spec:String):Number{
-		return pointDict[spec];
+		if (pointDict[spec]) {
+			return pointDict[spec];
+		} else {
+			return 0;
+		}
 	}
 }}

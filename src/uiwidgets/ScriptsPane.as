@@ -370,7 +370,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
-		trace("scriptspanel.handledropped called ============================")
+		trace("scriptspane.handledropped called ============================")
 		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
 
 		var info:MediaInfo = obj as MediaInfo;
@@ -383,6 +383,28 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		}
 
 		var b:Block = obj as Block;
+
+		if (b) {
+			// yc2937 if block was dragged from palette to scripts pane, increment points
+			if (app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_PALETTE) {
+
+				b.allBlocksDo(function (b:Block):void {
+					trace("dragged from palette to scripts pane: " + b.spec);
+					Scratch.app.incrementPoints(Specs.pointDict[b.spec]);
+					b.changePointArgToLabel();
+				});
+			}
+			//reset draggedfrom flag
+//			Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
+		}
+
+		trace("scriptspane.handledropped resetting flag ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
+
+
+		//end
+
 		var c:ScratchComment = obj as ScratchComment;
 		if (!b && !c) return false;
 
