@@ -157,7 +157,14 @@ public class PaletteBuilder {
 				var defaultArgs:Array = targetObj.defaultArgsFor(spec[3], spec.slice(4));
 				var label:String = spec[0];
 				if(targetObj.isStage && spec[3] == 'whenClicked') label = 'when Stage clicked';
-				var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs);
+
+				//yc2937 make points editable if we're in design mode
+				if (app.interp.sageDesignMode == true) {
+					var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs, true);
+				}
+				else {
+					var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs);
+				}
 				var showCheckbox:Boolean = isCheckboxReporter(spec[3]);
 				if (showCheckbox) addReporterCheckbox(block);
 				addItem(block, showCheckbox);

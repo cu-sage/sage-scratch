@@ -1149,19 +1149,22 @@ public class Scratch extends Sprite {
 		interp.turboMode = !interp.turboMode;
 		stagePart.refresh();
 	}
-	
+
+	//yc2937
+	//update elements when switching to design mode
 	public function toggleSageDesignMode(): void {
 		interp.sageDesignMode = !interp.sageDesignMode;
 		interp.sagePlayMode = false;
 		stagePart.refresh();
-		viewedObject.updateScriptsAfterTranslation(); // resest ScriptsPane
+		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
 	}
-	
+
+	//update elements when switching to play mode
 	public function toggleSagePlayMode(): void {
 		interp.sagePlayMode = !interp.sagePlayMode;
 		interp.sageDesignMode = false;
 		stagePart.refresh();
-		viewedObject.updateScriptsAfterTranslation(); // resest ScriptsPane
+		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
 	}
 
 	public function handleTool(tool:String, evt:MouseEvent):void { }

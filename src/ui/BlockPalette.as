@@ -54,7 +54,7 @@ public class BlockPalette extends ScrollFrameContents {
 	}
 
 	public function handleDrop(obj:*):Boolean {
-		trace("blockpalette.handledrop called======================================");
+		trace("blockpalette.handledrop called");
 		// Delete blocks and stacks dropped onto the palette.
 		var c:ScratchComment = obj as ScratchComment;
 		if (c) {
@@ -70,17 +70,17 @@ public class BlockPalette extends ScrollFrameContents {
 			if (Scratch.app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
 				obj.allBlocksDo(function(b:Block):void {
 					trace ("dragged from scripts pane to palette: " + b.spec);
-					Scratch.app.decrementPoints(Specs.pointDict[b.spec]);
+					Scratch.app.decrementPoints(Specs.p);
 				});
 			}
 
-			trace("blockpalette.handledrop resetting flag ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+			trace("blockpalette.handledrop resetting flag ");
 
 			Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 
 			return b.deleteStack();
 		}
-		trace("blockpalette.handledrop resetting flag ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		trace("blockpalette.handledrop resetting flag");
 
 		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 

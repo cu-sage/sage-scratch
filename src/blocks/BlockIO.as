@@ -63,6 +63,21 @@ public class BlockIO {
 		return topBlock;
 	}
 
+	/*
+	public static function arrayToStack(cmdList:Array, forStage:Boolean = false):Block {
+		// Return the stack represented by an array structure.
+		var topBlock:Block, lastBlock:Block;
+		for each (var cmd:Array in cmdList) {
+			var b:Block = null;
+			try { b = arrayToBlock(cmd, '', forStage) } catch (e:*) { b = new Block('undefined') }
+			if (topBlock == null) topBlock = b;
+			if (lastBlock != null) lastBlock.insertBlock(b);
+			lastBlock = b;
+		}
+		return topBlock;
+	}
+	*/
+
 	private static function blockToArray(b:Block):Array {
 		// Return an array structure for this block.
 		var result:Array = [b.op];

@@ -370,7 +370,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
-		trace("scriptspane.handledropped called ============================")
+		trace("scriptspane.handledropped called")
 		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
 
 		var info:MediaInfo = obj as MediaInfo;
@@ -398,7 +398,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 //			Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 		}
 
-		trace("scriptspane.handledropped resetting flag ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		trace("scriptspane.handledropped resetting flag");
 
 		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 

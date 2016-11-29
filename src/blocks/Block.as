@@ -109,11 +109,15 @@ public class Block extends Sprite {
 
 	private var originalParent:DisplayObjectContainer, originalRole:int, originalIndex:int, originalPosition:Point;
 
-	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null) {
-		trace("block constructor called");
+	//points
+	private 
+
+	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false) {
+		trace("block constructor called ---------------------------------");
 
 		trace("spec: " + spec);
 		trace("type: " + type);
+		trace("color: " + color.toString());
 		this.spec = Translator.map(spec);
 		this.type = type;
 		this.op = op;
@@ -133,7 +137,7 @@ public class Block extends Sprite {
 		createBase(color);
 		
 		addChildAt(base, 0);
-		setSpec(this.spec, defaultArgs);
+		setSpec(this.spec, defaultArgs, pointsEditable);
 
 		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
 	}
@@ -187,7 +191,7 @@ public class Block extends Sprite {
 	}
 
 	//juliesetspec
-	public function setSpec(newSpec:String, defaultArgs:Array = null):void {
+	public function setSpec(newSpec:String, defaultArgs:Array = null, pointsEditable:Boolean = false):void {
 		for each (var o:DisplayObject in labelsAndArgs) {
 			if (o.parent != null) o.parent.removeChild(o);
 		}
@@ -227,14 +231,8 @@ public class Block extends Sprite {
 
 		trace("from pointdict: " + Specs.pointDict[spec]);
 		var pointVal:int = Specs.pointDict[spec];
-		//yc2937
-		if (!isInScriptsPane()) {
-			trace("block.setspec not in scripts pane");
-		} else {
-			trace("block.setspec is in scripts pane");
 
-		}
-		if (Scratch.app.interp.sageDesignMode && !isInScriptsPane()) {
+		if (Scratch.app.interp.sageDesignMode && pointsEditable) {
 			labelsAndArgs.push(new PointArg(spec, pointVal));
 		} else {
 			labelsAndArgs.push(makePointLabel(pointVal));
@@ -649,7 +647,7 @@ public class Block extends Sprite {
 		collectArgs();
 		for (i = 0; i < srcArgs.length; i++) {
 			var argToCopy:* = srcArgs[i];
-			if (argToCopy is BlockArg) {
+			if (argToCopy is BlockArg && !argToCopy is PointArg) {
 				var arg:BlockArg = argToCopy;
 				BlockArg(args[i]).setArgValue(arg.argValue, arg.labelOrNull());
 			}
@@ -981,7 +979,7 @@ public class Block extends Sprite {
 
 	//yc2937
 	public function objToGrab(evt:MouseEvent):Block {
-		trace("block.objtograb called-------------------------------------------------------------------------------");
+		trace("block.objtograb called");
 		//if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
 		if (isInPalette()) {
 			trace("block.objtograb is in palette true");
