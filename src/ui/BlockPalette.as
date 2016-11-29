@@ -70,7 +70,7 @@ public class BlockPalette extends ScrollFrameContents {
 			if (Scratch.app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
 				obj.allBlocksDo(function(b:Block):void {
 					trace ("dragged from scripts pane to palette: " + b.spec);
-					Scratch.app.decrementPoints(Specs.p);
+					Scratch.app.decrementPoints(b.pointValue);
 				});
 			}
 

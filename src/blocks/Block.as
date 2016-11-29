@@ -110,7 +110,7 @@ public class Block extends Sprite {
 	private var originalParent:DisplayObjectContainer, originalRole:int, originalIndex:int, originalPosition:Point;
 
 	//points
-	private 
+	public var pointValue:int;
 
 	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false) {
 		trace("block constructor called ---------------------------------");
@@ -121,7 +121,7 @@ public class Block extends Sprite {
 		this.spec = Translator.map(spec);
 		this.type = type;
 		this.op = op;
-		
+		this.pointValue = Specs.getPointsForSpec(spec);
 
 		if ((Specs.CALL == op) ||
 			(Specs.GET_LIST == op) ||

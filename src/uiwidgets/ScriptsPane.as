@@ -390,20 +390,17 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 
 				b.allBlocksDo(function (b:Block):void {
 					trace("dragged from palette to scripts pane: " + b.spec);
-					Scratch.app.incrementPoints(Specs.pointDict[b.spec]);
+					Scratch.app.incrementPoints(b.pointValue);
 					b.changePointArgToLabel();
 				});
 			}
-			//reset draggedfrom flag
-//			Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 		}
 
 		trace("scriptspane.handledropped resetting flag");
 
 		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 
-
-		//end
+		//end yc2937
 
 		var c:ScratchComment = obj as ScratchComment;
 		if (!b && !c) return false;
