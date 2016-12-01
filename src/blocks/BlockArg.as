@@ -69,10 +69,15 @@ public class BlockArg extends Sprite {
 	public function BlockArg(type:String, color:int, editable:Boolean = false, menuName:String = '') {
 		this.type = type;
 
+		trace("type " + type);
+		trace("menuname " + menuName);
+
 		if (color == -1) { // copy for clone; omit graphics
 			if ((type == 'd') || (type == 'n')) isNumber = true;
 			return;
 		}
+		trace("color " + color.toString());
+
 		var c:int = Color.scaleBrightness(color, 0.92);
 		if (type == 'b') {
 			base = new BlockShape(BlockShape.BooleanShape, c);
@@ -145,6 +150,7 @@ public class BlockArg extends Sprite {
 	public function labelOrNull():String { return field ? field.text : null }
 
 	public function setArgValue(value:*, label:String = null):void {
+		trace("setargvalue valled");
 		// if provided, label is displayed in field, rather than the value
 		// this is used for sprite names and to support translation
 		argValue = value;
@@ -171,7 +177,10 @@ public class BlockArg extends Sprite {
 		base.redraw();
 	}
 
+	// called when user starts editing a text field
 	public function startEditing():void {
+		trace("startediting called");
+
 		if (isEditable) {
 			field.type = TextFieldType.INPUT;
 			field.selectable = true;
@@ -182,6 +191,8 @@ public class BlockArg extends Sprite {
 	}
 
 	private function stopEditing(ignore:*):void {
+		trace("stopediting called");
+
 		field.type = TextFieldType.DYNAMIC;
 		field.selectable = false;
 	}
@@ -214,6 +225,8 @@ public class BlockArg extends Sprite {
 	}
 
 	private function textChanged(evt:*):void {
+		trace("textchanged called");
+
 		argValue = field.text;
 		if (isNumber) {
 			// optimization: coerce to a number if possible

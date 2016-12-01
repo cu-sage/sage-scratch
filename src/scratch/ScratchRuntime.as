@@ -324,7 +324,12 @@ public class ScratchRuntime {
 		triggeredHats = activeHats;
 	}
 
+	//yc2937
+	// Called when a block is dropped in the scripts pane (work area)
 	public function blockDropped(stack:Block):void {
+		trace("scratchruntime.blockdropped called");
+		trace("block dropped: " + stack.spec);
+
 		// Turn on video the first time a video sensor reporter or hat block is added.
 		stack.allBlocksDo(function(b:Block):void {
 			var op:String = b.op;

@@ -35,6 +35,9 @@ package uiwidgets {
 
 public class ScriptsPane extends ScrollFrameContents {
 
+	public const isScriptsPane:Boolean = true;
+
+
 	private const INSERT_NORMAL:int = 0;
 	private const INSERT_ABOVE:int = 1;
 	private const INSERT_SUB1:int = 2;
@@ -197,7 +200,10 @@ public class ScriptsPane extends ScrollFrameContents {
 	}
 
 	private function blockDropped(b:Block):void {
+		trace("scriptspane.blockdropped called");
 		if (nearestTarget == null) {
+			trace("scriptspane.blockdropped 1");
+
 			b.cacheAsBitmap = true;
 		} else {
 			if(app.editMode) b.hideRunFeedback();
@@ -317,6 +323,11 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		feedbackShape.setWidthAndTopHeight(10, 10);
 		hideFeedbackShape();
 		addChild(feedbackShape);
+		//var aButton:Button = new Button("Click Me", null, false,  null);
+		//addChild(aButton);
+		//aButton.setLabel("Click me");
+	//	addItem(new Button(Translator.map('Make a Block'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
+		//addChild(new Button("Click Me", null, false,  null));
 	}
 
 	private function hideFeedbackShape():void {
@@ -364,6 +375,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
+		trace("scriptspane.handledropped called")
 		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
 
 		var info:MediaInfo = obj as MediaInfo;
@@ -376,6 +388,25 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		}
 
 		var b:Block = obj as Block;
+
+		if (b) {
+			// yc2937 if block was dragged from palette to scripts pane, increment points
+			if (app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_PALETTE) {
+
+				b.allBlocksDo(function (b:Block):void {
+					trace("dragged from palette to scripts pane: " + b.spec);
+					Scratch.app.incrementPoints(b.pointValue);
+					b.changePointArgToLabel();
+				});
+			}
+		}
+
+		trace("scriptspane.handledropped resetting flag");
+
+		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
+
+		//end yc2937
+
 		var c:ScratchComment = obj as ScratchComment;
 		if (!b && !c) return false;
 

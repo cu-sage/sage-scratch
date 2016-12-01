@@ -38,7 +38,8 @@ import flash.display.*;
 	import flash.filters.GlowFilter;
 	import flash.geom.*;
 	import flash.net.URLLoader;
-	import flash.text.*;
+import flash.net.URLRequest;
+import flash.text.*;
 	import assets.Resources;
 	import translation.Translator;
 	import util.*;
@@ -53,6 +54,7 @@ public class Block extends Sprite {
 
 	public static var argTextFormat:TextFormat;
 	public static var blockLabelFormat:TextFormat;
+	public static var pointLabelFormat:TextFormat;
 	private static var vOffset:int;
 
 //	private static const blockLabelFormat:TextFormat = new TextFormat('LucidaBoldEmbedded', 10, 0xFFFFFF, true);
@@ -107,11 +109,19 @@ public class Block extends Sprite {
 
 	private var originalParent:DisplayObjectContainer, originalRole:int, originalIndex:int, originalPosition:Point;
 
-	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null) {
+	//points
+	public var pointValue:int;
+
+	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false) {
+		trace("block constructor called ---------------------------------");
+
+		trace("spec: " + spec);
+		trace("type: " + type);
+		trace("color: " + color.toString());
 		this.spec = Translator.map(spec);
 		this.type = type;
 		this.op = op;
-		
+		this.pointValue = Specs.getPointsForSpec(spec);
 
 		if ((Specs.CALL == op) ||
 			(Specs.GET_LIST == op) ||
@@ -127,7 +137,7 @@ public class Block extends Sprite {
 		createBase(color);
 		
 		addChildAt(base, 0);
-		setSpec(this.spec, defaultArgs);
+		setSpec(this.spec, defaultArgs, pointsEditable);
 
 		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
 	}
@@ -180,11 +190,13 @@ public class Block extends Sprite {
 		}
 	}
 
-	public function setSpec(newSpec:String, defaultArgs:Array = null):void {
+	//juliesetspec
+	public function setSpec(newSpec:String, defaultArgs:Array = null, pointsEditable:Boolean = false):void {
 		for each (var o:DisplayObject in labelsAndArgs) {
 			if (o.parent != null) o.parent.removeChild(o);
 		}
 		spec = newSpec;
+		trace ("setspec called, op: " + op);
 		if (op == Specs.PROCEDURE_DEF) {
 			// procedure hat: make an icon from my spec and use that as the label
 			indentTop = 20;
@@ -216,6 +228,16 @@ public class Block extends Sprite {
 			argTypes.reverse();
 			if (defaultArgs) defaultArgs.reverse();
 		}
+
+		trace("from pointdict: " + Specs.pointDict[spec]);
+		var pointVal:int = Specs.pointDict[spec];
+
+		if (Scratch.app.interp.sageDesignMode && pointsEditable) {
+			labelsAndArgs.push(new PointArg(spec, pointVal));
+		} else {
+			labelsAndArgs.push(makePointLabel(pointVal));
+		}
+
 		for each (var item:* in labelsAndArgs) addChild(item);
 		if (defaultArgs) setDefaultArgs(defaultArgs);
 		fixArgLayout();
@@ -236,10 +258,47 @@ public class Block extends Sprite {
 		fixArgLayout();
 	}
 
+	//yc2937
+	//changes the point argument to a label, if a point arg exists
+	public function changePointArgToLabel():void {
+		trace("block.changepointargtolabel called");
+		for (var i:int = 0; i < labelsAndArgs.length; i++) {
+			if (labelsAndArgs[i] is PointArg) {
+				var item:PointArg = labelsAndArgs[i] as PointArg;
+				if (item) {
+					trace("block.changepointargtolabel changed");
+					removeChild(item);
+					labelsAndArgs[i] = makePointLabel(Specs.getPointsForSpec(item.getSpec()));
+					addChildAt(labelsAndArgs[i],i);
+					/*
+					labelsAndArgs.push(makePointLabel(888));
+					item.argValue = 999;
+					base.redraw()
+					*/
+
+
+				}
+			}
+		}
+		/*
+		for each (var item:* in labelsAndArgs) {
+			if (item is PointArg) {
+				var itemPointArg:PointArg = item as PointArg;
+
+				item = makeLabel(itemPointArg.argValue);
+			}
+		}
+		*/
+
+		fixArgLayout();
+
+	}
+
 	public static function setFonts(labelSize:int, argSize:int, boldFlag:Boolean, vOffset:int):void {
 		var font:String = Resources.chooseFont([
 			'Lucida Grande', 'Verdana', 'Arial', 'DejaVu Sans']);
 		blockLabelFormat = new TextFormat(font, labelSize, 0xFFFFFF, boldFlag);
+		pointLabelFormat = new TextFormat(font, labelSize-2, 0x777777, boldFlag);
 		argTextFormat = new TextFormat(font, argSize, 0x505050, false);
 		Block.vOffset = vOffset;
 	}
@@ -273,10 +332,24 @@ public class Block extends Sprite {
 		return Block(parent).op == 'proc_declaration';
 	}
 
+	//block is currently in scripts pane
 	public function isInPalette():Boolean {
 		var o:DisplayObject = parent;
 		while (o) {
 			if ('isBlockPalette' in o) return true;
+			o = o.parent;
+		}
+		return false;
+	}
+
+	//block is currently in scripts pane
+	public function isInScriptsPane():Boolean {
+		var o:DisplayObject = parent;
+		while (o) {
+			if ('isScriptsPane' in o) {
+				trace("Block.isinscriptspane true");
+				return true;
+			}
 			o = o.parent;
 		}
 		return false;
@@ -306,6 +379,7 @@ public class Block extends Sprite {
 		}
 	}
 
+	// call f on all blocks
 	public function allBlocksDo(f:Function):void {
 		f(this);
 		for each (var arg:* in args) {
@@ -415,6 +489,7 @@ public class Block extends Sprite {
 	}
 
 	public function setArg(i:int, newArg:*):void {
+		trace("setarg called");
 		// called on newly-created block (assumes argument being set is a BlockArg)
 		// newArg can be either a reporter block or a literal value (string, number, etc.)
 		collectArgs();
@@ -468,7 +543,7 @@ public class Block extends Sprite {
 		if (['h'].indexOf(type) >= 0) x = Math.max(x, minHatWidth); // minimum width for hat blocks
 		if (elseLabel) x = Math.max(x, indentLeft + elseLabel.width + 2);
 
-		base.setWidthAndTopHeight(x + indentRight, indentTop + maxH + indentBottom);
+		base.setWidthAndTopHeight(x + indentRight + 10, indentTop + maxH + indentBottom);
 		if ((type == "c") || (type == "e")) fixStackLayout();
 		base.redraw();
 		fixElseLabel();
@@ -572,7 +647,7 @@ public class Block extends Sprite {
 		collectArgs();
 		for (i = 0; i < srcArgs.length; i++) {
 			var argToCopy:* = srcArgs[i];
-			if (argToCopy is BlockArg) {
+			if (argToCopy is BlockArg && !argToCopy is PointArg) {
 				var arg:BlockArg = argToCopy;
 				BlockArg(args[i]).setArgValue(arg.argValue, arg.labelOrNull());
 			}
@@ -741,6 +816,7 @@ public class Block extends Sprite {
 		return result;
 	}
 
+	//julieargorlabel
 	private function argOrLabelFor(s:String, c:int):DisplayObject {
 		// Possible token formats:
 		//	%<single letter>
@@ -760,10 +836,30 @@ public class Block extends Sprite {
 			var icon:* = Specs.IconNamed(s.slice(1));
 			return (icon) ? icon : makeLabel(s);
 		}
+		//return makePointLabel(66);
 		return makeLabel(ReadStream.unescape(s));
 	}
 
+	private function makePointLabel(pointValue:Number):Sprite {
+		var pLoad:Loader = new Loader();
+		pLoad.load(new URLRequest("star.png"))
+
+		var background = new Sprite();
+		var text = makeLabel(pointValue.toString());
+		text.setTextFormat(pointLabelFormat);
+		//background.addChild(t);
+		background.addChild(pLoad)
+		background.addChild(text);
+		text.x = 5;
+		text.y = 2;
+		//addChild(background);
+		base.setWidth(base.width + 100);
+		return background;
+	}
+
 	private function makeLabel(label:String):TextField {
+		trace("makelabel called");
+
 		var text:TextField = new TextField();
 		text.autoSize = TextFieldAutoSize.LEFT;
 		text.selectable = false;
@@ -812,6 +908,7 @@ public class Block extends Sprite {
 	}
 	
 	public function sageInclude():void {
+		trace("sageinclude called");
 		Scratch.app.paletteBuilder.updateBlock(this.spec, true);
 	}
 	
@@ -880,14 +977,25 @@ public class Block extends Sprite {
 
 	/* Dragging */
 
+	//yc2937
 	public function objToGrab(evt:MouseEvent):Block {
+		trace("block.objtograb called");
 		//if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
+		if (isInPalette()) {
+			trace("block.objtograb is in palette true");
+			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_PALETTE;
+		}
+		if (isInScriptsPane()) {
+			trace("block.objtograb is inscriptsname true");
+			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_SCRIPTS_PANE;
+		}
 		if (isEmbeddedParameter() || isInPalette()) 
 		{
 			if (!Scratch.app.getPaletteBuilder().blockIncluded(this) && Scratch.app.interp.sagePlayMode)
 				return null; // block should not respond when restricted
-			else
+			else {
 				return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
+			}
 		}
 		return this;
 	}

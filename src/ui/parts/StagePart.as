@@ -67,6 +67,9 @@ public class StagePart extends UIPart {
 	private var yLabel:TextField;
 	private var yReadout:TextField;
 
+	//points
+	private var pointsLabel:TextField;
+
 	public function StagePart(app:Scratch) {
 		this.app = app;
 		outline = new Shape();
@@ -230,6 +233,20 @@ public class StagePart extends UIPart {
 
 		const versionFormat:TextFormat = new TextFormat(CSS.font, 9, 0x909090);
 		addChild(versionInfo = makeLabel(Scratch.versionString, versionFormat));
+
+		pointsLabel = getPointsLabel(fmt);
+		addChild(pointsLabel);
+	}
+
+	private function getPointsLabel(fmt):TextField {
+		var label = makeLabel("Points: " + Scratch.app.getPoints().toString(), fmt);
+		label.x = 50;
+		label.y = topBarHeight/2 - 11;
+		return label
+	}
+
+	public function updatePointsLabel():void {
+		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
 	}
 
 	protected function getProjectTitle(fmt:TextFormat):EditableLabel {
