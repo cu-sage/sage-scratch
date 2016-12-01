@@ -32,10 +32,7 @@ package scratch {
 	import flash.utils.*;
 	import blocks.*;
 	import extensions.*;
-
-import org.apache.flex.collections.ArrayList;
-
-import ui.media.MediaLibrary;
+	import ui.media.MediaLibrary;
 	import ui.ProcedureSpecEditor;
 	import ui.parts.UIPart;
 	import uiwidgets.*;
@@ -49,8 +46,6 @@ public class PaletteBuilder {
 	protected var nextY:int;
 	
 	private var currentCategory:int;
-
-	private var parsonsBlock:ArrayList= new ArrayList();
 
 	public function PaletteBuilder(app:Scratch) {
 		this.app = app;
@@ -131,9 +126,6 @@ public class PaletteBuilder {
 		if (selectedCategory == Specs.dataCategory) return showDataCategory();
 		if (selectedCategory == Specs.myBlocksCategory) return showMyBlocksPalette(shiftKey);
 
-		//sm4241
-		if (selectedCategory == Specs.parsonsCategory) return showParsonsPalette();
-
 		var catName:String = Specs.categories[selectedCategory][1];
 		var catColor:int = Specs.blockColor(selectedCategory);
 		if (app.viewedObj() && app.viewedObj().isStage) {
@@ -165,17 +157,17 @@ public class PaletteBuilder {
 				var defaultArgs:Array = targetObj.defaultArgsFor(spec[3], spec.slice(4));
 				var label:String = spec[0];
 				if(targetObj.isStage && spec[3] == 'whenClicked') label = 'when Stage clicked';
-				var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs);
 
-				var showReporterCheckbox:Boolean = isCheckboxReporter(spec[3]);
-				//sm4241- to restrict showing checkbox in play mode
-//				var showCheckbox:Boolean = app.interp.sageDesignMode;
-				if (showReporterCheckbox){
-					addReporterCheckbox(block);
-				}else if(app.interp.sageDesignMode){
-					addParsonsCheckbox(block);
+				//yc2937 make points editable if we're in design mode
+				if (app.interp.sageDesignMode == true) {
+					var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs, true);
 				}
-				addItem(block, true);
+				else {
+					var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs);
+				}
+				var showCheckbox:Boolean = isCheckboxReporter(spec[3]);
+				if (showCheckbox) addReporterCheckbox(block);
+				addItem(block, showCheckbox);
 				cmdCount++;
 			} else {
 				if ((spec.length == 1) && (cmdCount > 0)) nextY += 10 * spec[0].length; // add some space
@@ -233,33 +225,6 @@ public class PaletteBuilder {
 
 		updateCheckboxes();
 	}
-//sm4241 - render custom parson palette
-	private function showParsonsPalette():void {
-		// show creation button, hat, and call blocks
-		var catColor:int = Specs.blockColor(Specs.parsonsColor);
-		if (parsonsBlock.length > 0) {
-			nextY += 5;
-			for (var i=0; i<parsonsBlock.length; i++) {
-				var pb:Block = Block (parsonsBlock.getItemAt(i));
-				if(sageIncludedBlocks[pb.spec]){
-					addItem(Block (parsonsBlock.getItemAt(i)));
-				}
-
-			}
-			nextY += 5;
-			//trying
-			addItem(new Button(Translator.map('Submit'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
-		}
-
-		addExtensionButtons();
-		for each (var ext:* in app.extensionManager.enabledExtensions()) {
-			addExtensionSeparator(ext);
-			addBlocksForExtension(ext);
-		}
-
-		updateCheckboxes();
-	}
-
 
 	protected function addExtensionButtons():void {
 	}
@@ -410,22 +375,6 @@ public class PaletteBuilder {
 		b.y = nextY + 5;
 		app.palette.addChild(b);
 	}
-	//sm4241 - seperate checkbox for parsons
-	protected function addParsonsCheckbox(block:Block):void {
-		var b:IconButton = new IconButton(parsonsToggleWatcher, 'checkbox');
-		b.disableMouseover();
-		var targetObj:ScratchObj = isSpriteSpecific(block.op) ? app.viewedObj() : app.stagePane;
-		b.clientData = {
-			type: 'parsons',
-			targetObj: targetObj,
-			cmd: block.op,
-			block: block,
-			color: block.base.color
-		};
-		b.x = 6;
-		b.y = nextY + 5;
-		app.palette.addChild(b);
-	}
 
 	protected function isCheckboxReporter(op:String):Boolean {
 		const checkboxReporters: Array = [
@@ -480,32 +429,6 @@ public class PaletteBuilder {
 				break;
 			}
 		}
-		//sm4241- cutting off blocks from appearing on stage (to enable showing them up in parsons palette)
-		var showFlag:Boolean = !app.runtime.watcherShowing(data);
-		app.runtime.showWatcher(data, showFlag);
-		b.setOn(showFlag);
-		app.setSaveNeeded();
-	}
-
-	//sm4241- cutting off blocks from appearing on stage (to enable showing them up in parsons palette)
-
-	private function parsonsToggleWatcher(b:IconButton):void {
-		var data:Object = b.clientData;
-		var newBlock:Block = new Block(data.block.spec, data.block.type, data.color, data.cmd);
-		if(b.isOn() && sageIncludedBlocks[data.block.spec]){
-			parsonsBlock.addItem(newBlock);
-		}else{
-			for (var i=0; i<parsonsBlock.length; i++) {
-				var bl:Block = Block (parsonsBlock.getItemAt(i));
-				if(data.block.op == bl.op){
-					var index:int = parsonsBlock.getItemIndex(parsonsBlock.getItemAt(i));
-					parsonsBlock.removeItemAt(index);
-				}
-			}
-//			parsonsBlock.removeItem(data.block);
-		}
-
-		//sm4241- cutting off blocks from appearing on stage (to enable showing them up in parsons palette)
 		var showFlag:Boolean = !app.runtime.watcherShowing(data);
 		app.runtime.showWatcher(data, showFlag);
 		b.setOn(showFlag);

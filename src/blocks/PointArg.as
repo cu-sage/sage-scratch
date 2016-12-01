@@ -24,6 +24,10 @@ public class PointArg extends BlockArg {
 
     }
 
+    public function getSpec():String {
+        return spec;
+    }
+
     private function pointArgStopEditing(ignore:*):void {
         trace("pointargstopediting called");
 //        Specs.pointDict[spec] = 77;
