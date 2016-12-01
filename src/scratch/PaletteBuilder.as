@@ -247,6 +247,8 @@ public class PaletteBuilder {
 
 			}
 			nextY += 5;
+			//trying
+			addItem(new Button(Translator.map('Submit'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
 		}
 
 		addExtensionButtons();

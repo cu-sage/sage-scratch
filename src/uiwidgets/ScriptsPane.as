@@ -320,6 +320,11 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		feedbackShape.setWidthAndTopHeight(10, 10);
 		hideFeedbackShape();
 		addChild(feedbackShape);
+		//var aButton:Button = new Button("Click Me", null, false,  null);
+		//addChild(aButton);
+		//aButton.setLabel("Click me");
+	//	addItem(new Button(Translator.map('Make a Block'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
+		//addChild(new Button("Click Me", null, false,  null));
 	}
 
 	private function hideFeedbackShape():void {
