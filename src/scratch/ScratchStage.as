@@ -710,9 +710,6 @@ public class ScratchStage extends ScratchObj {
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
-		trace("scratchstage.handledrop called=====================================");
-
-
 		if ((obj is ScratchSprite) || (obj is Watcher) || (obj is ListWatcher)) {
 			if (scaleX != 1) {
 				obj.scaleX = obj.scaleY = obj.scaleX / scaleX; // revert to original scale

@@ -559,8 +559,6 @@ public class ScratchObj extends Sprite {
 		var newScripts:Array = [];
 		for each (var b:Block in scripts) {
 			var newStack:Block = BlockIO.arrayToStack(BlockIO.stackToArray(b), isStage);
-			//var newStack:Block = BlockIO.arrayToStack(BlockIO.stackToArray(b), isStage, true);
-
 			newStack.x = b.x;
 			newStack.y = b.y;
 			newScripts.push(newStack);

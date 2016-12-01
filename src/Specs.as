@@ -120,7 +120,7 @@ public class Specs {
 		// block specification					type, cat, opcode			default args (optional)
 		// motion
 		["move %n steps",						" ", 1, "forward:",					10],
-		["turn @turnRight!!!!!!!!!!!!!!!!!! %n degrees",			" ", 1, "turnRight:",				15],
+		["turn @turnRight %n degrees",			" ", 1, "turnRight:",				15],
 		["turn @turnLeft %n degrees",			" ", 1, "turnLeft:",				15],
 		["--"],
 		["point in direction %d.direction",		" ", 1, "heading:",					90],
@@ -322,7 +322,6 @@ public class Specs {
 		["days since 2000", 					"r", 107, "timestamp"],
 		["username",							"r", 107, "getUserName"],
 
-
 		// operators
 		["%n + %n",								"r", 8, "+",					"", ""],
 		["%n - %n",								"r", 8, "-",					"", ""],
@@ -419,20 +418,4 @@ public class Specs {
 
 	public static var extensionSpecs:Array = ["when %m.booleanSensor", "when %m.sensor %m.lessMore %n", "sensor %m.booleanSensor?", "%m.sensor sensor value", "turn %m.motor on for %n secs", "turn %m.motor on", "turn %m.motor off", "set %m.motor power to %n", "set %m.motor2 direction to %m.motorDirection", "when distance %m.lessMore %n", "when tilt %m.eNe %n", "distance", "tilt"];
 
-	/*
-	public static var pointDict:Object = {
-		"switch backdrop to %m.backdrop":1, "next backdrop":3, "change %m.effect effect by %n":2,
-		"set %m.effect effect to %n":2, "clear graphic effects":1, "backdrop name": 2, "backdrop #": 3
-		}
-		*/
-	public static var pointDict:Object = {}
-
-
-	public static function getPointsForSpec(spec:String):Number{
-		if (pointDict[spec]) {
-			return pointDict[spec];
-		} else {
-			return 0;
-		}
-	}
 }}
