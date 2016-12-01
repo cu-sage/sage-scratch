@@ -197,10 +197,7 @@ public class ScriptsPane extends ScrollFrameContents {
 	}
 
 	private function blockDropped(b:Block):void {
-		trace("scriptspane.blockdropped called");
 		if (nearestTarget == null) {
-			trace("scriptspane.blockdropped 1");
-
 			b.cacheAsBitmap = true;
 		} else {
 			if(app.editMode) b.hideRunFeedback();
@@ -320,11 +317,6 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		feedbackShape.setWidthAndTopHeight(10, 10);
 		hideFeedbackShape();
 		addChild(feedbackShape);
-		//var aButton:Button = new Button("Click Me", null, false,  null);
-		//addChild(aButton);
-		//aButton.setLabel("Click me");
-	//	addItem(new Button(Translator.map('Make a Block'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
-		//addChild(new Button("Click Me", null, false,  null));
 	}
 
 	private function hideFeedbackShape():void {

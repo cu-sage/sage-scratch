@@ -65,6 +65,34 @@ public class PaletteBuilder {
 			'New List', 'List name', 'New Variable', 'Variable name',
 			'New Block', 'Add an Extension'];
 	}
+
+	//sm4241 - creating dictionary of blocks included in parsons palette
+	public function getParsonsIncludedBlocks():Array {
+		var parsonsBlockArr = [];
+		if (parsonsBlock.length > 0) {
+			for (var i=0; i<parsonsBlock.length; i++) {
+				var currDict = new Dictionary();
+				var pb:Block = Block (parsonsBlock.getItemAt(i));
+				currDict['spec'] = pb.spec;
+				currDict['type'] = pb.type;
+				currDict['color'] = pb.base.color;
+				currDict['cmd'] = pb.op;
+				parsonsBlockArr.push(currDict);
+			}
+
+		}
+		return parsonsBlockArr;
+	}
+
+	public function setParsonsIncludedBlocks(parsons:Array):void {
+		if (parsons.length > 0) {
+			for (var i = 0; i < parsons.length; i++) {
+				var newBlock:Block = new Block(parsons[i]['spec'], parsons[i]['type'], parsons[i]['color'], parsons[i]['cmd']);
+
+				parsonsBlock.addItem(newBlock);
+			}
+		}
+	}
 	
 	public function getSageIncludedBlocks():Dictionary {
 		return sageIncludedBlocks;
@@ -247,8 +275,6 @@ public class PaletteBuilder {
 
 			}
 			nextY += 5;
-			//trying
-			addItem(new Button(Translator.map('Submit'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
 		}
 
 		addExtensionButtons();
@@ -502,7 +528,6 @@ public class PaletteBuilder {
 					parsonsBlock.removeItemAt(index);
 				}
 			}
-//			parsonsBlock.removeItem(data.block);
 		}
 
 		//sm4241- cutting off blocks from appearing on stage (to enable showing them up in parsons palette)

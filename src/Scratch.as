@@ -118,26 +118,6 @@ public class Scratch extends Sprite {
 	public var soundsPart:SoundsPart;
 	public const tipsBarClosedWidth:int = 17;
 
-	// Points
-	protected var points:int = 0;
-	public function setPoints(points:int):void {
-		this.points = points;
-	}
-
-	public function getPoints():int {
-		return points;
-	}
-
-	public function incrementPoints(pointsToAdd:int):void {
-		setPoints(this.points + pointsToAdd);
-		stagePart.updatePointsLabel();
-	}
-
-	public function decrementPoints(pointsToSubtract:int):void {
-		setPoints(this.points - pointsToSubtract);
-		stagePart.updatePointsLabel();
-	}
-
 	public var sagePalettesDefault:Array = [
 		false, // placeholder
 		true, true, true, true, true, // column 1
@@ -152,8 +132,6 @@ public class Scratch extends Sprite {
 	}
 
 	protected function initialize():void {
-		trace("editor initializing");
-
 		isOffline = loaderInfo.url.indexOf('http:') == -1;
 		checkFlashVersion();
 		initServer();
@@ -236,7 +214,8 @@ public class Scratch extends Sprite {
 
 	private function postJson(proj:*, sid:String, aid:String):void {
 		// Sending JSON project via HTTP POST
-		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assignments/"+aid);
+//		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assignments/"+aid);
+		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assignments/"+aid);
 
 		var loader:URLLoader = new URLLoader();
 		loader.dataFormat = URLLoaderDataFormat.TEXT;
@@ -251,20 +230,21 @@ public class Scratch extends Sprite {
 		}
 
 		function onPostError(e:IOErrorEvent):void {
-			//trace("Error posting the assignment: " + e.toString());
+			trace("Error posting the assignment: " + e.toString());
 		}
 
 		loader.addEventListener(Event.COMPLETE, onPostComplete);
 		loader.addEventListener(IOErrorEvent.IO_ERROR, onPostError);
 
-		//trace("Posting assignment: " + request)
+		trace("Posting assignment: " + request)
 
 		// send the request
 		loader.load(request);
 	}
 
 	private function getAssessmentResults(sid:String, aid:String):void {
-		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assessments/"+aid+"/results");
+//		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assessments/"+aid+"/results");
+		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assessments/"+aid+"/results");
 		var loader:URLLoader = new URLLoader();
 
 		request.method = URLRequestMethod.GET;
@@ -684,7 +664,6 @@ public class Scratch extends Sprite {
 	}
 
 	protected function addParts():void {
-		trace("addparts called");
 		initTopBarPart();
 		stagePart = getStagePart();
 		libraryPart = getLibraryPart();
@@ -718,6 +697,7 @@ public class Scratch extends Sprite {
 		Menu.removeMenusFrom(stage);
 		editMode = newMode;
 		if (editMode) {
+			//interp.sageDesignMode = true;
 			interp.showAllRunFeedback();
 			hide(playerBG);
 			show(topBarPart);
