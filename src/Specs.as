@@ -401,18 +401,6 @@ public class Specs {
 		["hide all sprites",					" ", 99, "hideAll"],
 		["user id",								"r", 99, "getUserId"],
 
-		//parsons
-		["repeat %n",							"c", 13, "doRepeat", 10],
-		["for",								"cf",13, "doForeverParsons"],
-		["-"],
-		["if %b then",							"c", 13, "doIf"],
-		["if %b then",							"e", 13, "doIfElse"],
-		["wait until %b",						" ", 13, "doWaitUntil"],
-		["repeat until %b",						"c", 13, "doUntil"],
-		["-"],
-		["stop %m.stop",						"f", 13, "stopScripts", "all"],
-		["-"],
-		["%n + %n",								"r", 13, "+",					"", ""],
 
 	];
 
