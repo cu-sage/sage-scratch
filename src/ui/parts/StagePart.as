@@ -25,14 +25,14 @@
 // since it is referred from many places.
 
 package ui.parts {
-	import flash.display.*;
-	import flash.events.*;
-	import flash.text.*;
-	import flash.media.*;
-	import assets.Resources;
-	import scratch.*;
-	import translation.Translator;
-	import uiwidgets.*;
+import flash.display.*;
+import flash.events.*;
+import flash.text.*;
+import flash.media.*;
+import assets.Resources;
+import scratch.*;
+import translation.Translator;
+import uiwidgets.*;
 
 public class StagePart extends UIPart {
 
@@ -66,6 +66,9 @@ public class StagePart extends UIPart {
 	private var xReadout:TextField;
 	private var yLabel:TextField;
 	private var yReadout:TextField;
+
+	//points
+	private var pointsLabel:TextField;
 
 	public function StagePart(app:Scratch) {
 		this.app = app;
@@ -189,7 +192,7 @@ public class StagePart extends UIPart {
 
 		turboIndicator.x = w - turboIndicator.width - 73;
 		turboIndicator.y = app.isSmallPlayer ? 5 : (app.editMode ? 22 : 12);
-		
+
 		sageDesignIndicator.x = w - sageDesignIndicator.width - 203;
 		sageDesignIndicator.y = app.isSmallPlayer ? 5 : (app.editMode ? 22 : 12);
 		sagePlayIndicator.x = w - sagePlayIndicator.width - 203;
@@ -230,6 +233,20 @@ public class StagePart extends UIPart {
 
 		const versionFormat:TextFormat = new TextFormat(CSS.font, 9, 0x909090);
 		addChild(versionInfo = makeLabel(Scratch.versionString, versionFormat));
+
+		pointsLabel = getPointsLabel(fmt);
+		addChild(pointsLabel);
+	}
+
+	private function getPointsLabel(fmt):TextField {
+		var label = makeLabel("Points: " + Scratch.app.getPoints().toString(), fmt);
+		label.x = 50;
+		label.y = topBarHeight/2 - 11;
+		return label
+	}
+
+	public function updatePointsLabel():void {
+		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
 	}
 
 	protected function getProjectTitle(fmt:TextFormat):EditableLabel {
@@ -249,7 +266,7 @@ public class StagePart extends UIPart {
 		turboIndicator.visible = false;
 		addChild(turboIndicator);
 	}
-	
+
 	private function addSageDesignIndicator():void {
 		sageDesignIndicator = new TextField();
 		sageDesignIndicator.defaultTextFormat = new TextFormat(CSS.font, 11, CSS.buttonLabelOverColor, true);
@@ -257,9 +274,9 @@ public class StagePart extends UIPart {
 		sageDesignIndicator.selectable = false;
 		sageDesignIndicator.text = Translator.map('SAGE Design Mode');
 		sageDesignIndicator.visible = false;
-		addChild(sageDesignIndicator);	
+		addChild(sageDesignIndicator);
 	}
-	
+
 	private function addSagePlayIndicator():void {
 		sagePlayIndicator = new TextField();
 		sagePlayIndicator.defaultTextFormat = new TextFormat(CSS.font, 11, CSS.buttonLabelOverColor, true);
@@ -267,7 +284,7 @@ public class StagePart extends UIPart {
 		sagePlayIndicator.selectable = false;
 		sagePlayIndicator.text = Translator.map('SAGE Play Mode');
 		sagePlayIndicator.visible = false;
-		addChild(sagePlayIndicator);	
+		addChild(sagePlayIndicator);
 	}
 
 	private function addXYReadouts():void {

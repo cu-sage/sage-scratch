@@ -402,20 +402,28 @@ public class Specs {
 		["user id",								"r", 99, "getUserId"],
 
 		//parsons
-		["repeat %n",							"c", 13, "doRepeat", 10],
-		["for",								"cf",13, "doForeverParsons"],
-		["-"],
-		["if %b then",							"c", 13, "doIf"],
-		["if %b then",							"e", 13, "doIfElse"],
-		["wait until %b",						" ", 13, "doWaitUntil"],
-		["repeat until %b",						"c", 13, "doUntil"],
-		["-"],
-		["stop %m.stop",						"f", 13, "stopScripts", "all"],
-		["-"],
-		["%n + %n",								"r", 13, "+",					"", ""],
+
 
 	];
 
 	public static var extensionSpecs:Array = ["when %m.booleanSensor", "when %m.sensor %m.lessMore %n", "sensor %m.booleanSensor?", "%m.sensor sensor value", "turn %m.motor on for %n secs", "turn %m.motor on", "turn %m.motor off", "set %m.motor power to %n", "set %m.motor2 direction to %m.motorDirection", "when distance %m.lessMore %n", "when tilt %m.eNe %n", "distance", "tilt"];
+
+
+	/*
+	public static var pointDict:Object = {
+		"switch backdrop to %m.backdrop":1, "next backdrop":3, "change %m.effect effect by %n":2,
+		"set %m.effect effect to %n":2, "clear graphic effects":1, "backdrop name": 2, "backdrop #": 3
+		}
+		*/
+	public static var pointDict:Object = {}
+
+
+	public static function getPointsForSpec(spec:String):Number{
+		if (pointDict[spec]) {
+			return pointDict[spec];
+		} else {
+			return 0;
+		}
+	}
 
 }}

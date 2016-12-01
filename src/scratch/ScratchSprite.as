@@ -695,11 +695,13 @@ public class ScratchSprite extends ScratchObj {
 	}
 
 	public function prepareToDrag():void {
+		trace("scratchsprite.preparetodrag called");
 		// Force rendering with PixelBender for a dragged sprite
 		applyFilters(true);
 	}
 
 	public override function stopDrag():void {
+		trace("scratchsprite.stopdrag called")
 		super.stopDrag();
 		applyFilters();
 	}
