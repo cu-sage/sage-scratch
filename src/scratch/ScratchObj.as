@@ -603,7 +603,8 @@ public class ScratchObj extends Sprite {
 			variables[i] = Scratch.app.runtime.makeVariable(varObj);
 		}
 		lists = jsonObj.lists || [];
-		scripts = jsonObj.scripts || [];
+		//sm4241 - to prevent scripts being displayed on script pane during play mode
+		//scripts = jsonObj.scripts || [];
 		scriptComments = jsonObj.scriptComments || [];
 		sounds = jsonObj.sounds || [];
 		costumes = jsonObj.costumes || [];

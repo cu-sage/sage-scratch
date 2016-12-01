@@ -793,6 +793,7 @@ public class ScratchStage extends ScratchObj {
 		json.writeKeyValue('videoAlpha', videoAlpha);		
 		json.writeKeyValue('sagePalettes', Scratch.app.scriptsPart.getSagePalettes());
 		json.writeKeyValue('sageBlocks', Scratch.app.getPaletteBuilder().getSageIncludedBlocks());
+		json.writeKeyValue('parsonsBlocks', Scratch.app.getPaletteBuilder().getParsonsIncludedBlocks());
 		json.writeKeyValue('children', children);
 		json.writeKeyValue('info', info);
 	}
@@ -807,6 +808,7 @@ public class ScratchStage extends ScratchObj {
 		if (jsonObj.videoAlpha) videoAlpha = jsonObj.videoAlpha;
 		Scratch.app.scriptsPart.setSagePalettes(jsonObj.sagePalettes);
 		Scratch.app.getPaletteBuilder().setSageIncludedBlocks(util.JSON.objToDict(jsonObj.sageBlocks));
+		Scratch.app.getPaletteBuilder().setParsonsIncludedBlocks(jsonObj.parsonsBlocks);
 		children = jsonObj.children;
 		info = jsonObj.info;
 

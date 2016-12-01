@@ -214,7 +214,8 @@ public class Scratch extends Sprite {
 
 	private function postJson(proj:*, sid:String, aid:String):void {
 		// Sending JSON project via HTTP POST
-		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assignments/"+aid);
+//		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assignments/"+aid);
+		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assignments/"+aid);
 
 		var loader:URLLoader = new URLLoader();
 		loader.dataFormat = URLLoaderDataFormat.TEXT;
@@ -242,7 +243,8 @@ public class Scratch extends Sprite {
 	}
 
 	private function getAssessmentResults(sid:String, aid:String):void {
-		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assessments/"+aid+"/results");
+//		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assessments/"+aid+"/results");
+		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assessments/"+aid+"/results");
 		var loader:URLLoader = new URLLoader();
 
 		request.method = URLRequestMethod.GET;
@@ -695,6 +697,7 @@ public class Scratch extends Sprite {
 		Menu.removeMenusFrom(stage);
 		editMode = newMode;
 		if (editMode) {
+			//interp.sageDesignMode = true;
 			interp.showAllRunFeedback();
 			hide(playerBG);
 			show(topBarPart);
