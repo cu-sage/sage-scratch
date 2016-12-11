@@ -801,6 +801,7 @@ public class ScratchStage extends ScratchObj {
 		json.writeKeyValue('parsonsBlocks', Scratch.app.getPaletteBuilder().getParsonsIncludedBlocks());
 		json.writeKeyValue('children', children);
 		json.writeKeyValue('info', info);
+		json.writeKeyValue('pointConfig', Specs.pointDict);
 	}
 
 	public override function readJSON(jsonObj:Object):void {
