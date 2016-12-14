@@ -1111,7 +1111,7 @@ public class Scratch extends Sprite {
 		d.showOnStage(stage);
 	}
 
-	protected function exportProjectToFile(fromJS:Boolean = false):void {
+	public function exportProjectToFile(fromJS:Boolean = false):void {
 		function squeakSoundsConverted():void {
 			scriptsPane.saveScripts(false);
 			var defaultName:String = (projectName().length > 0) ? projectName() + '.sb2' : 'project.sb2';

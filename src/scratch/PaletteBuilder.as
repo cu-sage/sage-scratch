@@ -176,6 +176,7 @@ public class PaletteBuilder {
 			}
 		}
 		addBlocksForCategory(selectedCategory, catColor);
+
 		updateCheckboxes();
 	}
 
@@ -285,6 +286,7 @@ public class PaletteBuilder {
 		// show creation button, hat, and call blocks
 		var catColor:int = Specs.blockColor(Specs.parsonsColor);
 		if (parsonsBlock.length > 0) {
+
 			nextY += 5;
 			for (var i=0; i<parsonsBlock.length; i++) {
 				var pb:Block = Block (parsonsBlock.getItemAt(i));
@@ -293,7 +295,18 @@ public class PaletteBuilder {
 				}
 
 			}
+			//sm4241
+
+		//	addItem(new Button(Translator.map('Submit'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
+			if(app.interp.sageDesignMode) { // we call the save project function
+				addItem(new Button(Translator.map('Submit'), app.exportProjectToFile, false, ''));
+			}
+			else // we call submission for Parsons function
+			{
+				addItem(new Button(Translator.map('Submit'), makeNewBlock, false, ''));
+			}
 			nextY += 5;
+
 		}
 
 		addExtensionButtons();
@@ -303,6 +316,7 @@ public class PaletteBuilder {
 		}
 
 		updateCheckboxes();
+
 	}
 
 
