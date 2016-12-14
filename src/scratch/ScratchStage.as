@@ -802,6 +802,8 @@ public class ScratchStage extends ScratchObj {
 		json.writeKeyValue('children', children);
 		json.writeKeyValue('info', info);
 		json.writeKeyValue('pointConfig', Specs.pointDict);
+		json.writeKeyValue('question', Scratch.app.getPaletteBuilder().question);
+		json.writeKeyValue('hint', Scratch.app.getPaletteBuilder().hint);
 	}
 
 	public override function readJSON(jsonObj:Object):void {
@@ -816,6 +818,8 @@ public class ScratchStage extends ScratchObj {
 		Scratch.app.scriptsPart.setSagePalettes(jsonObj.sagePalettes);
 		Scratch.app.getPaletteBuilder().setSageIncludedBlocks(util.JSON.objToDict(jsonObj.sageBlocks));
 		Scratch.app.getPaletteBuilder().setParsonsIncludedBlocks(jsonObj.parsonsBlocks);
+		Scratch.app.getPaletteBuilder().question = jsonObj.question;
+		Scratch.app.getPaletteBuilder().hint = jsonObj.hint;
 
 		children = jsonObj.children;
 		info = jsonObj.info;
