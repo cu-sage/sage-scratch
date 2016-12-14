@@ -47,7 +47,8 @@ public class PaletteBuilder {
 
 	protected var app:Scratch;
 	protected var nextY:int;
-	
+	public var question:String;
+	public var hint:String;
 	private var currentCategory:int;
 
 	private var parsonsBlock:ArrayList= new ArrayList();
@@ -299,6 +300,7 @@ public class PaletteBuilder {
 
 		//	addItem(new Button(Translator.map('Submit'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
 			if(app.interp.sageDesignMode) { // we call the save project function
+				addItem(new Button(Translator.map('Question/Hint'), makeQuestion, false, ''));
 				addItem(new Button(Translator.map('Submit'), app.exportProjectToFile, false, ''));
 			}
 			else // we call submission for Parsons function
@@ -392,6 +394,23 @@ public class PaletteBuilder {
 		d.addField('Variable name', 150);
 		d.addWidget(varSettings);
 		d.addAcceptCancelButtons('OK');
+		d.showOnStage(app.stage);
+	}
+
+	//sm4241
+	private function makeQuestion():void {
+		function ok():void {
+			question = d.getField("Enter Question");
+			hint = d.getField("Enter Hint");
+
+		}
+
+		var d:DialogBox = new DialogBox(null);
+		d.addTitle('Question/Hint');
+		d.addField('Enter Question', 350, question);
+		d.addField('Enter Hint', 350, hint);
+		d.addButton('Ok', ok);
+		d.addButton('Cancel',null);
 		d.showOnStage(app.stage);
 	}
 
