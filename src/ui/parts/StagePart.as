@@ -152,6 +152,7 @@ public class StagePart extends UIPart {
 		sageDesignIndicator.visible = app.interp.sageDesignMode;
 		sagePlayIndicator.visible = app.interp.sagePlayMode;
 		fullscreenButton.visible = !app.isSmallPlayer;
+		pointsLabel.visible = !app.interp.sageDesignMode;
 		if (app.editMode) {
 			fullscreenButton.setOn(false);
 			drawStageSizeButton();
