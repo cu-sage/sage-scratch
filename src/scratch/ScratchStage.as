@@ -812,9 +812,11 @@ public class ScratchStage extends ScratchObj {
 		penLayerMD5 = jsonObj.penLayerMD5;
 		tempoBPM = jsonObj.tempoBPM;
 		if (jsonObj.videoAlpha) videoAlpha = jsonObj.videoAlpha;
+		Specs.pointDict = jsonObj.pointConfig;
 		Scratch.app.scriptsPart.setSagePalettes(jsonObj.sagePalettes);
 		Scratch.app.getPaletteBuilder().setSageIncludedBlocks(util.JSON.objToDict(jsonObj.sageBlocks));
 		Scratch.app.getPaletteBuilder().setParsonsIncludedBlocks(jsonObj.parsonsBlocks);
+
 		children = jsonObj.children;
 		info = jsonObj.info;
 
