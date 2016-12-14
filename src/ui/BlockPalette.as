@@ -74,7 +74,9 @@ public class BlockPalette extends ScrollFrameContents {
 			if (Scratch.app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
 				obj.allBlocksDo(function(b:Block):void {
 					trace ("dragged from scripts pane to palette: " + b.spec);
-					Scratch.app.decrementPoints(b.pointValue);
+					//sm4241 - parsons logic
+					//Scratch.app.parsonsLogic();
+					//Scratch.app.decrementPoints(b.pointValue);
 				});
 			}
 
@@ -84,6 +86,7 @@ public class BlockPalette extends ScrollFrameContents {
 
 
 			return b.deleteStack();
+
 		}
 		trace("blockpalette.handledrop resetting flag");
 

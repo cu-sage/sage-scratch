@@ -149,7 +149,32 @@ public class Scratch extends Sprite {
 	//for detecting where a block you're currently dragging was dragged from. For determining if points should be added/subtracted.
 	public var blockDraggedFrom = K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 
+	//parsons logic
+	public function parsonsLogic():void{
+		var i:int;
+		setPoints(0);
+		//script from json
+		var scripts = viewedObject.parsonScripts;
 
+		//current script on script pane
+		var currScript = viewedObject.scripts;
+
+		for (i = 0; i < currScript.length; i++){
+			var pb:Block = currScript[i] as Block;
+			//good case
+			if(i<scripts){
+				if(currScript[i] == scripts[i]){
+					incrementPoints(pb.pointValue);
+				}else{
+					decrementPoints(pb.pointValue);
+				}
+			}else{
+				decrementPoints(pb.pointValue);
+			}
+		}
+
+
+	}
 	public var sagePalettesDefault:Array = [
 		false, // placeholder
 		true, true, true, true, true, // column 1
@@ -281,7 +306,8 @@ public class Scratch extends Sprite {
 		function ok():void {
 			var sid:String = d.getField("Student ID");
 			var aid:String = d.getField("Assignment ID");
-
+			//default play mode for students
+			toggleSagePlayMode();
 			// sm4241: Most probably its polling timer
 			startTimer(sid, aid);
 		}
@@ -790,7 +816,8 @@ public class Scratch extends Sprite {
 		Menu.removeMenusFrom(stage);
 		editMode = newMode;
 		if (editMode) {
-			//interp.sageDesignMode = true;
+			//sm4241 -default design mode
+			interp.sageDesignMode = true;
 			interp.showAllRunFeedback();
 			hide(playerBG);
 			show(topBarPart);
