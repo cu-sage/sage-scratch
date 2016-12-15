@@ -40,7 +40,7 @@ public class StagePart extends UIPart {
 	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 10, CSS.textColor);
 
 	private const topBarHeightNormal:int = 39;
-	private const topBarHeightSmallPlayerMode:int = 26;
+	private const topBarHeightSmallPlayerMode:int = 46;
 
 	private var topBarHeight:int = topBarHeightNormal;
 

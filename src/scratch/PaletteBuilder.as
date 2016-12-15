@@ -47,6 +47,7 @@ public class PaletteBuilder {
 
 	protected var app:Scratch;
 	protected var nextY:int;
+	public var comments:String;
 	private var currentCategory:int;
 
 	private var parsonsBlock:ArrayList= new ArrayList();
@@ -142,7 +143,7 @@ public class PaletteBuilder {
 	public function setHint(h:String):void {
 		hint = h;
 	}
-	
+
 	public function getBlockCategory(label:String):int {
 		if (label == 'when Stage clicked') label = 'whenClicked'; // special case
 		var category:int = -1;
@@ -330,6 +331,7 @@ public class PaletteBuilder {
 			}
 			else // we call submission for Parsons function
 			{
+				addItem(new Button(Translator.map('Comments'), getComments, false, ''));
 				addItem(new Button(Translator.map('Submit'), makeNewBlock, false, ''));
 			}
 			nextY += 5;
@@ -434,6 +436,21 @@ public class PaletteBuilder {
 		d.addTitle('Question/Hint');
 		d.addField('Enter Question', 350, question);
 		d.addField('Enter Hint', 350, hint);
+		d.addButton('Ok', ok);
+		d.addButton('Cancel',null);
+		d.showOnStage(app.stage);
+	}
+	//sm4241
+	private function getComments():void {
+		function ok():void {
+			comments = d.getField("Enter Comments");
+
+
+		}
+
+		var d:DialogBox = new DialogBox(null);
+		d.addTitle('Comments/Suggestions');
+		d.addField('Enter Comments', 350, comments);
 		d.addButton('Ok', ok);
 		d.addButton('Cancel',null);
 		d.showOnStage(app.stage);
