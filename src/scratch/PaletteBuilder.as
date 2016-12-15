@@ -47,11 +47,12 @@ public class PaletteBuilder {
 
 	protected var app:Scratch;
 	protected var nextY:int;
-	public var question:String;
-	public var hint:String;
 	private var currentCategory:int;
 
 	private var parsonsBlock:ArrayList= new ArrayList();
+	private var question:String;
+	private var hint:String;
+	private var hintCounter:int=0;
 
 	public function PaletteBuilder(app:Scratch) {
 		this.app = app;
@@ -124,6 +125,22 @@ public class PaletteBuilder {
 	
 	public function blockIncluded(block:Block):Boolean {
 		return blockLabelCategoryIncluded(block.spec, getBlockCategory(block.spec));
+	}
+
+	public function getQuestion():String {
+		return question;
+	}
+
+	public function setQuestion(q:String):void {
+		question = q;
+	}
+
+	public function getHint():String {
+		return hint;
+	}
+
+	public function setHint(h:String):void {
+		hint = h;
 	}
 	
 	public function getBlockCategory(label:String):int {
@@ -285,6 +302,15 @@ public class PaletteBuilder {
 //sm4241 - render custom parson palette
 	private function showParsonsPalette():void {
 		// show creation button, hat, and call blocks
+		if(app.interp.sagePlayMode) { // we call the parsons logic
+			addItem(new Button(Translator.map('Question'), showQuestion, false, ''));
+			addItem(new Button(Translator.map('Hint'), showHint, false, ''));
+		}
+
+		if(app.interp.sageDesignMode) { // we call the save project function
+			addItem(new Button(Translator.map('Question/Hint'), makeQuestion, false, ''));
+		}
+
 		var catColor:int = Specs.blockColor(Specs.parsonsColor);
 		if (parsonsBlock.length > 0) {
 
@@ -300,7 +326,6 @@ public class PaletteBuilder {
 
 		//	addItem(new Button(Translator.map('Submit'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
 			if(app.interp.sageDesignMode) { // we call the save project function
-				addItem(new Button(Translator.map('Question/Hint'), makeQuestion, false, ''));
 				addItem(new Button(Translator.map('Submit'), app.exportProjectToFile, false, ''));
 			}
 			else // we call submission for Parsons function
@@ -411,6 +436,30 @@ public class PaletteBuilder {
 		d.addField('Enter Hint', 350, hint);
 		d.addButton('Ok', ok);
 		d.addButton('Cancel',null);
+		d.showOnStage(app.stage);
+	}
+
+	//sm4241
+	private function showQuestion():void {
+		function ok():void {
+		}
+		var d:DialogBox = new DialogBox(null);
+		d.addTitle('Question');
+		d.addText(question);
+		d.addButton('Ok', ok);
+		d.showOnStage(app.stage);
+	}
+
+	//sm4241
+	private function showHint():void {
+		function ok():void {
+			hintCounter++;
+			trace(hintCounter);
+		}
+		var d:DialogBox = new DialogBox(null);
+		d.addTitle('Hint');
+		d.addText(hint);
+		d.addButton('Ok', ok);
 		d.showOnStage(app.stage);
 	}
 
