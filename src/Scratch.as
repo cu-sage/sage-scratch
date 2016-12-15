@@ -1076,6 +1076,7 @@ public class Scratch extends Sprite {
 		function clearProject():void {
 			startNewProject('', '');
 			setProjectName('Untitled');
+			Scratch.app.points = 0;
 			scriptsPart.setSagePalettes(sagePalettesDefault);
 			topBarPart.refresh();
 			stagePart.refresh();

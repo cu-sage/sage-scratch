@@ -67,6 +67,7 @@ public class BlockPalette extends ScrollFrameContents {
 		//yc2937 if block was dragged from scripts pane to palette, decrement points
 
 		if (b) {
+
 			if (Scratch.app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
 				obj.allBlocksDo(function(b:Block):void {
 					trace ("dragged from scripts pane to palette: " + b.spec);

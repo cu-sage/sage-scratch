@@ -152,6 +152,7 @@ public class StagePart extends UIPart {
 		sageDesignIndicator.visible = app.interp.sageDesignMode;
 		sagePlayIndicator.visible = app.interp.sagePlayMode;
 		fullscreenButton.visible = !app.isSmallPlayer;
+		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
 		if (app.editMode) {
 			fullscreenButton.setOn(false);
 			drawStageSizeButton();
@@ -240,7 +241,7 @@ public class StagePart extends UIPart {
 
 	private function getPointsLabel(fmt):TextField {
 		var label = makeLabel("Points: " + Scratch.app.getPoints().toString(), fmt);
-		label.x = 50;
+		label.x = 325;
 		label.y = topBarHeight/2 - 11;
 		return label
 	}
