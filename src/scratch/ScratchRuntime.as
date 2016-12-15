@@ -1099,14 +1099,19 @@ public class ScratchRuntime {
 				}
 			}
 			app.scriptsPane.saveScripts();
+			/*
 			if (b is Block) {
+
 
 				var stack = b as Block;
 				stack.allBlocksDo(function(b:Block):void {
 					Scratch.app.incrementPoints(b.pointValue);
 				});
-				app.updatePalette();
-			}
+			}*/
+			if (b is Block)
+
+			app.updatePalette();
+
 		}
 	}
 

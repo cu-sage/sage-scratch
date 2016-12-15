@@ -927,7 +927,7 @@ public class Block extends Sprite {
 	}
 
 
-	public function deleteStack(fromScriptsPane:Boolean = false):Boolean {
+	public function deleteStack():Boolean {
 		if (op == 'proc_declaration') {
 			return (parent as Block).deleteStack();
 		}
@@ -940,12 +940,13 @@ public class Block extends Sprite {
 		if (top == this && app.interp.isRunning(top, app.viewedObj())) {
 			app.interp.toggleThread(top, app.viewedObj());
 		}
+		/*
 		//if deleting stack from scripts pane, also decrement points
 		if (fromScriptsPane == true) {
 			top.allBlocksDo(function (b:Block):void {
 				Scratch.app.decrementPoints(b.pointValue);
 			});
-		}
+		}*/
 
 		// TODO: Remove any waiting reporter data in the Scratch.app.extensionManager
 		if (parent is Block) Block(parent).removeBlock(this);
