@@ -133,7 +133,12 @@ public class PaletteBuilder {
 	}
 
 	public function setQuestion(q:String):void {
-		question = q;
+		if(q==null){
+			question="None";
+		}else{
+			question = q;
+		}
+
 	}
 
 	public function getHint():String {
@@ -141,7 +146,12 @@ public class PaletteBuilder {
 	}
 
 	public function setHint(h:String):void {
-		hint = h;
+		if(h==null){
+			hint="None";
+		}else{
+			hint = h;
+		}
+
 	}
 
 	public function getBlockCategory(label:String):int {
