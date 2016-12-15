@@ -241,7 +241,7 @@ public class StagePart extends UIPart {
 
 	private function getPointsLabel(fmt):TextField {
 		var label = makeLabel("Points: " + Scratch.app.getPoints().toString(), fmt);
-		label.x = 50;
+		label.x = 325;
 		label.y = topBarHeight/2 - 11;
 		return label
 	}
