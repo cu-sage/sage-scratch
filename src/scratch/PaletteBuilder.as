@@ -326,12 +326,12 @@ public class PaletteBuilder {
 		}
 
 		var catColor:int = Specs.blockColor(Specs.parsonsColor);
-		if (parsonsBlock.length > 0) {
 
+		if (parsonsBlock.length > 0) {
 			nextY += 5;
 			for (var i=0; i<parsonsBlock.length; i++) {
 				var pb:Block = Block (parsonsBlock.getItemAt(i));
-				if(sageIncludedBlocks[pb.spec]){
+				if(sageIncludedBlocks[pb.spec] || pb.op=="readVariable"){
 					addItem(Block (parsonsBlock.getItemAt(i)));
 				}
 
@@ -642,14 +642,21 @@ public class PaletteBuilder {
 		app.runtime.showWatcher(data, showFlag);
 		b.setOn(showFlag);
 		app.setSaveNeeded();
+		parsonsToggleWatcher(b);
 	}
 
 	//sm4241- cutting off blocks from appearing on stage (to enable showing them up in parsons palette)
 
 	private function parsonsToggleWatcher(b:IconButton):void {
 		var data:Object = b.clientData;
-		var newBlock:Block = new Block(data.block.spec, data.block.type, data.color, data.cmd);
-		if(b.isOn() && sageIncludedBlocks[data.block.spec]){
+		var newBlock:Block;
+		if(data.block){
+			newBlock = new Block(data.block.spec, data.block.type, data.color, data.cmd);
+		}else{
+			newBlock = new Block(data.varName, 'r', Specs.variableColor, Specs.GET_VAR);
+		}
+
+		if((data.type == "variable" && b.isOn()) || (b.isOn() && sageIncludedBlocks[data.block.spec])){
 			parsonsBlock.addItem(newBlock);
 		}else{
 			for (var i=0; i<parsonsBlock.length; i++) {
@@ -661,11 +668,14 @@ public class PaletteBuilder {
 			}
 		}
 
+		if(data.type=="parsons"){
+			var showFlag:Boolean = !app.runtime.watcherShowing(data);
+			app.runtime.showWatcher(data, showFlag);
+			b.setOn(showFlag);
+			app.setSaveNeeded();
+		}
 		//sm4241- cutting off blocks from appearing on stage (to enable showing them up in parsons palette)
-		var showFlag:Boolean = !app.runtime.watcherShowing(data);
-		app.runtime.showWatcher(data, showFlag);
-		b.setOn(showFlag);
-		app.setSaveNeeded();
+
 	}
 
 	private function updateCheckboxes():void {
