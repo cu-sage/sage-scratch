@@ -38,7 +38,7 @@ public class PaletteSelector extends Sprite {
 		'Events', 'Control', 'Sensing', 'Operators', 'More Blocks', 'Parsons']; // column 2
 	//true against category id for
 	public var sageCategories:Array = [
-		false, // placeholder
+		true, // placeholder
 		true, true, true, true, true, // column 1
 		true, true, true, true, true, true, true, true]; // column 2
 		

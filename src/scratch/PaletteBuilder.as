@@ -125,7 +125,7 @@ public class PaletteBuilder {
 	}
 	
 	public function blockIncluded(block:Block):Boolean {
-		return (blockLabelCategoryIncluded(block.spec, getBlockCategory(block.spec)) || block.type =="variable");
+		return (blockLabelCategoryIncluded(block.spec, getBlockCategory(block.spec)) || block.type =="r");
 	}
 
 	public function getQuestion():String {
@@ -655,13 +655,10 @@ public class PaletteBuilder {
 			newBlock = new Block(data.block.spec, data.block.type, data.color, data.cmd);
 		}else{
 			newBlock = new Block(data.varName, 'r', Specs.variableColor, Specs.GET_VAR);
+			sageIncludedBlocks[data.varName] = true;
 		}
 
-		if(data.type == "variable" && b.isOn()){
-			parsonsBlock.addItem(newBlock);
-			sageIncludedBlocks[data.varName] = true;
-
-		}else if (b.isOn() && sageIncludedBlocks[data.block.spec]){
+		if((data.type == "variable" && b.isOn()) || b.isOn() && sageIncludedBlocks[data.block.spec]){
 			parsonsBlock.addItem(newBlock);
 		}else{
 			for (var i=0; i<parsonsBlock.length; i++) {
