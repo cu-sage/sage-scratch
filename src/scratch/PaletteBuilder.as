@@ -151,7 +151,10 @@ public class PaletteBuilder {
 		}else{
 			hint = h;
 		}
+	}
 
+	public function getHintCount():int {
+		return hintCounter;
 	}
 
 	public function getBlockCategory(label:String):int {

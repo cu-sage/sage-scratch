@@ -413,7 +413,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		saveScripts();
 		//sm4241 - parsons logic here
 		app.parsonsLogic();
-		b.changePointArgToLabel()
+		//b.changePointArgToLabel()
 		updateSize();
 		if (c) fixCommentLayout();
 		return true;

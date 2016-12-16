@@ -108,6 +108,7 @@ public class Scratch extends Sprite {
 	public var lp:LoadProgress;
 	public var cameraDialog:CameraDialog;
 
+
 	// UI Parts
 	public var libraryPart:LibraryPart;
 	protected var topBarPart:TopBarPart;
@@ -121,7 +122,7 @@ public class Scratch extends Sprite {
 
 
 	// Points
-
+	var totalMoves:int=0;
 
 	protected var points:int = 0;
 	public function setPoints(points:int):void {
@@ -151,28 +152,45 @@ public class Scratch extends Sprite {
 
 	//parsons logic
 	public function parsonsLogic():void{
+		trace("Scratch.parsonsLogic called")
+		totalMoves++;
 		var i:int;
+		var blocksCount:int=0;
+
 		setPoints(0);
 		//script from json
 		var scripts = viewedObject.parsonScripts;
+
 
 		//current script on script pane
 		var currScript = viewedObject.scripts;
 
 		for (i = 0; i < currScript.length; i++){
+			//current parson block
 			var pb:Block = currScript[i] as Block;
-			//good case
-			if(i<scripts){
-				if(currScript[i] == scripts[i]){
+
+			//saved block
+			var sb:Block = scripts[i] as Block;
+
+			while(pb != null && sb!= null){
+				if(pb.op == sb.op){
 					incrementPoints(pb.pointValue);
 				}else{
 					decrementPoints(pb.pointValue);
 				}
-			}else{
+				sb = sb.nextBlock;
+				blocksCount++;
+				pb = pb.nextBlock;
+			}
+
+			while(pb != null){
 				decrementPoints(pb.pointValue);
+				pb = pb.nextBlock;
 			}
 		}
-
+		setPoints(getPoints() - paletteBuilder.getHintCount() - (totalMoves - blocksCount));
+		stagePart.updatePointsLabel();
+		trace(getPoints());
 
 	}
 	public var sagePalettesDefault:Array = [

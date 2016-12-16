@@ -84,8 +84,7 @@ public class BlockPalette extends ScrollFrameContents {
 
 			Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 
-
-			return b.deleteStack();
+			return b.deleteStack();;
 
 		}
 		trace("blockpalette.handledrop resetting flag");
