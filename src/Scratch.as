@@ -123,6 +123,8 @@ public class Scratch extends Sprite {
 
 	// Points
 	var totalMoves:int=0;
+    var blocksCount:int=0;
+    var success:Boolean=false;
 
 	protected var points:int = 0;
 	public function setPoints(points:int):void {
@@ -155,7 +157,7 @@ public class Scratch extends Sprite {
 		trace("Scratch.parsonsLogic called")
 		totalMoves++;
 		var i:int;
-		var blocksCount:int=0;
+		blocksCount=0;
 
 		setPoints(0);
 		//script from json
@@ -174,9 +176,16 @@ public class Scratch extends Sprite {
 
 			while(pb != null && sb!= null){
 				if(pb.op == sb.op){
+                    success = true;
+                    checkSubstack(pb.subStack1, sb.subStack1);
+                    checkSubstack(pb.subStack2, sb.subStack2);
 					incrementPoints(pb.pointValue);
+                    stagePart.updateMessageLabel("Good Going!");
+
 				}else{
+                    success = false;
 					decrementPoints(pb.pointValue);
+                    stagePart.updateMessageLabel("Oops! Wrong Choice");
 				}
 				sb = sb.nextBlock;
 				blocksCount++;
@@ -184,7 +193,9 @@ public class Scratch extends Sprite {
 			}
 
 			while(pb != null){
+                success = false;
 				decrementPoints(pb.pointValue);
+                stagePart.updateMessageLabel("Try removing few blocks!");
 				pb = pb.nextBlock;
 			}
 		}
@@ -193,7 +204,111 @@ public class Scratch extends Sprite {
 		trace(getPoints());
 
 	}
-	public var sagePalettesDefault:Array = [
+
+    //forloop
+    public function checkSubstack(block1:Block, block2:Block):void{
+        if(block1 != null && block2 != null){
+
+            if(block1.op == block2.op){
+                success=true;
+                blocksCount++;
+                checkSubstack(block1.subStack1, block2.subStack1);
+                checkSubstack(block1.subStack2, block2.subStack2);
+                incrementPoints(block1.pointValue);
+                stagePart.updateMessageLabel("Good Going!")
+            }else{
+                success = false;
+                decrementPoints(block1.pointValue);
+                stagePart.updateMessageLabel("Oops! Wrong Choice");
+            }
+        }else if(block1 != null && block2 == null){
+            success = false;
+            decrementPoints(block1.pointValue);
+            stagePart.updateMessageLabel("Try removing few blocks!");
+        }
+    }
+
+    //ifthenelse
+//    public function checkSubstack2(block1:Block, block2:Block):void{
+//        if(block1 != null && block2 != null){
+//
+//            if(block1.op == block2.op){
+//                success=true;
+//                blocksCount++;
+//                checkSubstack1(block1.subStack1, block2.subStack2);
+//                checkSubstack2(block1.subStack2, block2.subStack2);
+//                incrementPoints(block1.pointValue);
+//            }else{
+//                success = false;
+//                decrementPoints(block1.pointValue);
+//            }
+//        }else if(block1 != null && block2 == null){
+//            success = false;
+//            decrementPoints(block1.pointValue);
+//        }
+//
+//    }
+
+//    public function submit():void{
+//        var i:int;
+//        var blocksCount:int=0;
+//        var success:Boolean=false;
+//
+//        //script from json
+//        var scripts = viewedObject.parsonScripts;
+//
+//        //current script on script pane
+//        var currScript = viewedObject.scripts;
+//
+//        for (i = 0; i < currScript.length; i++){
+//            //current parson block
+//            var pb:Block = currScript[i] as Block;
+//
+//            //saved block
+//            var sb:Block = scripts[i] as Block;
+//
+//            while(pb != null && sb!= null){
+//                if(pb.op == sb.op){
+//                    checkSubstack1(pb.subStack1, sb.subStack1);
+//                    success = true;
+//                }else{
+//                    success = false;
+//                }
+//                sb = sb.nextBlock;
+//                blocksCount++;
+//                pb = pb.nextBlock;
+//            }
+//
+//            if(pb != null || sb != null){
+//                success = false;
+//            }
+//        }
+//        summary(success, blocksCount);
+//
+//
+//    }
+
+    public function summary():void {
+        function ok():void {
+        }
+        var d:DialogBox = new DialogBox(null);
+        if(success){
+            d.addTitle('Congratulations!');
+            d.addText('You have completed Parsons Puzzle');
+        }else{
+            d.addTitle('Better Luck Next Time!');
+            d.addText('You were very close...');
+        }
+
+        d.addText('Your score: ' + getPoints());
+        d.addText('Correct Moves: ' + blocksCount);
+        d.addText('Incorrect Moves: ' + (totalMoves - blocksCount));
+        d.addText('Hint Used: ' + paletteBuilder.getHintCount());
+        d.addButton('Ok', ok);
+        d.showOnStage(app.stage);
+    }
+
+   public var sagePalettesDefault:Array = [
 		false, // placeholder
 		true, true, true, true, true, // column 1
 		true, true, true, true, true]; // column 2

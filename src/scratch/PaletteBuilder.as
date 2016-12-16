@@ -345,7 +345,7 @@ public class PaletteBuilder {
 			else // we call submission for Parsons function
 			{
 				addItem(new Button(Translator.map('Comments'), getComments, false, ''));
-				addItem(new Button(Translator.map('Submit'), makeNewBlock, false, ''));
+				addItem(new Button(Translator.map('Submit'), app.summary, false, ''));
 			}
 			nextY += 5;
 

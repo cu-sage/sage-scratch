@@ -69,6 +69,7 @@ public class StagePart extends UIPart {
 
 	//points
 	private var pointsLabel:TextField;
+	private var messageLabel:TextField;
 
 	public function StagePart(app:Scratch) {
 		this.app = app;
@@ -153,6 +154,7 @@ public class StagePart extends UIPart {
 		sagePlayIndicator.visible = app.interp.sagePlayMode;
 		fullscreenButton.visible = !app.isSmallPlayer;
 		pointsLabel.visible = !app.interp.sageDesignMode;
+		messageLabel.visible = !app.interp.sageDesignMode;
 		if (app.editMode) {
 			fullscreenButton.setOn(false);
 			drawStageSizeButton();
@@ -227,6 +229,7 @@ public class StagePart extends UIPart {
 
 	private function addTitleAndInfo():void {
 		var fmt:TextFormat = app.isOffline ? new TextFormat(CSS.font, 16, CSS.textColor) : CSS.projectTitleFormat;
+		var fmt2:TextFormat = app.isOffline ? new TextFormat(CSS.font, 12, CSS.textColor) : CSS.normalTextFormat;
 		projectTitle = getProjectTitle(fmt);
 		addChild(projectTitle);
 
@@ -236,18 +239,34 @@ public class StagePart extends UIPart {
 		addChild(versionInfo = makeLabel(Scratch.versionString, versionFormat));
 
 		pointsLabel = getPointsLabel(fmt);
+		messageLabel= getMessageLabel(fmt2);
 		addChild(pointsLabel);
+		addChild(messageLabel);
+
 	}
 
 	private function getPointsLabel(fmt):TextField {
 		var label = makeLabel("Points: " + Scratch.app.getPoints().toString(), fmt);
-		label.x = 50;
+		label.x = 325;
 		label.y = topBarHeight/2 - 11;
 		return label
 	}
 
+	private function getMessageLabel(fmt):TextField {
+		var label = makeLabel("Hey! Let's start solving!", fmt);
+		label.x = 170;
+		label.y = 2;
+		return label
+	}
+
+
+
 	public function updatePointsLabel():void {
 		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
+	}
+
+	public function updateMessageLabel(message:String):void {
+		messageLabel.text = message;
 	}
 
 	protected function getProjectTitle(fmt:TextFormat):EditableLabel {
