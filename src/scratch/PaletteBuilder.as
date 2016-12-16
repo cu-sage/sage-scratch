@@ -125,7 +125,7 @@ public class PaletteBuilder {
 	}
 	
 	public function blockIncluded(block:Block):Boolean {
-		return blockLabelCategoryIncluded(block.spec, getBlockCategory(block.spec));
+		return (blockLabelCategoryIncluded(block.spec, getBlockCategory(block.spec)) || block.type =="variable");
 	}
 
 	public function getQuestion():String {
@@ -159,6 +159,7 @@ public class PaletteBuilder {
 
 	public function getBlockCategory(label:String):int {
 		if (label == 'when Stage clicked') label = 'whenClicked'; // special case
+
 		var category:int = -1;
 		for each (var spec:Array in Specs.commands) {
 			if ((spec.length > 3) && (spec[0] == label))
@@ -656,7 +657,11 @@ public class PaletteBuilder {
 			newBlock = new Block(data.varName, 'r', Specs.variableColor, Specs.GET_VAR);
 		}
 
-		if((data.type == "variable" && b.isOn()) || (b.isOn() && sageIncludedBlocks[data.block.spec])){
+		if(data.type == "variable" && b.isOn()){
+			parsonsBlock.addItem(newBlock);
+			sageIncludedBlocks[data.varName] = true;
+
+		}else if (b.isOn() && sageIncludedBlocks[data.block.spec]){
 			parsonsBlock.addItem(newBlock);
 		}else{
 			for (var i=0; i<parsonsBlock.length; i++) {
