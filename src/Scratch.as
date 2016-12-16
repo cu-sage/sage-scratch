@@ -198,6 +198,10 @@ public class Scratch extends Sprite {
                 stagePart.updateMessageLabel("Try removing few blocks!");
 				pb = pb.nextBlock;
 			}
+
+			if(sb != null){
+				success = false;
+			}
 		}
 		setPoints(getPoints() - paletteBuilder.getHintCount() - (totalMoves - blocksCount));
 		stagePart.updatePointsLabel();
@@ -225,7 +229,9 @@ public class Scratch extends Sprite {
             success = false;
             decrementPoints(block1.pointValue);
             stagePart.updateMessageLabel("Try removing few blocks!");
-        }
+        }else if(block1 == null && block2 != null){
+			success = false;
+		}
     }
 
     //ifthenelse
