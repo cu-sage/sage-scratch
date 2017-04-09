@@ -559,7 +559,11 @@ public class ScratchObj extends Sprite {
 		// Update the scripts of this object after switching languages.
 		var newScripts:Array = [];
 		for each (var b:Block in scripts) {
-			var newStack:Block = BlockIO.arrayToStack(BlockIO.stackToArray(b), isStage);
+			var blocksOnly:Array = BlockIO.stackToArray(b);
+			var blockIds:Array = [];
+			for each (var block:Array in blocksOnly) blockIds.push(block[0]);
+			for each (var block:Array in blocksOnly) block.shift();
+			var newStack:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
 			newStack.x = b.x;
 			newStack.y = b.y;
 			newScripts.push(newStack);
@@ -605,8 +609,8 @@ public class ScratchObj extends Sprite {
 		}
 		lists = jsonObj.lists || [];
 		//sm4241 - to prevent scripts being displayed on script pane during play mode
-		//scripts = jsonObj.scripts || [];
-		parsonScripts = jsonObj.scripts || [];
+		scripts = jsonObj.scripts || [];
+		//parsonScripts = jsonObj.scripts || [];
 		scriptComments = jsonObj.scriptComments || [];
 		sounds = jsonObj.sounds || [];
 		costumes = jsonObj.costumes || [];
@@ -639,7 +643,11 @@ public class ScratchObj extends Sprite {
 		for (i = 0; i < scripts.length; i++) {
 			// entries are of the form: [x y stack]
 			var entry:Array = scripts[i];
-			var b:Block = BlockIO.arrayToStack(entry[2], isStage);
+			var blockIds:Array = [];
+			for each (var e:Array in entry[2]) blockIds.push(e[0]);
+			var blocksOnly:Array = entry[2];
+			for each (var e:Array in blocksOnly) e.shift();
+			var b:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
 			b.x = entry[0];
 			b.y = entry[1];
 			scripts[i] = b;
@@ -649,7 +657,11 @@ public class ScratchObj extends Sprite {
 		for (i = 0; i < parsonScripts.length; i++) {
 			// entries are of the form: [x y stack]
 			var entry:Array = parsonScripts[i];
-			var b:Block = BlockIO.arrayToStack(entry[2]);
+			var blockIds:Array = [];
+			for each (var e:Array in entry[2]) blockIds.push(e[0]);
+			var blocksOnly:Array = entry[2];
+			for each (var e:Array in blocksOnly) e.shift();
+			var b:Block = BlockIO.arrayToStack(blocksOnly, blockIds);
 			b.x = entry[0];
 			b.y = entry[1];
 			parsonScripts[i] = b;

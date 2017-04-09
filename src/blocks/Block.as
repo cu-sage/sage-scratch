@@ -45,6 +45,7 @@ import flash.text.*;
 	import util.*;
 	import uiwidgets.*;
 	import scratch.*;
+import mx.utils.UIDUtil;
 
 public class Block extends Sprite {
 
@@ -94,7 +95,7 @@ public class Block extends Sprite {
 	private var labelsAndArgs:Array = [];
 	private var argTypes:Array = [];
 	private var elseLabel:TextField;
-	
+
 	//private var isIncluded:Boolean;
 
 	private var indentTop:int = 2, indentBottom:int = 3;
@@ -112,8 +113,10 @@ public class Block extends Sprite {
 
 	//points
 	public var pointValue:int;
+	// unique block ID
+	private var id:String;
 
-	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false) {
+	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false, id:String = null) {
 		trace("block constructor called ---------------------------------");
 
 		trace("spec: " + spec);
@@ -124,6 +127,8 @@ public class Block extends Sprite {
 		this.type = type;
 		this.op = op;
 		this.pointValue = Specs.getPointsForSpec(spec);
+		if (id == null) this.id = UIDUtil.createUID();
+		else this.id = id;
 
 		if ((Specs.CALL == op) ||
 			(Specs.GET_LIST == op) ||
@@ -137,13 +142,13 @@ public class Block extends Sprite {
 		if (color == -1) return; // copy for clone; omit graphics
 
 		createBase(color);
-		
+
 		addChildAt(base, 0);
 		setSpec(this.spec, defaultArgs, pointsEditable);
 
 		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
 	}
-	
+
 	// SAGE refactor to simplify color change on include/exclude
 	private function createBase(color:int):void {
 		if ((type == " ") || (type == "") || (type == "w")) {
@@ -613,8 +618,9 @@ public class Block extends Sprite {
 	}
 
 	public function duplicate(forClone:Boolean, forStage:Boolean = false):Block {
+		// called only on blocks dragged from palette (not those that are duplicated)
 		var newSpec:String = spec;
-		if (op == 'whenClicked') newSpec = forStage ? 'when Stage clicked' : 'when this sprite clicked';				
+		if (op == 'whenClicked') newSpec = forStage ? 'when Stage clicked' : 'when this sprite clicked';
 		var dup:Block = new Block(newSpec, type, (int)(forClone ? -1 : base.color), op);
 		dup.isRequester = isRequester;
 		dup.forcedRequester = forcedRequester;
@@ -909,19 +915,24 @@ public class Block extends Sprite {
 			Scratch.app.showTip(op);
 		}
 	}
-	
+
 	public function sageInclude():void {
 		Scratch.app.paletteBuilder.updateBlock(this.spec, true);
 	}
-	
+
 	public function sageExclude():void {
 		Scratch.app.paletteBuilder.updateBlock(this.spec, false);
 	}
 
 	public function duplicateStack(deltaX:Number, deltaY:Number):void {
+		// called on a block that is being cloned.
 		if (isProcDef() || op == 'proc_declaration') return; // don't duplicate procedure definition
 		var forStage:Boolean = Scratch.app.viewedObj() && Scratch.app.viewedObj().isStage;
-		var newStack:Block = BlockIO.stringToStack(BlockIO.stackToString(this), forStage);
+		var blockIds:Array = []; // get list of IDs only
+		for each (var b:Array in BlockIO.stackToArray(this)) {
+			blockIds.push(b[0]);
+		}
+		var newStack:Block = BlockIO.stringToStack(BlockIO.stackToString(this), forStage, blockIds);
 		var p:Point = localToGlobal(new Point(0, 0));
 		newStack.x = p.x + deltaX;
 		newStack.y = p.y + deltaY;
@@ -992,7 +1003,7 @@ public class Block extends Sprite {
 			trace("block.objtograb is inscriptsname true");
 			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_SCRIPTS_PANE;
 		}
-		if (isEmbeddedParameter() || isInPalette()) 
+		if (isEmbeddedParameter() || isInPalette())
 		{
 			if (!Scratch.app.getPaletteBuilder().blockIncluded(this) && Scratch.app.interp.sagePlayMode)
 				return null; // block should not respond when restricted
@@ -1144,6 +1155,11 @@ public class Block extends Sprite {
 
 	protected static function indent(s:String):String {
 		return s.replace(/^/gm, "    ");
+	}
+
+	// Allison Sawyer
+	public function getBlockId() {
+		return this.id;
 	}
 
 }}

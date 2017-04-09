@@ -28,15 +28,17 @@ package blocks {
 	import scratch.*;
 	import util.*;
 	import translation.*;
+	import mx.utils.UIDUtil;
 
 public class BlockIO {
 
 	public static function stackToString(b:Block):String {
+		// called on a block that is being cloned. (parent block passed in as input)
 		return util.JSON.stringify(stackToArray(b));
 	}
 
-	public static function stringToStack(s:String, forStage:Boolean = false):Block {
-		return arrayToStack(util.JSON.parse(s) as Array, forStage);
+	public static function stringToStack(s:String, forStage:Boolean = false, blockIds:Array = null):Block {
+		return arrayToStack(util.JSON.parse(s) as Array, forStage, blockIds);
 	}
 
 	public static function stackToArray(b:Block):Array {
@@ -50,10 +52,19 @@ public class BlockIO {
 		return result;
 	}
 
-	public static function arrayToStack(cmdList:Array, forStage:Boolean = false):Block {
+	public static function arrayToStack(cmdList:Array, forStage:Boolean = false, blockIds:Array = null):Block {
 		// Return the stack represented by an array structure.
 		var topBlock:Block, lastBlock:Block;
+		var idx:int = 0;
 		for each (var cmd:Array in cmdList) {
+			// for cloned (duplicated) blocks: remove parent blockId(s) from cmd
+			if (blockIds != null) {
+				// first element in cmd is a block ID - must be removed to render image
+				if (cmd[0] == blockIds[idx]) cmd.shift();
+				// blocks are being loaded from saved JSON - must retrieve original block IDs
+				else cmd.unshift(blockIds[idx]);
+				idx++;
+			}
 			var b:Block = null;
 			try { b = arrayToBlock(cmd, '', forStage) } catch (e:*) { b = new Block('undefined') }
 			if (topBlock == null) topBlock = b;
@@ -86,11 +97,14 @@ public class BlockIO {
 		}
 		if (b.base.canHaveSubstack1()) result.push(stackToArray(b.subStack1));
 		if (b.base.canHaveSubstack2()) result.push(stackToArray(b.subStack2));
+		result.unshift(b.getBlockId()); // prepend block ID to list
 		return result;
 	}
 
 	private static function arrayToBlock(cmd:Array, undefinedBlockType:String, forStage:Boolean = false):Block {
 		// Make a block from an array of form: <op><arg>*
+		var blockId:String = null;
+		if (UIDUtil.isUID(cmd[0])) blockId = cmd.shift(); // remove block ID from cmd if present
 
 		if (cmd[0] == 'getUserName') Scratch.app.usesUserNameBlock = true;
 
@@ -103,14 +117,14 @@ public class BlockIO {
 
 		if (cmd[0] == Specs.CALL) {
 			//b = new Block(cmd[1], '', Specs.procedureColor, Specs.CALL);
-			b = new Block(cmd[1], '', getModeBlockColor(cmd[1], Specs.procedureColor), Specs.CALL);
+			b = new Block(cmd[1], '', getModeBlockColor(cmd[1], Specs.procedureColor), Specs.CALL, null, false, blockId);
 			cmd.splice(0, 1);
 		} else {
 			var spec:Array = specForCmd(cmd, undefinedBlockType);
 			var label:String = spec[0];
 			if(forStage && spec[3] == 'whenClicked') label = 'when Stage clicked';
 			//b = new Block(label, spec[1], Specs.blockColor(spec[2]), spec[3]);
-			b = new Block(label, spec[1], getModeBlockColor(label, Specs.blockColor(spec[2])), spec[3]);
+			b = new Block(label, spec[1], getModeBlockColor(label, Specs.blockColor(spec[2])), spec[3], null, false, blockId);
 		}
 
 		var args:Array = argsForCmd(cmd, b.rightToLeft);
