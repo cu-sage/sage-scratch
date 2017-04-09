@@ -35,7 +35,9 @@ import flash.utils.*;
 
 	import interpreter.*;
 
-	import scratch.ScratchComment;
+import mx.utils.UIDUtil;
+
+import scratch.ScratchComment;
 import scratch.ScratchSprite;
 
 import translation.Translator;
@@ -644,9 +646,13 @@ public class ScratchObj extends Sprite {
 			// entries are of the form: [x y stack]
 			var entry:Array = scripts[i];
 			var blockIds:Array = [];
-			for each (var e:Array in entry[2]) blockIds.push(e[0]);
+			for each (var e:Array in entry[2]) {
+				if (UIDUtil.isUID(e[0])) blockIds.push(e[0]);
+			}
 			var blocksOnly:Array = entry[2];
-			for each (var e:Array in blocksOnly) e.shift();
+			for each (var e:Array in blocksOnly) {
+				if (UIDUtil.isUID(e[0])) e.shift();
+			}
 			var b:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
 			b.x = entry[0];
 			b.y = entry[1];
@@ -658,9 +664,13 @@ public class ScratchObj extends Sprite {
 			// entries are of the form: [x y stack]
 			var entry:Array = parsonScripts[i];
 			var blockIds:Array = [];
-			for each (var e:Array in entry[2]) blockIds.push(e[0]);
+			for each (var e:Array in entry[2]) {
+				if (UIDUtil.isUID(e[0])) blockIds.push(e[0]);
+			}
 			var blocksOnly:Array = entry[2];
-			for each (var e:Array in blocksOnly) e.shift();
+			for each (var e:Array in blocksOnly) {
+				if (UIDUtil.isUID(e[0])) e.shift();
+			}
 			var b:Block = BlockIO.arrayToStack(blocksOnly, blockIds);
 			b.x = entry[0];
 			b.y = entry[1];

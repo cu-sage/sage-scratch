@@ -88,11 +88,13 @@ public class PaletteBuilder {
 	}
 
 	public function setParsonsIncludedBlocks(parsons:Array):void {
-		if (parsons.length > 0) {
-			for (var i = 0; i < parsons.length; i++) {
-				var newBlock:Block = new Block(parsons[i]['spec'], parsons[i]['type'], parsons[i]['color'], parsons[i]['cmd']);
+		if (parsons != null) {
+			if (parsons.length > 0) {
+				for (var i = 0; i < parsons.length; i++) {
+					var newBlock:Block = new Block(parsons[i]['spec'], parsons[i]['type'], parsons[i]['color'], parsons[i]['cmd']);
 
-				parsonsBlock.addItem(newBlock);
+					parsonsBlock.addItem(newBlock);
+				}
 			}
 		}
 	}
