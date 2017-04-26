@@ -55,6 +55,9 @@ public class PaletteBuilder {
 	private var hint:String;
 	private var hintCounter:int=0;
 
+	// store all blocks for use in hinting
+	private var paletteBlocks:Array = new Array();
+
 	public function PaletteBuilder(app:Scratch) {
 		this.app = app;
 		currentCategory=1;
@@ -250,6 +253,8 @@ public class PaletteBuilder {
 				else {
 					var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs);
 				}
+				paletteBlocks.push(block); // add to array of all blocks
+
 				var showReporterCheckbox:Boolean = isCheckboxReporter(spec[3]);
 
 				if (showReporterCheckbox){
@@ -776,4 +781,16 @@ public class PaletteBuilder {
 		app.palette.addChild(line);
 	}
 
+	/* Functions for hinting */
+
+	public function getCurrentCategory() {
+		return this.currentCategory;
+	}
+
+	public function getBlockByOp(opStr:String):Block {
+		for each (var b:Block in this.paletteBlocks) {
+			if (opStr == b.op) return b;
+		}
+		return null; // no block found with given value of 'op'
+	}
 }}

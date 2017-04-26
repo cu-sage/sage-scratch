@@ -41,8 +41,20 @@ import flash.display.*;
 import flash.net.URLRequest;
 import flash.text.*;
 	import assets.Resources;
-	import translation.Translator;
-	import util.*;
+
+import flash.utils.Dictionary;
+
+import flash.utils.Timer;
+
+import org.osmf.events.TimeEvent;
+
+import translation.Translator;
+
+import ui.Hints;
+import ui.PaletteSelector;
+import ui.PaletteSelectorItem;
+
+import util.*;
 	import uiwidgets.*;
 	import scratch.*;
 import mx.utils.UIDUtil;
@@ -116,6 +128,14 @@ public class Block extends Sprite {
 	// unique block ID
 	private var id:String;
 
+	// hinting
+	public var hints:Hints = new Hints();
+	// 5-second delay before category hint is issued (if available)
+	private var categoryTimer:Timer = new Timer(5000);
+	// 5-second delay before block hint is issued (if available)
+	private var blockTimer:Timer = new Timer(5000);
+	private static var blocksToSuggest:Array = [];
+
 	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false, id:String = null) {
 		trace("block constructor called ---------------------------------");
 
@@ -147,6 +167,8 @@ public class Block extends Sprite {
 		setSpec(this.spec, defaultArgs, pointsEditable);
 
 		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
+
+		addChild(hints);
 	}
 
 	// SAGE refactor to simplify color change on include/exclude
@@ -995,6 +1017,35 @@ public class Block extends Sprite {
 	public function objToGrab(evt:MouseEvent):Block {
 		trace("block.objtograb called");
 		//if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
+
+		// update latest block for hinting purposes
+		latestBlock = bottomBlock();
+
+		trace('index: ' + blockList.indexOf(this));
+		if (!(this.parent is Block) && blockList.indexOf(this) < 0) {
+			blockList.push(this);
+		}
+		trace("LATEST BLOCK: " + latestBlock.op);
+		var blocksToPrint:Array = [];
+		for each (var block:Block in blockList) {
+			blocksToPrint.push(block.op);
+		}
+		trace("BLOCK LIST:    " + String(blocksToPrint));
+
+		var hintRules:Array = hints.getRules();
+		var hintBlocks:Array = hints.getRuleBlocks();
+
+		// see if a hint can be issued based on the current latest block
+		if (hintBlocks.indexOf(latestBlock.op) >= 0) {
+			// get blocks that should be suggested (as hints)
+			blocksToSuggest = hints.getRightCol(hintRules, this.op);
+			if (blocksToSuggest) {
+				// set timer and then call shake event
+				startCategoryTimer();
+			}
+		}
+
+
 		if (isInPalette()) {
 			trace("block.objtograb is in palette true");
 			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_PALETTE;
@@ -1014,6 +1065,61 @@ public class Block extends Sprite {
 		return this;
 	}
 
+	private function startCategoryTimer():void {
+		categoryTimer.addEventListener(TimerEvent.TIMER, afterCategoryTimer);
+		categoryTimer.start();
+	}
+
+	private function afterCategoryTimer(event:TimerEvent):void {
+		categoryTimer.removeEventListener(TimerEvent.TIMER, afterCategoryTimer);
+		// after 5 seconds have passed, issue hint
+		//if (blocksToSuggest.length > 0) {
+		for each (var opStr:String in blocksToSuggest) {
+			var currentCategory:int = Scratch.app.paletteBuilder.getCurrentCategory();
+			// get category of block to hint
+			//var suggBlockInfo:Array = BlockIO.specForCmd([blocksToSuggest[0]], " ");
+			var suggBlockInfo:Array = BlockIO.specForCmd([opStr], " ");
+			var suggCategory:int = suggBlockInfo[2];
+
+			// hint needs to be generated in a different palette category
+			if (currentCategory != suggCategory) {
+				var ps:PaletteSelector = Scratch.app.getScriptsPart().getPaletteSelector();
+				// shake category of suggested block
+				var catToShake:PaletteSelectorItem = ps.hintSelect(suggCategory);
+				// TODO: put event listener on particular category, not ps
+				//ps.addEventListener(MouseEvent.CLICK, startBlockTimer);
+				catToShake.addEventListener(MouseEvent.CLICK, startBlockTimer);
+			}
+		}
+	}
+
+	private function startBlockTimer(evt:MouseEvent):void {
+		blockTimer.addEventListener(TimerEvent.TIMER, afterBlockTimer);
+		blockTimer.start();
+	}
+
+	private function afterBlockTimer(event:TimerEvent):void {
+		blockTimer.removeEventListener(TimerEvent.TIMER, afterBlockTimer);
+		// after 5 seconds have passed, issue hint
+		shakeInCategory();
+	}
+
+	/* If hint has to be issued in a category different from the current one,
+	 *  wait until the user clicks on the appropriate category for the hint and then
+	 *  shake the relevant block. */
+	private function shakeInCategory() {
+		//if (blocksToSuggest.length > 0) { // should always be true
+		for each (var opStr:String in blocksToSuggest) {
+			//var opStr:String = blocksToSuggest[0];
+			var blockHint:Hints = new Hints();
+			var blockToShake:Block = Scratch.app.paletteBuilder.getBlockByOp(opStr);
+			if (blockToShake) {
+				blockHint.log('toShake: ' + blockToShake.op);
+				blockHint.initShake(blockToShake);
+			}
+		}
+	}
+
 	/* Events */
 
 	public function click(evt:MouseEvent):void {
@@ -1029,6 +1135,18 @@ public class Block extends Sprite {
 	private function editArg(evt:MouseEvent):Boolean {
 		var arg:BlockArg = evt.target as BlockArg;
 		if (!arg) arg = evt.target.parent as BlockArg;
+		// update latest block to block with args changed
+		if (arg && arg.parent is Block) {
+			var b:Block = Block(arg.parent);
+			latestBlock = b;
+			trace('index: ' + blockList.indexOf(b));
+			if (blockList.indexOf(b) < 0) blockList.push(b);
+			trace("BLOCK LIST: ");
+			for each (var block:Block in blockList) {
+				trace("    " + block.op);
+			}
+			trace("LATEST BLOCK: " + latestBlock.op);
+		}
 		if (arg && arg.isEditable && (arg.parent == this)) {
 			arg.startEditing();
 			return true;

@@ -47,10 +47,13 @@ public class PaletteSelector extends Sprite {
 	public var selectedCategory:int = 0;
 	
 	private var app:Scratch;
+	private var paletteItems:Array;
+
+	public var hints:Hints = new Hints();
 
 	public function PaletteSelector(app:Scratch) {
 		this.app = app;
-		initCategories();
+		this.paletteItems = initCategories();
 	}
 
 	public static function strings():Array { return categories }
@@ -102,7 +105,7 @@ public class PaletteSelector extends Sprite {
 		}
 	}
 	//sm4241 - changing numberOfRows -> 6 (categories table)
-	private function initCategories():void {
+	private function initCategories():Array {
 		const numberOfRows:int = 6; //initially was 5
 		const w:int = 208;
 		const startY:int = 3;
@@ -110,6 +113,8 @@ public class PaletteSelector extends Sprite {
 		var x:int, i:int;
 		var y:int = startY;
 		while (numChildren > 0) removeChildAt(0); // remove old contents
+
+		var paletteItems:Array = []; // for hinting
 
 //		if(app.interp.sagePlayMode){
 //			sageCategories[13] = true;
@@ -130,17 +135,33 @@ public class PaletteSelector extends Sprite {
 			item.y = y;
 			addChild(item);
 			y += itemH;
+
+			paletteItems.push(item);
 		}
 		setWidthHeightColor(w, startY + (numberOfRows * itemH) + 5);
+
+		return paletteItems;
 	}
 
-	private function setWidthHeightColor(w:int, h:int):void {
+	public function setWidthHeightColor(w:int, h:int):void {
 		var g:Graphics = graphics;
 		g.clear();
 		g.beginFill(0xFFFF00, 0); // invisible (alpha = 0) rectangle used to set size
 		g.drawRect(0, 0, w, h);
 	}
-	
-	
+
+	// return PaletteItems for use in hinting
+	public function getPaletteItems() {
+		return this.paletteItems;
+	}
+
+	// issue hint by shaking the palette category with ID 'id'
+	public function hintSelect(id:int):PaletteSelectorItem {
+		// palette item to shake
+		var item:PaletteSelectorItem = getChildAt(id) as PaletteSelectorItem;
+		var catHint:Hints = new Hints();
+		catHint.initShake(item);
+		return item;
+	}
 
 }}

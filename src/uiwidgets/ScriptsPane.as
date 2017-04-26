@@ -31,7 +31,9 @@ package uiwidgets {
 	import blocks.*;
 	import scratch.*;
 	import flash.geom.Rectangle;
-	import ui.media.MediaInfo;
+
+import ui.Hints;
+import ui.media.MediaInfo;
 
 public class ScriptsPane extends ScrollFrameContents {
 
@@ -53,6 +55,7 @@ public class ScriptsPane extends ScrollFrameContents {
 	private var possibleTargets:Array = [];
 	private var nearestTarget:Array = [];
 	private var feedbackShape:BlockShape;
+	public var hints:Hints = new Hints();
 
 	public function ScriptsPane(app:Scratch) {
 		this.app = app;
@@ -387,6 +390,17 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 
 				b.allBlocksDo(function (b:Block):void {
 					trace("dragged from palette to scripts pane: " + b.spec);
+					// update latest block to account for new block added
+					/*
+                    latestBlock = b.op;
+					trace('index: ' + blockList.indexOf(b));
+					if (blockList.indexOf(b) < 0) blockList.push(b);
+					trace("LATEST BLOCK: " + latestBlock);
+					trace("BLOCK LIST: ");
+					for each (var block:Block in blockList) {
+						trace("    " + block.op);
+					}
+					*/
 					//Scratch.app.incrementPoints(b.pointValue);
 					//b.changePointArgToLabel();
 				});

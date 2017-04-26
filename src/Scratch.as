@@ -36,6 +36,7 @@ import flash.net.FileFilter;
 import flash.net.FileReference;
 import flash.net.FileReferenceList;
 import flash.net.LocalConnection;
+import flash.net.SharedObject;
 import flash.net.URLLoader;
 import flash.net.URLLoaderDataFormat;
 import flash.net.URLRequest;
@@ -334,7 +335,7 @@ public class Scratch extends Sprite {
 		// These steps below are to pass the data as DisplayObject
 		// These steps below are specific to this example.
 		var data:ByteArray = fileReference["data"];
-		var lol:Object = JSON.parse(data.readUTF());
+		var lol:Object = util.JSON.parse(data.readUTF());
 		Specs.pointDict = lol;
 		trace(lol);
 	}
@@ -371,14 +372,14 @@ public class Scratch extends Sprite {
 			//addChild(loader);
 
 			//var data:ByteArray = fileReference["data"];
-			var lol:Object = JSON.parse(e.target.data);
+			var lol:Object = util.JSON.parse(e.target.data);
 			Specs.pointDict = lol;
 			trace(lol);
 		}*/
 
 		//load point config
 		/*
-		 var jsonString = JSON.stringify(Specs.pointDict);
+		 var jsonString = util.JSON.stringify(Specs.pointDict);
 		trace("jsonstring: " + jsonString);
 		var f:FileReference = new FileReference();
 		f.save(jsonString, "lol.txt");
@@ -435,6 +436,11 @@ public class Scratch extends Sprite {
 		//Analyze.countMissingAssets();
 
 		getIds();
+
+		// load relevant variables for hinting from Dashboard
+		var h:Hints = new Hints();
+		this.addChild(h);
+		h.getRulesFile();
 	}
 
 	private function getIds():void {
@@ -473,6 +479,7 @@ public class Scratch extends Sprite {
 	private function postJson(proj:*, sid:String, aid:String):void {
 		// Sending JSON project via HTTP POST
 //		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assignments/"+aid);
+		/*
 		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assignments/"+aid);
 
 		var loader:URLLoader = new URLLoader();
@@ -493,11 +500,24 @@ public class Scratch extends Sprite {
 
 		loader.addEventListener(Event.COMPLETE, onPostComplete);
 		loader.addEventListener(IOErrorEvent.IO_ERROR, onPostError);
-
 		trace("Posting assignment: " + request)
 
 		// send the request
 		loader.load(request);
+		*/
+
+		var now:Date = new Date();
+		var time:String = now.toString();
+		var output_pathname:String = time + ".json";
+		output_pathname = output_pathname.replace(/\s+/g, "-");
+		output_pathname = output_pathname.replace(/:/g, "-");
+		var jsonString:String = util.JSON.stringify(proj);
+		//var fileRef:FileReference = new FileReference();
+		//fileRef.save(jsonString, output_pathname);
+
+		var so:SharedObject = SharedObject.getLocal(output_pathname, "/");
+		so.data.json = jsonString;
+		so.flush();
 	}
 
 	private function getAssessmentResults(sid:String, aid:String):void {
@@ -1136,7 +1156,7 @@ public class Scratch extends Sprite {
 				//addChild(loader);
 
 				//var data:ByteArray = fileReference["data"];
-				var lol:Object = JSON.parse(e.target.data);
+				var lol:Object = util.JSON.parse(e.target.data);
 				Specs.pointDict = lol;
 				trace(lol);
 			}*/
@@ -1145,7 +1165,7 @@ public class Scratch extends Sprite {
 
 			function configFileLoaded(e:Event):void {
 				trace("lolfunc called");
-				var lol:Object = JSON.parse(e.target.data);
+				var lol:Object = util.JSON.parse(e.target.data);
 				Specs.pointDict = lol;
 				trace("json: " + lol);
 			}
@@ -1165,7 +1185,7 @@ public class Scratch extends Sprite {
 			}
 
 			function saveConfigFile():void {
-				var jsonString = JSON.stringify(Specs.pointDict);
+				var jsonString = util.JSON.stringify(Specs.pointDict);
 				trace("jsonstring: " + jsonString);
 				var f:FileReference = new FileReference();
 				f.save(jsonString, "0points_config.json");
@@ -1654,6 +1674,11 @@ public class Scratch extends Sprite {
 			// Ignore the exception that happens when you call browse() with the file browser open
 			fileList.browse(filters);
 		} catch(e:*) {}
+	}
+
+	// for hinting
+	public function getScriptsPart():ScriptsPart {
+		return this.scriptsPart;
 	}
 
 	// -----------------------------

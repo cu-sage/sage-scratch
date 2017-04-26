@@ -56,6 +56,7 @@ public class BlockIO {
 		// Return the stack represented by an array structure.
 		var topBlock:Block, lastBlock:Block;
 		var idx:int = 0;
+		if (blockIds != null && blockIds.length == 0) blockIds = null;
 		for each (var cmd:Array in cmdList) {
 			// for cloned (duplicated) blocks: remove parent blockId(s) from cmd
 			if (blockIds != null) {
@@ -66,7 +67,8 @@ public class BlockIO {
 				idx++;
 			}
 			var b:Block = null;
-			try { b = arrayToBlock(cmd, '', forStage) } catch (e:*) { b = new Block('undefined') }
+			//try { b = arrayToBlock(cmd, '', forStage) } catch (e:*) { b = new Block('undefined') }
+			b = arrayToBlock(cmd, '', forStage);
 			if (topBlock == null) topBlock = b;
 			if (lastBlock != null) lastBlock.insertBlock(b);
 			lastBlock = b;
@@ -124,9 +126,10 @@ public class BlockIO {
 			var label:String = spec[0];
 			if(forStage && spec[3] == 'whenClicked') label = 'when Stage clicked';
 			//b = new Block(label, spec[1], Specs.blockColor(spec[2]), spec[3]);
-			b = new Block(label, spec[1], getModeBlockColor(label, Specs.blockColor(spec[2])), spec[3], null, false, blockId);
+			var color:int = getModeBlockColor(label, Specs.blockColor(spec[2]));
+			b = new Block(label, spec[1], color, spec[3]);
+			//b = new Block(label, spec[1], getModeBlockColor(label, Specs.blockColor(spec[2])), spec[3]);
 		}
-
 		var args:Array = argsForCmd(cmd, b.rightToLeft);
 		var substacks:Array = substacksForCmd(cmd);
 		var hadSpriteRef:Boolean;

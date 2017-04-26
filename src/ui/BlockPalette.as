@@ -25,17 +25,23 @@
 // creates a copy of that block when it is dragged out of the palette.
 
 package ui {
-	import flash.geom.*;
+
+import blocks.blockList;
+import blocks.latestBlock;
+
 	import blocks.Block;
 	import interpreter.Interpreter;
 	import uiwidgets.*;
 	import scratch.ScratchObj;
 	import scratch.ScratchComment;
-	
+
+import flash.events.Event;
+
 
 public class BlockPalette extends ScrollFrameContents {
 
 	public const isBlockPalette:Boolean = true;
+	public var hints:Hints = new Hints();
 
 	public function BlockPalette():void {
 		super();
@@ -55,7 +61,6 @@ public class BlockPalette extends ScrollFrameContents {
 
 	public function handleDrop(obj:*):Boolean {
 
-
 		trace("blockpalette.handledrop called");
 
 		// Delete blocks and stacks dropped onto the palette.
@@ -74,6 +79,40 @@ public class BlockPalette extends ScrollFrameContents {
 			if (Scratch.app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
 				obj.allBlocksDo(function(b:Block):void {
 					trace ("dragged from scripts pane to palette: " + b.spec);
+					// update latest block for hinting purposes (to account for block(s) being removed)
+					if (blockList.length > 0) {
+						blockList.pop();
+						if (blockList.length > 0) {
+							// delete all children from blockList as well
+							var current:Block = b;
+							while (current.nextBlock != null) {
+								for (var i:int=0; i < blockList.length; i++) {
+									if (blockList[i] == current) {
+										blockList.splice(i, 1);
+									}
+								}
+								current = current.nextBlock;
+							}
+
+							latestBlock = blockList[blockList.length - 1];
+							trace("LATEST BLOCK: " + latestBlock.op);
+							var blocksToPrint:Array = [];
+							for each (var block:Block in blockList) {
+								blocksToPrint.push(block.op);
+							}
+							trace("BLOCK LIST:    " + String(blocksToPrint));
+
+						}
+						else { // no more blocks present to use for hinting
+							latestBlock = null;
+						}
+						var hintRules:Array = hints.getRules();
+						var hintBlocks:Array = hints.getRuleBlocks();
+						hints.log('rules from BlockPalette: ' + hintBlocks);
+						if (hintBlocks.indexOf(this.op) >= 0) {
+							hints.log("HINTING OPPORTUNITY FOUND!!!!");
+						}
+					}
 					//sm4241 - parsons logic
 					//Scratch.app.parsonsLogic();
 					//Scratch.app.decrementPoints(b.pointValue);

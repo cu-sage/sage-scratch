@@ -197,4 +197,8 @@ public class ScriptsPart extends UIPart {
 		addChild(xyDisplay);
 	}
 
+	public function getPaletteSelector():PaletteSelector {
+		return this.selector;
+	}
+
 }}
