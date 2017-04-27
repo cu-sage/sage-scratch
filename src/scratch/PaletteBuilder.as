@@ -221,6 +221,7 @@ public class PaletteBuilder {
 	private function addBlocksForCategory(category:int, catColor:int):void {
 		var cmdCount:int;
 		var targetObj:ScratchObj = app.viewedObj();
+		paletteBlocks = new Array();
 		for each (var spec:Array in Specs.commands) {
 			if ((spec.length > 3) && (spec[2] == category)) {
 				var blockColor:int = (app.interp.isImplemented(spec[3])) ? catColor : 0x505050;

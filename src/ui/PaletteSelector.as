@@ -160,7 +160,9 @@ public class PaletteSelector extends Sprite {
 		// palette item to shake
 		var item:PaletteSelectorItem = getChildAt(id) as PaletteSelectorItem;
 		var catHint:Hints = new Hints();
-		catHint.initShake(item);
+		var shaker:Shaker = new Shaker(item);
+		//catHint.initShake(item);
+		shaker.initShake();
 		return item;
 	}
 

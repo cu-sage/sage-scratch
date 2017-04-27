@@ -130,11 +130,6 @@ public class Block extends Sprite {
 
 	// hinting
 	public var hints:Hints = new Hints();
-	// 5-second delay before category hint is issued (if available)
-	private var categoryTimer:Timer = new Timer(5000);
-	// 5-second delay before block hint is issued (if available)
-	private var blockTimer:Timer = new Timer(5000);
-	private static var blocksToSuggest:Array = [];
 
 	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false, id:String = null) {
 		trace("block constructor called ---------------------------------");
@@ -1032,19 +1027,13 @@ public class Block extends Sprite {
 		}
 		trace("BLOCK LIST:    " + String(blocksToPrint));
 
-		var hintRules:Array = hints.getRules();
-		var hintBlocks:Array = hints.getRuleBlocks();
+		//var hintRules:Array = hints.getRules();
+		//var hintBlocks:Array = hints.getRuleBlocks();
 
 		// see if a hint can be issued based on the current latest block
-		if (hintBlocks.indexOf(latestBlock.op) >= 0) {
-			// get blocks that should be suggested (as hints)
-			blocksToSuggest = hints.getRightCol(hintRules, this.op);
-			if (blocksToSuggest) {
-				// set timer and then call shake event
-				startCategoryTimer();
-			}
-		}
-
+		var latestHint:Hints = new Hints(latestBlock.op);
+		addChild(latestHint);
+		latestHint.checkHint();
 
 		if (isInPalette()) {
 			trace("block.objtograb is in palette true");
@@ -1063,61 +1052,6 @@ public class Block extends Sprite {
 			}
 		}
 		return this;
-	}
-
-	private function startCategoryTimer():void {
-		categoryTimer.addEventListener(TimerEvent.TIMER, afterCategoryTimer);
-		categoryTimer.start();
-	}
-
-	private function afterCategoryTimer(event:TimerEvent):void {
-		categoryTimer.removeEventListener(TimerEvent.TIMER, afterCategoryTimer);
-		// after 5 seconds have passed, issue hint
-		//if (blocksToSuggest.length > 0) {
-		for each (var opStr:String in blocksToSuggest) {
-			var currentCategory:int = Scratch.app.paletteBuilder.getCurrentCategory();
-			// get category of block to hint
-			//var suggBlockInfo:Array = BlockIO.specForCmd([blocksToSuggest[0]], " ");
-			var suggBlockInfo:Array = BlockIO.specForCmd([opStr], " ");
-			var suggCategory:int = suggBlockInfo[2];
-
-			// hint needs to be generated in a different palette category
-			if (currentCategory != suggCategory) {
-				var ps:PaletteSelector = Scratch.app.getScriptsPart().getPaletteSelector();
-				// shake category of suggested block
-				var catToShake:PaletteSelectorItem = ps.hintSelect(suggCategory);
-				// TODO: put event listener on particular category, not ps
-				//ps.addEventListener(MouseEvent.CLICK, startBlockTimer);
-				catToShake.addEventListener(MouseEvent.CLICK, startBlockTimer);
-			}
-		}
-	}
-
-	private function startBlockTimer(evt:MouseEvent):void {
-		blockTimer.addEventListener(TimerEvent.TIMER, afterBlockTimer);
-		blockTimer.start();
-	}
-
-	private function afterBlockTimer(event:TimerEvent):void {
-		blockTimer.removeEventListener(TimerEvent.TIMER, afterBlockTimer);
-		// after 5 seconds have passed, issue hint
-		shakeInCategory();
-	}
-
-	/* If hint has to be issued in a category different from the current one,
-	 *  wait until the user clicks on the appropriate category for the hint and then
-	 *  shake the relevant block. */
-	private function shakeInCategory() {
-		//if (blocksToSuggest.length > 0) { // should always be true
-		for each (var opStr:String in blocksToSuggest) {
-			//var opStr:String = blocksToSuggest[0];
-			var blockHint:Hints = new Hints();
-			var blockToShake:Block = Scratch.app.paletteBuilder.getBlockByOp(opStr);
-			if (blockToShake) {
-				blockHint.log('toShake: ' + blockToShake.op);
-				blockHint.initShake(blockToShake);
-			}
-		}
 	}
 
 	/* Events */
@@ -1279,5 +1213,15 @@ public class Block extends Sprite {
 	public function getBlockId() {
 		return this.id;
 	}
+
+	// issue hint by shaking block
+	/*
+	public function hintSelect(opStr:String):void {
+		var pb:PaletteBuilder = Scratch.app.paletteBuilder;
+		var blockToShake:Block = pb.getBlockByOp(opStr);
+		var blockHint:Hints = new Hints();
+		blockHint.initShake(blockToShake);
+	}
+	*/
 
 }}
