@@ -1027,12 +1027,10 @@ public class Block extends Sprite {
 		}
 		trace("BLOCK LIST:    " + String(blocksToPrint));
 
-		//var hintRules:Array = hints.getRules();
-		//var hintBlocks:Array = hints.getRuleBlocks();
-
 		// see if a hint can be issued based on the current latest block
 		var latestHint:Hints = new Hints(latestBlock.op);
 		addChild(latestHint);
+		hints.log('hinting from Block 1')
 		latestHint.checkHint();
 
 		if (isInPalette()) {
@@ -1080,6 +1078,12 @@ public class Block extends Sprite {
 				trace("    " + block.op);
 			}
 			trace("LATEST BLOCK: " + latestBlock.op);
+
+			// see if a hint can be issued based on the current latest block
+			var latestHint:Hints = new Hints(latestBlock.op);
+			addChild(latestHint);
+			hints.log('hinting from Block 2')
+			latestHint.checkHint();
 		}
 		if (arg && arg.isEditable && (arg.parent == this)) {
 			arg.startEditing();

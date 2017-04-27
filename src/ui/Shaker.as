@@ -13,18 +13,20 @@ import flash.utils.getQualifiedClassName;
 
 public class Shaker {
 
+	private var sprite:Sprite;
 	private var toShake:Sprite;
 	private var shakerPos:Point;
 	private var dir:int = 1;
+	private var shakeTimer:Timer;
 
 	public function Shaker(s:Sprite) {
-		toShake = s;
+		sprite = s;
 	}
 
 	public function initShake() {
-		var s:Sprite = this.toShake;
+		var s:Sprite = this.sprite;
+		shakeTimer = new Timer(150, 10);
 		log('s pos: (' + s.x + ',' + s.y + ')')
-		var shakeTimer:Timer = new Timer(150, 10);
 		shakeTimer.addEventListener(TimerEvent.TIMER, shake);
 		shakeTimer.start();
 		log('set timer...')
@@ -45,9 +47,11 @@ public class Shaker {
 		this.toShake.y = this.shakerPos.y + 5.25*dir;
 	}
 
-	private function resetPos(e:TimerEvent) {
+	public function resetPos(e:TimerEvent) {
 		this.toShake.x = this.shakerPos.x;
 		this.toShake.y = this.shakerPos.y;
+		shakeTimer.removeEventListener(TimerEvent.TIMER, shake);
+		shakeTimer.removeEventListener(TimerEvent.TIMER_COMPLETE, resetPos);
 	}
 
 	public function log(msg:String, caller:Object = null):void {

@@ -95,16 +95,23 @@ public class BlockPalette extends ScrollFrameContents {
 							}
 
 							latestBlock = blockList[blockList.length - 1];
+
 							trace("LATEST BLOCK: " + latestBlock.op);
 							var blocksToPrint:Array = [];
 							for each (var block:Block in blockList) {
 								blocksToPrint.push(block.op);
 							}
 							trace("BLOCK LIST:    " + String(blocksToPrint));
-
 						}
 						else { // no more blocks present to use for hinting
 							latestBlock = null;
+						}
+						if (latestBlock) {
+							// see if a hint can be issued based on the current latest block
+							var latestHint:Hints = new Hints(latestBlock.op);
+							addChild(latestHint);
+							hints.log('hinting from BlockPalette')
+							latestHint.checkHint();
 						}
 						var hintRules:Array = hints.getRules();
 						var hintBlocks:Array = hints.getRuleBlocks();
