@@ -1081,7 +1081,7 @@ public class Block extends Sprite {
 
 			// see if a hint can be issued based on the current latest block
 			var latestHint:Hints = new Hints(latestBlock.op);
-			addChild(latestHint);
+			//addChild(latestHint);
 			hints.log('hinting from Block 2')
 			latestHint.checkHint();
 		}
