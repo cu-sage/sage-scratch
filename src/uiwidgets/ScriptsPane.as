@@ -385,22 +385,22 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		var b:Block = obj as Block;
 
 		if (b) {
+			// update latest block to account for new block added
+			b.updateLatest(b.bottomBlock());
+			// see if a hint can be issued based on the current latest block
+			/*
+			 var latestHint:Hints = new Hints(latestBlock.op);
+			 addChild(latestHint);
+			 //hints.log('hinting from Block 1')
+			 latestHint.checkHint();
+			 */
+
 			// yc2937 if block was dragged from palette to scripts pane, increment points
 			if (app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_PALETTE) {
 
 				b.allBlocksDo(function (b:Block):void {
 					trace("dragged from palette to scripts pane: " + b.spec);
-					// update latest block to account for new block added
-					/*
-                    latestBlock = b.op;
-					trace('index: ' + blockList.indexOf(b));
-					if (blockList.indexOf(b) < 0) blockList.push(b);
-					trace("LATEST BLOCK: " + latestBlock);
-					trace("BLOCK LIST: ");
-					for each (var block:Block in blockList) {
-						trace("    " + block.op);
-					}
-					*/
+
 					//Scratch.app.incrementPoints(b.pointValue);
 					//b.changePointArgToLabel();
 				});

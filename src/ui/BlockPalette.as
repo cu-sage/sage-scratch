@@ -26,9 +26,6 @@
 
 package ui {
 
-import blocks.blockList;
-import blocks.latestBlock;
-
 	import blocks.Block;
 	import interpreter.Interpreter;
 	import uiwidgets.*;
@@ -79,47 +76,9 @@ public class BlockPalette extends ScrollFrameContents {
 			if (Scratch.app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
 				obj.allBlocksDo(function(b:Block):void {
 					trace ("dragged from scripts pane to palette: " + b.spec);
-					// update latest block for hinting purposes (to account for block(s) being removed)
-					if (blockList.length > 0) {
-						blockList.pop();
-						if (blockList.length > 0) {
-							// delete all children from blockList as well
-							var current:Block = b;
-							while (current.nextBlock != null) {
-								for (var i:int=0; i < blockList.length; i++) {
-									if (blockList[i] == current) {
-										blockList.splice(i, 1);
-									}
-								}
-								current = current.nextBlock;
-							}
 
-							latestBlock = blockList[blockList.length - 1];
+					latestHint(b);
 
-							trace("LATEST BLOCK: " + latestBlock.op);
-							var blocksToPrint:Array = [];
-							for each (var block:Block in blockList) {
-								blocksToPrint.push(block.op);
-							}
-							trace("BLOCK LIST:    " + String(blocksToPrint));
-						}
-						else { // no more blocks present to use for hinting
-							latestBlock = null;
-						}
-						if (latestBlock) {
-							// see if a hint can be issued based on the current latest block
-							var latestHint:Hints = new Hints(latestBlock.op);
-							addChild(latestHint);
-							hints.log('hinting from BlockPalette')
-							latestHint.checkHint();
-						}
-						var hintRules:Array = hints.getRules();
-						var hintBlocks:Array = hints.getRuleBlocks();
-						hints.log('rules from BlockPalette: ' + hintBlocks);
-						if (hintBlocks.indexOf(this.op) >= 0) {
-							hints.log("HINTING OPPORTUNITY FOUND!!!!");
-						}
-					}
 					//sm4241 - parsons logic
 					//Scratch.app.parsonsLogic();
 					//Scratch.app.decrementPoints(b.pointValue);
@@ -130,7 +89,7 @@ public class BlockPalette extends ScrollFrameContents {
 
 			Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 
-			return b.deleteStack();;
+			return b.deleteStack();
 
 		}
 		trace("blockpalette.handledrop resetting flag");
@@ -142,6 +101,41 @@ public class BlockPalette extends ScrollFrameContents {
 
 	public static function strings():Array {
 		return ['Cannot Delete', 'To delete a block definition, first remove all uses of the block.'];
+	}
+
+	private function updateLatestBlock(b:Block):Block {
+		// update latest block for hinting purposes (to account for block(s) being removed)
+		var latestList:Array = b.getLatestList();
+		if (latestList.length > 0) {
+			if (latestList.indexOf(b) >= 0) {
+				latestList.splice(latestList.indexOf(b), 1);
+			}
+			hints.log('updating from delete')
+			b.updateLatest(latestList[latestList.length - 1], false, true);
+		} else { // no more blocks present to use for hinting
+			b.updateLatest(null, false, true);
+		}
+		b.printLatest();
+		var latestBlock:Block = b.getLatestBlock();
+		return latestBlock;
+	}
+
+	private function latestHint(b:Block):void {
+		var latestBlock:Block = updateLatestBlock(b);
+		if (latestBlock) {
+			// see if a hint can be issued based on the current latest block
+			var latestHint:Hints = new Hints(latestBlock.op);
+			addChild(latestHint);
+			//hints.log('hinting from BlockPalette')
+			latestHint.checkHint();
+		}
+		//var hintRules:Array = hints.getRules();
+		var hintBlocks:Array = hints.getRuleBlocks();
+		/*
+		 if (hintBlocks.indexOf(this.op) >= 0) {
+		 hints.log("HINTING OPPORTUNITY FOUND!!!!");
+		 }
+		 */
 	}
 
 }}

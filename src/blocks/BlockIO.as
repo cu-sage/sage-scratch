@@ -25,7 +25,9 @@
 // is independent of the internal representation and is easy to convert to/from JSON.
 
 package blocks {
-	import scratch.*;
+import mx.utils.UIDUtil;
+
+import scratch.*;
 	import util.*;
 	import translation.*;
 	import mx.utils.UIDUtil;

@@ -43,8 +43,8 @@ public class Shaker {
 		dir *= -1;
 		//this.toShake.x = this.shakerPos.x + 1.25*dir;
 		//this.toShake.y = this.shakerPos.y + 1.25*dir;
-		this.toShake.x = this.shakerPos.x + 5.25*dir;
-		this.toShake.y = this.shakerPos.y + 5.25*dir;
+		this.toShake.x = this.shakerPos.x + 2*dir;
+		this.toShake.y = this.shakerPos.y + 2*dir;
 	}
 
 	public function resetPos(e:TimerEvent) {

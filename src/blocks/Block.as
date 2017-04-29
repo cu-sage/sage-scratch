@@ -129,6 +129,8 @@ public class Block extends Sprite {
 	private var id:String;
 
 	// hinting
+	public static var latestBlock:Block;
+	public static var latestBlockList:Array = [];
 	public var hints:Hints = new Hints();
 
 	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false, id:String = null) {
@@ -142,7 +144,10 @@ public class Block extends Sprite {
 		this.type = type;
 		this.op = op;
 		this.pointValue = Specs.getPointsForSpec(spec);
-		if (id == null) this.id = UIDUtil.createUID();
+		if (id == null) { // ID needs to be set
+			this.id = UIDUtil.createUID();
+			Scratch.app.updateIdCt();
+		}
 		else this.id = id;
 
 		if ((Specs.CALL == op) ||
@@ -1013,26 +1018,6 @@ public class Block extends Sprite {
 		trace("block.objtograb called");
 		//if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
 
-		// update latest block for hinting purposes
-		latestBlock = bottomBlock();
-
-		trace('index: ' + blockList.indexOf(this));
-		if (!(this.parent is Block) && blockList.indexOf(this) < 0) {
-			blockList.push(this);
-		}
-		trace("LATEST BLOCK: " + latestBlock.op);
-		var blocksToPrint:Array = [];
-		for each (var block:Block in blockList) {
-			blocksToPrint.push(block.op);
-		}
-		trace("BLOCK LIST:    " + String(blocksToPrint));
-
-		// see if a hint can be issued based on the current latest block
-		var latestHint:Hints = new Hints(latestBlock.op);
-		addChild(latestHint);
-		hints.log('hinting from Block 1')
-		latestHint.checkHint();
-
 		if (isInPalette()) {
 			trace("block.objtograb is in palette true");
 			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_PALETTE;
@@ -1041,6 +1026,7 @@ public class Block extends Sprite {
 			trace("block.objtograb is inscriptsname true");
 			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_SCRIPTS_PANE;
 		}
+
 		if (isEmbeddedParameter() || isInPalette())
 		{
 			if (!Scratch.app.getPaletteBuilder().blockIncluded(this) && Scratch.app.interp.sagePlayMode)
@@ -1070,19 +1056,13 @@ public class Block extends Sprite {
 		// update latest block to block with args changed
 		if (arg && arg.parent is Block) {
 			var b:Block = Block(arg.parent);
-			latestBlock = b;
-			trace('index: ' + blockList.indexOf(b));
-			if (blockList.indexOf(b) < 0) blockList.push(b);
-			trace("BLOCK LIST: ");
-			for each (var block:Block in blockList) {
-				trace("    " + block.op);
-			}
-			trace("LATEST BLOCK: " + latestBlock.op);
+			updateLatest(b, true);
+			hints.log('updating from editArg')
 
 			// see if a hint can be issued based on the current latest block
 			var latestHint:Hints = new Hints(latestBlock.op);
 			//addChild(latestHint);
-			hints.log('hinting from Block 2')
+			//hints.log('hinting from Block 2')
 			latestHint.checkHint();
 		}
 		if (arg && arg.isEditable && (arg.parent == this)) {
@@ -1214,8 +1194,44 @@ public class Block extends Sprite {
 	}
 
 	// Allison Sawyer
-	public function getBlockId() {
+	public function getBlockId():String {
 		return this.id;
+	}
+
+	public function getLatestBlock():Block {
+		return latestBlock;
+	}
+
+	public function getLatestList():Array {
+		return latestBlockList;
+	}
+
+	// update latest block manipulated by user (for hinting purposes)
+	public function updateLatest(newLatest:Block, inScriptsPane = false, deleting = false):void {
+		latestBlock = newLatest;
+		if (deleting) return; // if deleting, don't add anything to latestBlockList
+		if (inScriptsPane) { // delete previous occurrence from list before adding to end
+			var idx:int = latestBlockList.indexOf(newLatest);
+			latestBlockList.splice(idx, 1);
+		}
+		if (newLatest && latestBlockList.indexOf(newLatest) < 0) {
+			latestBlockList.push(newLatest);
+		} else if (newLatest == null) {
+			latestBlockList = [];
+		}
+		printLatest();
+	}
+
+	public function printLatest() {
+		if (latestBlock) {
+			trace("LATEST BLOCK: " + latestBlock.op);
+		} else trace("LATEST BLOCK: null");
+		var blocksToPrint:Array = [];
+		for each (var block:Block in latestBlockList) {
+			blocksToPrint.push(block.op);
+		}
+		trace("BLOCK LIST:    " + String(blocksToPrint));
+		trace("LEN:           " + String(blocksToPrint.length));
 	}
 
 	// issue hint by shaking block

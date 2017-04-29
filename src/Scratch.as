@@ -122,6 +122,9 @@ public class Scratch extends Sprite {
 	public const tipsBarClosedWidth:int = 17;
 
 
+	// Block IDs
+	public var blockIdCt = 0;
+
 	// Points
 	var totalMoves:int=0;
     var blocksCount:int=0;
@@ -1674,6 +1677,10 @@ public class Scratch extends Sprite {
 			// Ignore the exception that happens when you call browse() with the file browser open
 			fileList.browse(filters);
 		} catch(e:*) {}
+	}
+
+	public function updateIdCt() {
+		this.blockIdCt++;
 	}
 
 	// for hinting

@@ -30,7 +30,6 @@ package ui {
 import blocks.Block;
 import blocks.Block;
 import blocks.BlockIO;
-import blocks.latestBlock;
 
 import flash.display.DisplayObject;
 import flash.display.Sprite;
@@ -235,9 +234,9 @@ public class Hints extends ScrollFrameContents {
 			blockTimer.reset();
 			blockTimer.start();
 			//if (evt) {
-			Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
-			Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
-			Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
+			//Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
+			//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
+			//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
 			if (catToShake && catToShake.hasEventListener(MouseEvent.CLICK)) {
 				catToShake.removeEventListener(MouseEvent.CLICK, startBlockTimer);
 			}
@@ -251,9 +250,9 @@ public class Hints extends ScrollFrameContents {
 			blockTimer.reset();
 			blockTimer.start();
 			//if (evt) {
-			Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
-			Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
-			Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
+			//Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
+			//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
+			//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
 			if (catToShake && catToShake.hasEventListener(MouseEvent.CLICK)) {
 				catToShake.removeEventListener(MouseEvent.CLICK, startBlockTimer);
 			}
