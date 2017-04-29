@@ -65,7 +65,7 @@ public class Hints extends ScrollFrameContents {
 	// 5-second delay before category hint is issued (if available)
 	private static var categoryTimer:Timer = new Timer(5000);
 	// 5-second delay before block hint is issued (if available)
-	private static var blockTimer:Timer = new Timer(5000);;
+	private static var blockTimer:Timer = new Timer(5000);
 	private var catPos:Point = null;
 	private var blockPos:Point = null;
 
@@ -169,7 +169,6 @@ public class Hints extends ScrollFrameContents {
 
 	private function stopHinting(evt:MouseEvent) {
 		if (categoryTimer && categoryTimer.hasEventListener(TimerEvent.TIMER)) {
-			log('STOPPING hinting for cat')
 			categoryTimer.stop();
 			categoryTimer.reset();
 			categoryTimer.removeEventListener(TimerEvent.TIMER, afterCategoryTimer);
@@ -181,7 +180,6 @@ public class Hints extends ScrollFrameContents {
 			startCategoryTimer();
 		}
 		if (blockTimer && blockTimer.hasEventListener(TimerEvent.TIMER)) {
-			log('STOPPING hinting for block')
 			blockTimer.stop();
 			blockTimer.removeEventListener(TimerEvent.TIMER, afterBlockTimer);
 			if (blockToShake && blockPos) {
@@ -189,6 +187,7 @@ public class Hints extends ScrollFrameContents {
 				blockToShake.x = blockPos.x;
 				blockToShake.y = blockPos.y;
 			}
+			//startBlockTimerNoEvent();
 			startBlockTimer(null);
 		}
 	}
@@ -201,9 +200,9 @@ public class Hints extends ScrollFrameContents {
 	}
 
 	private function shakeCategory():void {
-		Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
-		Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
-		Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
+		//Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
+		//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
+		//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
 		//if (blocksToSuggest.length > 0) {
 		for each (var opStr:String in blocksToSuggest) {
 			var currentCategory:int = Scratch.app.paletteBuilder.getCurrentCategory();
@@ -222,7 +221,9 @@ public class Hints extends ScrollFrameContents {
 			}
 			// user is already in the correct category and just needs a hint on which block to use
 			else {
-				startBlockTimerNoEvent();
+				log('correct category')
+				//startBlockTimerNoEvent();
+				afterBlockTimer(null);
 			}
 		}
 	}
@@ -231,31 +232,14 @@ public class Hints extends ScrollFrameContents {
 		if (!blockTimer.hasEventListener(TimerEvent.TIMER)) {
 			//blockTimer = new Timer(5000);
 			blockTimer.addEventListener(TimerEvent.TIMER, afterBlockTimer);
-			blockTimer.reset();
-			blockTimer.start();
-			//if (evt) {
-			//Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
-			//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
-			//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
-			if (catToShake && catToShake.hasEventListener(MouseEvent.CLICK)) {
-				catToShake.removeEventListener(MouseEvent.CLICK, startBlockTimer);
-			}
 		}
-	}
-
-	private function startBlockTimerNoEvent():void {
-		if (!blockTimer.hasEventListener(TimerEvent.TIMER)) {
-			//blockTimer = new Timer(5000);
-			blockTimer.addEventListener(TimerEvent.TIMER, afterBlockTimer);
-			blockTimer.reset();
-			blockTimer.start();
-			//if (evt) {
-			//Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
-			//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
-			//Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
-			if (catToShake && catToShake.hasEventListener(MouseEvent.CLICK)) {
-				catToShake.removeEventListener(MouseEvent.CLICK, startBlockTimer);
-			}
+		blockTimer.reset();
+		blockTimer.start();
+		Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
+		Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
+		Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
+		if (catToShake && catToShake.hasEventListener(MouseEvent.CLICK)) {
+			catToShake.removeEventListener(MouseEvent.CLICK, startBlockTimer);
 		}
 	}
 
@@ -272,9 +256,9 @@ public class Hints extends ScrollFrameContents {
 	 *  wait until the user clicks on the appropriate category for the hint and then
 	 *  shake the relevant block. */
 	private function shakeBlock() {
-		Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
-		Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
-		Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
+		if (!Scratch.app.stage.hasEventListener(MouseEvent.CLICK)) Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopHinting);
+		if (!Scratch.app.stage.hasEventListener((MouseEvent.MOUSE_DOWN))) Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopHinting);
+		if (!Scratch.app.stage.hasEventListener((MouseEvent.MOUSE_UP))) Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopHinting);
 		log('blocksToSuggest: ' + blocksToSuggest);
 		for each (var opStr:String in blocksToSuggest) {
 			blockToShake = pb.getBlockByOp(opStr);

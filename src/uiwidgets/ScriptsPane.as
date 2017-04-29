@@ -386,14 +386,12 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 
 		if (b) {
 			// update latest block to account for new block added
-			b.updateLatest(b.bottomBlock());
+			var latestBlock:Block = b.updateLatest(b.bottomBlock());
 			// see if a hint can be issued based on the current latest block
-			/*
-			 var latestHint:Hints = new Hints(latestBlock.op);
-			 addChild(latestHint);
-			 //hints.log('hinting from Block 1')
-			 latestHint.checkHint();
-			 */
+			var latestHint:Hints = new Hints(latestBlock.op);
+			addChild(latestHint);
+			//hints.log('hinting from Block 1')
+			latestHint.checkHint();
 
 			// yc2937 if block was dragged from palette to scripts pane, increment points
 			if (app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_PALETTE) {

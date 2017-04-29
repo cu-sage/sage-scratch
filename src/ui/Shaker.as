@@ -5,6 +5,8 @@ package ui {
 import blocks.Block;
 
 import flash.display.Sprite;
+import flash.events.Event;
+import flash.events.MouseEvent;
 import flash.events.TimerEvent;
 import flash.geom.Point;
 import flash.utils.Timer;
@@ -26,13 +28,16 @@ public class Shaker {
 	public function initShake() {
 		var s:Sprite = this.sprite;
 		shakeTimer = new Timer(150, 10);
-		log('s pos: (' + s.x + ',' + s.y + ')')
+		//log('s pos: (' + s.x + ',' + s.y + ')')
 		shakeTimer.addEventListener(TimerEvent.TIMER, shake);
 		shakeTimer.start();
 		log('set timer...')
 		if (s is Block) log('id: ' + String((s as Block).getBlockId()))
 
 		this.toShake = s;
+		// stop shaking if user clicks on hinted block/category
+		this.toShake.addEventListener(MouseEvent.CLICK, resetPos);
+		this.toShake.addEventListener(MouseEvent.MOUSE_DOWN, resetPos);
 		this.shakerPos = new Point(this.toShake.x, this.toShake.y);
 
 		// reset to original position
@@ -47,7 +52,7 @@ public class Shaker {
 		this.toShake.y = this.shakerPos.y + 2*dir;
 	}
 
-	public function resetPos(e:TimerEvent) {
+	public function resetPos(e:Event) {
 		this.toShake.x = this.shakerPos.x;
 		this.toShake.y = this.shakerPos.y;
 		shakeTimer.removeEventListener(TimerEvent.TIMER, shake);

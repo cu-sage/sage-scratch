@@ -110,7 +110,6 @@ public class BlockPalette extends ScrollFrameContents {
 			if (latestList.indexOf(b) >= 0) {
 				latestList.splice(latestList.indexOf(b), 1);
 			}
-			hints.log('updating from delete')
 			b.updateLatest(latestList[latestList.length - 1], false, true);
 		} else { // no more blocks present to use for hinting
 			b.updateLatest(null, false, true);

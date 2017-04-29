@@ -1057,7 +1057,6 @@ public class Block extends Sprite {
 		if (arg && arg.parent is Block) {
 			var b:Block = Block(arg.parent);
 			updateLatest(b, true);
-			hints.log('updating from editArg')
 
 			// see if a hint can be issued based on the current latest block
 			var latestHint:Hints = new Hints(latestBlock.op);
@@ -1207,9 +1206,9 @@ public class Block extends Sprite {
 	}
 
 	// update latest block manipulated by user (for hinting purposes)
-	public function updateLatest(newLatest:Block, inScriptsPane = false, deleting = false):void {
+	public function updateLatest(newLatest:Block, inScriptsPane = false, deleting = false):Block {
 		latestBlock = newLatest;
-		if (deleting) return; // if deleting, don't add anything to latestBlockList
+		if (deleting) return latestBlock; // if deleting, don't add anything to latestBlockList
 		if (inScriptsPane) { // delete previous occurrence from list before adding to end
 			var idx:int = latestBlockList.indexOf(newLatest);
 			latestBlockList.splice(idx, 1);
@@ -1220,6 +1219,7 @@ public class Block extends Sprite {
 			latestBlockList = [];
 		}
 		printLatest();
+		return latestBlock;
 	}
 
 	public function printLatest() {
