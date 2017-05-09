@@ -388,9 +388,8 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 			// update latest block to account for new block added
 			var latestBlock:Block = b.updateLatest(b.bottomBlock());
 			// see if a hint can be issued based on the current latest block
-			var latestHint:Hints = new Hints(latestBlock.op);
+			var latestHint:Hints = new Hints(latestBlock);
 			addChild(latestHint);
-			//hints.log('hinting from Block 1')
 			latestHint.checkHint();
 
 			// yc2937 if block was dragged from palette to scripts pane, increment points

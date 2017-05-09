@@ -110,7 +110,11 @@ public class BlockPalette extends ScrollFrameContents {
 			if (latestList.indexOf(b) >= 0) {
 				latestList.splice(latestList.indexOf(b), 1);
 			}
-			b.updateLatest(latestList[latestList.length - 1], false, true);
+			if (latestList.length > 0) {
+				b.updateLatest(latestList[latestList.length - 1].bottomBlock(), false, true);
+			} else { // no more blocks present to use for hinting
+				b.updateLatest(null, false, true);
+			}
 		} else { // no more blocks present to use for hinting
 			b.updateLatest(null, false, true);
 		}
@@ -123,18 +127,10 @@ public class BlockPalette extends ScrollFrameContents {
 		var latestBlock:Block = updateLatestBlock(b);
 		if (latestBlock) {
 			// see if a hint can be issued based on the current latest block
-			var latestHint:Hints = new Hints(latestBlock.op);
+			var latestHint:Hints = new Hints(latestBlock);
 			addChild(latestHint);
-			//hints.log('hinting from BlockPalette')
 			latestHint.checkHint();
 		}
-		//var hintRules:Array = hints.getRules();
-		var hintBlocks:Array = hints.getRuleBlocks();
-		/*
-		 if (hintBlocks.indexOf(this.op) >= 0) {
-		 hints.log("HINTING OPPORTUNITY FOUND!!!!");
-		 }
-		 */
 	}
 
 }}

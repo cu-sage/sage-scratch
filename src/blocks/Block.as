@@ -167,8 +167,6 @@ public class Block extends Sprite {
 		setSpec(this.spec, defaultArgs, pointsEditable);
 
 		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
-
-		addChild(hints);
 	}
 
 	// SAGE refactor to simplify color change on include/exclude
@@ -1059,9 +1057,8 @@ public class Block extends Sprite {
 			updateLatest(b, true);
 
 			// see if a hint can be issued based on the current latest block
-			var latestHint:Hints = new Hints(latestBlock.op);
-			//addChild(latestHint);
-			//hints.log('hinting from Block 2')
+			var latestHint:Hints = new Hints(latestBlock);
+			addChild(latestHint);
 			latestHint.checkHint();
 		}
 		if (arg && arg.isEditable && (arg.parent == this)) {
