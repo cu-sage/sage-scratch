@@ -57,6 +57,8 @@ public class Shaker {
 
 	private function shake(e:TimerEvent):void {
 		dir *= -1;
+		// change the value multiplied by 'dir' to change amount shaking moves the object
+		// higher value --> more movement
 		this.toShake.x = this.shakerPos.x + 2*dir;
 		this.toShake.y = this.shakerPos.y + 2*dir;
 	}

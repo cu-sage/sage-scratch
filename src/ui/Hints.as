@@ -76,6 +76,7 @@ public class Hints extends ScrollFrameContents {
 		toHintOn = hintBlock;
 	}
 
+	/*
 	public function getRules():Array {
 		return rules;
 	}
@@ -83,9 +84,9 @@ public class Hints extends ScrollFrameContents {
 	public function getRuleBlocks():Array {
 		return leftCol;
 	}
+	*/
 
 	public function getRulesFile():void {
-		//var h:HintsFlashVar = new HintsFlashVar();
 		try {
 			rulesFile = root.loaderInfo.parameters.gspResults;
 			// open rules file
@@ -151,7 +152,7 @@ public class Hints extends ScrollFrameContents {
 		if (!Scratch.app.stage.hasEventListener((MouseEvent.MOUSE_DOWN))) Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopCatHinting);
 		if (!Scratch.app.stage.hasEventListener((MouseEvent.MOUSE_UP))) Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopCatHinting);
 
-		if (leftCol.indexOf(toHintOn.op) >= 0) {
+		if (leftCol && toHintOn && leftCol.indexOf(toHintOn.op) >= 0) {
 			// get blocks that should be suggested (as hints)
 			blocksToSuggest = getRightCol(rules, toHintOn.op);
 			if (blocksToSuggest) {
@@ -167,12 +168,12 @@ public class Hints extends ScrollFrameContents {
 		if (categoryTimer && categoryTimer.hasEventListener(TimerEvent.TIMER)) {
 			categoryTimer.removeEventListener(TimerEvent.TIMER, afterCategoryTimer);
 		}
+		categoryTimer.reset();
 		categoryTimer.addEventListener(TimerEvent.TIMER, afterCategoryTimer);
 		// reset hinting timers if user takes any action
-		Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopCatHinting);
-		Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopCatHinting);
-		Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopCatHinting);
-		//categoryTimer.reset();
+		if (!Scratch.app.stage.hasEventListener(MouseEvent.CLICK)) Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopCatHinting);
+		if (!Scratch.app.stage.hasEventListener(MouseEvent.MOUSE_DOWN)) Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopCatHinting);
+		if (!Scratch.app.stage.hasEventListener(MouseEvent.MOUSE_UP)) Scratch.app.stage.addEventListener(MouseEvent.MOUSE_UP, stopCatHinting);
 		categoryTimer.start();
 	}
 
@@ -246,6 +247,7 @@ public class Hints extends ScrollFrameContents {
 		if (blockTimer && blockTimer.hasEventListener(TimerEvent.TIMER)) {
 			blockTimer.removeEventListener(TimerEvent.TIMER, afterBlockTimer);
 		}
+		blockTimer.reset();
 		blockTimer.addEventListener(TimerEvent.TIMER, afterBlockTimer);
 		blockTimer.start();
 		if (catToShake && catToShake.hasEventListener(MouseEvent.CLICK)) {
@@ -273,7 +275,7 @@ public class Hints extends ScrollFrameContents {
 				shaker.initShake();
 			}
 		}
-		blocksToSuggest = [];
+		//blocksToSuggest = [];
 	}
 
 	public function log(msg:String, caller:Object = null):void {

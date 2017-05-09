@@ -69,6 +69,7 @@ public class BlockPalette extends ScrollFrameContents {
 		}
 		var b:Block = obj as Block;
 
+
 		//yc2937 if block was dragged from scripts pane to palette, decrement points
 
 		if (b) {
@@ -77,11 +78,12 @@ public class BlockPalette extends ScrollFrameContents {
 				obj.allBlocksDo(function(b:Block):void {
 					trace ("dragged from scripts pane to palette: " + b.spec);
 
-					latestHint(b);
-
 					//sm4241 - parsons logic
 					//Scratch.app.parsonsLogic();
 					//Scratch.app.decrementPoints(b.pointValue);
+
+					// update block to hint on after deleting removed blocks
+					latestHint(b);
 				});
 			}
 
@@ -90,9 +92,7 @@ public class BlockPalette extends ScrollFrameContents {
 			Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 
 			return b.deleteStack();
-
 		}
-		trace("blockpalette.handledrop resetting flag");
 
 		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
 
@@ -103,6 +103,7 @@ public class BlockPalette extends ScrollFrameContents {
 		return ['Cannot Delete', 'To delete a block definition, first remove all uses of the block.'];
 	}
 
+	// deletes blocks removed by user from latestBlockList
 	private function updateLatestBlock(b:Block):Block {
 		// update latest block for hinting purposes (to account for block(s) being removed)
 		var latestList:Array = b.getLatestList();
@@ -125,9 +126,10 @@ public class BlockPalette extends ScrollFrameContents {
 
 	private function latestHint(b:Block):void {
 		var latestBlock:Block = updateLatestBlock(b);
-		if (latestBlock) {
+		//if (latestBlock) {
 			// see if a hint can be issued based on the current latest block
-			var latestHint:Hints = new Hints(latestBlock);
+		var latestHint:Hints = new Hints(latestBlock);
+		if (latestHint) {
 			addChild(latestHint);
 			latestHint.checkHint();
 		}
