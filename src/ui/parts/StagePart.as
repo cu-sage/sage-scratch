@@ -155,6 +155,7 @@ public class StagePart extends UIPart {
 		fullscreenButton.visible = !app.isSmallPlayer;
 		pointsLabel.visible = !app.interp.sageDesignMode;
 		messageLabel.visible = !app.interp.sageDesignMode;
+		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
 		if (app.editMode) {
 			fullscreenButton.setOn(false);
 			drawStageSizeButton();
