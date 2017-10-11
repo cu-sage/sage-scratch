@@ -208,7 +208,7 @@ public class SensingPrims {
 		if (interp.activeThread.firstTime) {
 			var question:String = interp.arg(b, 0);
 			if ((obj is ScratchSprite) && (obj.visible)) {
-				ScratchSprite(obj).showBubble(question, 'talk', true);
+				ScratchSprite(obj).showBubble(question, 'talk', obj, true);
 				app.runtime.showAskPrompt('');
 			} else {
 				app.runtime.showAskPrompt(question);
@@ -223,6 +223,12 @@ public class SensingPrims {
 
 	private function primKeyPressed(b:Block):Boolean {
 		var key:String = interp.arg(b, 0);
+		if (key == 'any') {
+			for each (var k:Boolean in app.runtime.keyIsDown) {
+				if (k) return true;
+			}
+			return false;
+		}
 		var ch:int = key.charCodeAt(0);
 		if (ch > 127) return false;
 		if (key == 'left arrow') ch = 28;
@@ -236,7 +242,7 @@ public class SensingPrims {
 	private function primDistanceTo(b:Block):Number {
 		var s:ScratchSprite = interp.targetSprite();
 		var p:Point = mouseOrSpritePosition(interp.arg(b, 0));
-		if ((s == null) || (p == null)) return 0;
+		if ((s == null) || (p == null)) return 10000;
 		var dx:Number = p.x - s.scratchX;
 		var dy:Number = p.y - s.scratchY;
 		return Math.sqrt((dx * dx) + (dy * dy));

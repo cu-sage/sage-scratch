@@ -1,3 +1,11 @@
+/.idea/uiDesigner.xml
+/.idea/workspace.xml
+/.gradle/
+/.settings/
+/bin/
+/bin-debug/
+/bin-release/
+/build/
 .DS_Store
 .actionScriptProperties
 .flexLibProperties
@@ -10,3 +18,4 @@ bin-debug/
 bin-release/
 html-template/
 libs/RenderIn3D.swf
+local.properties

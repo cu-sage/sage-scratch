@@ -31,6 +31,15 @@ public class Resources {
 		}
 		return new resourceClass();
 	}
+	
+	public static function createDO(resourceName:String):DisplayObject {
+		var resourceClass:Class = Resources[resourceName];
+		if (!resourceClass) {
+			trace('missing resource: ', resourceName);
+			return new Bitmap(new BitmapData(10, 10, false, 0x808080));
+		}
+		return new resourceClass();
+	}
 
 	public static function makeLabel(s:String, fmt:TextFormat, x:int = 0, y:int = 0):TextField {
 		// Create a non-editable text field for use as a label.
@@ -79,11 +88,16 @@ public class Resources {
 	[Embed(source='cursors/growCursor.png')] private static const growCursor:Class;
 	[Embed(source='cursors/helpCursor.png')] private static const helpCursor:Class;
 	[Embed(source='cursors/shrinkCursor.png')] private static const shrinkCursor:Class;
+	[Embed(source='cursors/mouseCircle.png')] private static const mouseCircle:Class;
+	[Embed(source='cursors/segmentationBusyCursor.png')] private static const segmentationBusy:Class;
 	[Embed(source='UI/paint/zoomInCursor.png')] private static const zoomInCursor:Class;
+	
+	[Embed(source='cursors/videoCursor.svg')] private static const videoCursor:Class;
 
 	// Top bar
 	[Embed(source='UI/topbar/scratchlogoOff.png')] private static const scratchlogoOff:Class;
 	[Embed(source='UI/topbar/scratchlogoOn.png')] private static const scratchlogoOn:Class;
+	[Embed(source='UI/topbar/scratchx-logo.png')] private static const scratchxlogo:Class;
 	[Embed(source='UI/topbar/copyTool.png')] private static const copyTool:Class;
 	[Embed(source='UI/topbar/cutTool.png')] private static const cutTool:Class;
 	[Embed(source='UI/topbar/growTool.png')] private static const growTool:Class;
@@ -93,6 +107,7 @@ public class Resources {
 	[Embed(source='UI/topbar/myStuffOff.gif')] private static const myStuffOff:Class;
 	[Embed(source='UI/topbar/myStuffOn.gif')] private static const myStuffOn:Class;
 	[Embed(source='UI/topbar/projectPageFlip.png')] private static const projectPageFlip:Class;
+	[Embed(source='UI/topbar/openInScratch.png')] private static const openInScratch:Class;
 	[Embed(source='UI/topbar/shrinkTool.png')] private static const shrinkTool:Class;
 
 	// Buttons
@@ -128,10 +143,14 @@ public class Resources {
 	[Embed(source='UI/buttons/spriteInfoOn.png')] private static const spriteInfoOn:Class;
 	[Embed(source='UI/buttons/stopOff.png')] private static const stopOff:Class;
 	[Embed(source='UI/buttons/stopOn.png')] private static const stopOn:Class;
+	[Embed(source='UI/buttons/toggleOff.gif')] private static const toggleOff:Class;
+	[Embed(source='UI/buttons/toggleOn.gif')] private static const toggleOn:Class;
 	[Embed(source='UI/buttons/undoOff.png')] private static const undoOff:Class;
 	[Embed(source='UI/buttons/undoOn.png')] private static const undoOn:Class;
 	[Embed(source='UI/buttons/unlockedOff.png')] private static const unlockedOff:Class;
 	[Embed(source='UI/buttons/unlockedOn.png')] private static const unlockedOn:Class;
+	[Embed(source='UI/buttons/stopVideoOff.gif')] private static const stopVideoOff:Class;
+	[Embed(source='UI/buttons/stopVideoOn.gif')] private static const stopVideoOn:Class;
 
 	// Misc UI Elements
 	[Embed(source='UI/misc/hatshape.png')] private static const hatshape:Class;
@@ -201,6 +220,14 @@ public class Resources {
 	[Embed(source='UI/paint/hicon.png')] private static const HeightIcon:Class;
 
 	[Embed(source='UI/paint/canvasGrid.gif')] private static const canvasGrid:Class;
+	[Embed(source='UI/paint/segmentationAnimation/first.png')] private static const first:Class;
+	[Embed(source='UI/paint/segmentationAnimation/second.png')] private static const second:Class;
+	[Embed(source='UI/paint/segmentationAnimation/third.png')] private static const third:Class;
+	[Embed(source='UI/paint/segmentationAnimation/fourth.png')] private static const fourth:Class;
+	[Embed(source='UI/paint/segmentationAnimation/fifth.png')] private static const fifth:Class;
+	[Embed(source='UI/paint/segmentationAnimation/sixth.png')] private static const sixth:Class;
+	[Embed(source='UI/paint/segmentationAnimation/seventh.png')] private static const seventh:Class;
+	[Embed(source='UI/paint/segmentationAnimation/eighth.png')] private static const eighth:Class;
 	[Embed(source='UI/paint/colorWheel.png')] private static const colorWheel:Class;
 	[Embed(source='UI/paint/swatchButton.png')] private static const swatchButton:Class;
 	[Embed(source='UI/paint/rainbowButton.png')] private static const rainbowButton:Class;
@@ -208,6 +235,8 @@ public class Resources {
 	// Paint Tools
 	[Embed(source='UI/paint/ellipseOff.png')] private static const ellipseOff:Class;
 	[Embed(source='UI/paint/ellipseOn.png')] private static const ellipseOn:Class;
+	[Embed(source='UI/paint/cropOff.png')] private static const cropOff:Class;
+	[Embed(source='UI/paint/cropOn.png')] private static const cropOn:Class;
 	[Embed(source='UI/paint/flipHOff.gif')] private static const flipHOff:Class;
 	[Embed(source='UI/paint/flipHOn.gif')] private static const flipHOn:Class;
 	[Embed(source='UI/paint/flipVOff.gif')] private static const flipVOff:Class;
@@ -288,9 +317,17 @@ public class Resources {
 	[Embed(source='UI/paint/bitmapRectOn.png')] private static const bitmapRectOn:Class;
 	[Embed(source='UI/paint/bitmapSelectOff.png')] private static const bitmapSelectOff:Class;
 	[Embed(source='UI/paint/bitmapSelectOn.png')] private static const bitmapSelectOn:Class;
+	[Embed(source='UI/paint/magicEraserOn.png')] private static const magicEraserOn:Class;
+	[Embed(source='UI/paint/magicEraserOff.png')] private static const magicEraserOff:Class;
 	[Embed(source='UI/paint/bitmapStampOff.png')] private static const bitmapStampOff:Class;
 	[Embed(source='UI/paint/bitmapStampOn.png')] private static const bitmapStampOn:Class;
 	[Embed(source='UI/paint/bitmapTextOff.png')] private static const bitmapTextOff:Class;
 	[Embed(source='UI/paint/bitmapTextOn.png')] private static const bitmapTextOn:Class;
+	
+	//Recording
+	[Embed(source='StopArrow.png')] private static const stopArrow:Class;
+	[Embed(source='VideoShare.svg')] private static const videoShare:Class;
 
+	[Embed(source='UI/paint/moreInfoOff.png')] private static const moreInfoOff:Class;
+	[Embed(source='UI/paint/moreInfoOn.png')] private static const moreInfoOn:Class;
 }}
