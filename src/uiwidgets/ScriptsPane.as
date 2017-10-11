@@ -35,6 +35,9 @@ package uiwidgets {
 
 public class ScriptsPane extends ScrollFrameContents {
 
+	public const isScriptsPane:Boolean = true;
+
+
 	private const INSERT_NORMAL:int = 0;
 	private const INSERT_ABOVE:int = 1;
 	private const INSERT_SUB1:int = 2;
@@ -364,6 +367,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
+		trace("scriptspane.handledropped called")
 		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
 
 		var info:MediaInfo = obj as MediaInfo;
@@ -376,6 +380,25 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		}
 
 		var b:Block = obj as Block;
+
+		if (b) {
+			// yc2937 if block was dragged from palette to scripts pane, increment points
+			if (app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_PALETTE) {
+
+				b.allBlocksDo(function (b:Block):void {
+					trace("dragged from palette to scripts pane: " + b.spec);
+					//Scratch.app.incrementPoints(b.pointValue);
+					//b.changePointArgToLabel();
+				});
+			}
+		}
+
+		trace("scriptspane.handledropped resetting flag");
+
+		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
+
+		//end yc2937
+
 		var c:ScratchComment = obj as ScratchComment;
 		if (!b && !c) return false;
 
@@ -388,10 +411,15 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 			c.blockRef = blockAtPoint(localP); // link to the block under comment top-left corner, or unlink if none
 		}
 		saveScripts();
+		//sm4241 - parsons logic here
+		app.parsonsLogic();
+		//b.changePointArgToLabel()
 		updateSize();
 		if (c) fixCommentLayout();
 		return true;
 	}
+
+
 
 	private function addStacksFromBackpack(info:MediaInfo, dropP:Point):void {
 		if (!info.scripts) return;

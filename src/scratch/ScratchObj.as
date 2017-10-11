@@ -72,6 +72,7 @@ public class ScratchObj extends Sprite {
 	public var listCache:Object = {};
 	public var procCache:Object = {};
 	public var varCache:Object = {};
+	public var parsonScripts:Array = [];
 
 	public function clearCaches():void {
 		// Clear the list, procedure, and variable caches for this object.
@@ -603,7 +604,9 @@ public class ScratchObj extends Sprite {
 			variables[i] = Scratch.app.runtime.makeVariable(varObj);
 		}
 		lists = jsonObj.lists || [];
-		scripts = jsonObj.scripts || [];
+		//sm4241 - to prevent scripts being displayed on script pane during play mode
+		//scripts = jsonObj.scripts || [];
+		parsonScripts = jsonObj.scripts || [];
 		scriptComments = jsonObj.scriptComments || [];
 		sounds = jsonObj.sounds || [];
 		costumes = jsonObj.costumes || [];
@@ -640,6 +643,16 @@ public class ScratchObj extends Sprite {
 			b.x = entry[0];
 			b.y = entry[1];
 			scripts[i] = b;
+		}
+
+		// parsonScripts
+		for (i = 0; i < parsonScripts.length; i++) {
+			// entries are of the form: [x y stack]
+			var entry:Array = parsonScripts[i];
+			var b:Block = BlockIO.arrayToStack(entry[2]);
+			b.x = entry[0];
+			b.y = entry[1];
+			parsonScripts[i] = b;
 		}
 
 		// script comments

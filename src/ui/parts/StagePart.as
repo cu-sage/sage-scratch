@@ -25,14 +25,14 @@
 // since it is referred from many places.
 
 package ui.parts {
-	import flash.display.*;
-	import flash.events.*;
-	import flash.text.*;
-	import flash.media.*;
-	import assets.Resources;
-	import scratch.*;
-	import translation.Translator;
-	import uiwidgets.*;
+import flash.display.*;
+import flash.events.*;
+import flash.text.*;
+import flash.media.*;
+import assets.Resources;
+import scratch.*;
+import translation.Translator;
+import uiwidgets.*;
 
 public class StagePart extends UIPart {
 
@@ -40,7 +40,7 @@ public class StagePart extends UIPart {
 	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 10, CSS.textColor);
 
 	private const topBarHeightNormal:int = 39;
-	private const topBarHeightSmallPlayerMode:int = 26;
+	private const topBarHeightSmallPlayerMode:int = 46;
 
 	private var topBarHeight:int = topBarHeightNormal;
 
@@ -66,6 +66,10 @@ public class StagePart extends UIPart {
 	private var xReadout:TextField;
 	private var yLabel:TextField;
 	private var yReadout:TextField;
+
+	//points
+	private var pointsLabel:TextField;
+	private var messageLabel:TextField;
 
 	public function StagePart(app:Scratch) {
 		this.app = app;
@@ -149,6 +153,9 @@ public class StagePart extends UIPart {
 		sageDesignIndicator.visible = app.interp.sageDesignMode;
 		sagePlayIndicator.visible = app.interp.sagePlayMode;
 		fullscreenButton.visible = !app.isSmallPlayer;
+		pointsLabel.visible = !app.interp.sageDesignMode;
+		messageLabel.visible = !app.interp.sageDesignMode;
+		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
 		if (app.editMode) {
 			fullscreenButton.setOn(false);
 			drawStageSizeButton();
@@ -189,7 +196,7 @@ public class StagePart extends UIPart {
 
 		turboIndicator.x = w - turboIndicator.width - 73;
 		turboIndicator.y = app.isSmallPlayer ? 5 : (app.editMode ? 22 : 12);
-		
+
 		sageDesignIndicator.x = w - sageDesignIndicator.width - 203;
 		sageDesignIndicator.y = app.isSmallPlayer ? 5 : (app.editMode ? 22 : 12);
 		sagePlayIndicator.x = w - sagePlayIndicator.width - 203;
@@ -223,6 +230,7 @@ public class StagePart extends UIPart {
 
 	private function addTitleAndInfo():void {
 		var fmt:TextFormat = app.isOffline ? new TextFormat(CSS.font, 16, CSS.textColor) : CSS.projectTitleFormat;
+		var fmt2:TextFormat = app.isOffline ? new TextFormat(CSS.font, 12, CSS.textColor) : CSS.normalTextFormat;
 		projectTitle = getProjectTitle(fmt);
 		addChild(projectTitle);
 
@@ -230,6 +238,36 @@ public class StagePart extends UIPart {
 
 		const versionFormat:TextFormat = new TextFormat(CSS.font, 9, 0x909090);
 		addChild(versionInfo = makeLabel(Scratch.versionString, versionFormat));
+
+		pointsLabel = getPointsLabel(fmt);
+		messageLabel= getMessageLabel(fmt2);
+		addChild(pointsLabel);
+		addChild(messageLabel);
+
+	}
+
+	private function getPointsLabel(fmt):TextField {
+		var label = makeLabel("Points: " + Scratch.app.getPoints().toString(), fmt);
+		label.x = 325;
+		label.y = topBarHeight/2 - 11;
+		return label
+	}
+
+	private function getMessageLabel(fmt):TextField {
+		var label = makeLabel("Hey! Let's start solving!", fmt);
+		label.x = 170;
+		label.y = 2;
+		return label
+	}
+
+
+
+	public function updatePointsLabel():void {
+		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
+	}
+
+	public function updateMessageLabel(message:String):void {
+		messageLabel.text = message;
 	}
 
 	protected function getProjectTitle(fmt:TextFormat):EditableLabel {
@@ -249,7 +287,7 @@ public class StagePart extends UIPart {
 		turboIndicator.visible = false;
 		addChild(turboIndicator);
 	}
-	
+
 	private function addSageDesignIndicator():void {
 		sageDesignIndicator = new TextField();
 		sageDesignIndicator.defaultTextFormat = new TextFormat(CSS.font, 11, CSS.buttonLabelOverColor, true);
@@ -257,9 +295,9 @@ public class StagePart extends UIPart {
 		sageDesignIndicator.selectable = false;
 		sageDesignIndicator.text = Translator.map('SAGE Design Mode');
 		sageDesignIndicator.visible = false;
-		addChild(sageDesignIndicator);	
+		addChild(sageDesignIndicator);
 	}
-	
+
 	private function addSagePlayIndicator():void {
 		sagePlayIndicator = new TextField();
 		sagePlayIndicator.defaultTextFormat = new TextFormat(CSS.font, 11, CSS.buttonLabelOverColor, true);
@@ -267,7 +305,7 @@ public class StagePart extends UIPart {
 		sagePlayIndicator.selectable = false;
 		sagePlayIndicator.text = Translator.map('SAGE Play Mode');
 		sagePlayIndicator.visible = false;
-		addChild(sagePlayIndicator);	
+		addChild(sagePlayIndicator);
 	}
 
 	private function addXYReadouts():void {

@@ -324,7 +324,15 @@ public class ScratchRuntime {
 		triggeredHats = activeHats;
 	}
 
+
+
+	//yc2937
+	// Called when a block is dropped in the scripts pane (work area)
 	public function blockDropped(stack:Block):void {
+		trace("scratchruntime.blockdropped called");
+		trace("block dropped: " + stack.spec);
+
+
 		// Turn on video the first time a video sensor reporter or hat block is added.
 		stack.allBlocksDo(function(b:Block):void {
 			var op:String = b.op;
@@ -907,6 +915,21 @@ public class ScratchRuntime {
 			}
 		}
 
+		if ('parsons' == data.type) {
+			var w:Watcher = findParsonsWatcher(data);
+			if (w) {
+				app.removeChild(w);
+				w.visible = showFlag;
+			} else {
+				if (showFlag) {
+					w = new Watcher();
+					w.initWatcher(data.targetObj, data.cmd, data.param, data.color);
+					app.addChild(w);
+					w.visible = false;
+				}
+			}
+		}
+
 		app.setSaveNeeded();
 	}
 
@@ -987,6 +1010,15 @@ public class ScratchRuntime {
 			var w:Watcher = findReporterWatcher(data);
 			return w && w.visible;
 		}
+		if ('parsons' == data.type) {
+			var w:Watcher = findParsonsWatcher(data);
+//			return w && w.visible;
+			if(w != null){
+				return true;
+			}else return false;
+
+		}
+
 		return false;
 	}
 
@@ -994,6 +1026,14 @@ public class ScratchRuntime {
 		var uiLayer:Sprite = app.stagePane.getUILayer();
 		for (var i:int = 0; i < uiLayer.numChildren; i++) {
 			var w:Watcher = uiLayer.getChildAt(i) as Watcher;
+			if (w && w.isReporterWatcher(data.targetObj, data.cmd, data.param)) return w;
+		}
+		return null;
+	}
+
+	private function findParsonsWatcher(data:Object):Watcher {
+		for (var i:int = 0; i < app.numChildren; i++) {
+			var w:Watcher = app.getChildAt(i) as Watcher;
 			if (w && w.isReporterWatcher(data.targetObj, data.cmd, data.param)) return w;
 		}
 		return null;
@@ -1094,7 +1134,19 @@ public class ScratchRuntime {
 				}
 			}
 			app.scriptsPane.saveScripts();
-			if (b is Block) app.updatePalette();
+			/*
+			if (b is Block) {
+
+
+				var stack = b as Block;
+				stack.allBlocksDo(function(b:Block):void {
+					Scratch.app.incrementPoints(b.pointValue);
+				});
+			}*/
+			if (b is Block)
+
+			app.updatePalette();
+
 		}
 	}
 
