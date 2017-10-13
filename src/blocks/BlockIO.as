@@ -151,16 +151,6 @@ public class BlockIO {
 		b.fixArgLayout();
 		return b;
 	}
-	
-	private static function getModeBlockColor(label:String, color:int):int {
-		if (!Scratch.app.getPaletteBuilder().blockLabelIncluded(label)) {
-			if(Scratch.app.interp.sageDesignMode) 
-				color = CSS.sageDesignRestricted;
-			else if (Scratch.app.interp.sagePlayMode)
-				color = CSS.sagePlayRestricted;
-		}
-		return color;
-	}
 
 	public static function specForCmd(cmd:Array, undefinedBlockType:String):Array {
 		// Return the block specification for the given command.
@@ -177,15 +167,15 @@ public class BlockIO {
 		return [spec, undefinedBlockType, 0, op]; // no match found
 	}
 
-	private static function argsForCmd(cmd:Array, reverseArgs:Boolean):Array {
+	private static function argsForCmd(cmd:Array, numArgs:uint, reverseArgs:Boolean):Array {
 		// Return an array of zero or more arguments for the given command.
-		// Skip substacks. Arguments may be literal values or reporter blocks (expressions).
+		// Arguments may be literal values or reporter blocks (expressions).
 		var result:Array = [];
-		for (var i:int = 1; i < cmd.length; i++) {
+		for (var i:int = 1; i <= numArgs; i++) {
 			var a:* = cmd[i];
 			if (a is Array) {
-				// block (skip if substack)
-				if (!(a[0] is Array)) result.push(arrayToBlock(a, 'r'));
+				// block
+				result.push(arrayToBlock(a, 'r'));
 			} else {
 				// literal value
 				result.push(a);
@@ -195,14 +185,13 @@ public class BlockIO {
 		return result;
 	}
 
-	private static function substacksForCmd(cmd:Array):Array {
+	private static function substacksForCmd(cmd:Array, numArgs:uint):Array {
 		// Return an array of zero or more substacks for the given command.
 		var result:Array = [];
-		for (var i:int = 1; i < cmd.length; i++) {
+		for (var i:int = 1 + numArgs; i < cmd.length; i++) {
 			var a:* = cmd[i];
 			if (a == null) result.push(null); // null indicates an empty stack
-			// a is substack if (1) it is an array and (2) it's first element is an array (vs. a String)
-			if ((a is Array) && (a[0] is Array)) result.push(arrayToStack(a));
+			else result.push(arrayToStack(a));
 		}
 		return result;
 	}
@@ -327,14 +316,15 @@ public class BlockIO {
 			'gotoSpriteOrMouse:', 'pointTowards:', 'touching:'];
 		if (refCmds.indexOf(b.op) < 0) return;
 		var arg:BlockArg;
-		if ((b.args.length == 1) && (b.args[0] is BlockArg)) arg = b.args[0];
-		if ((b.args.length == 2) && (b.args[1] is BlockArg)) arg = b.args[1];
+		if ((b.args.length == 1) && (b.getNormalizedArg(0) is BlockArg)) arg = b.getNormalizedArg(0);
+		if ((b.args.length == 2) && (b.getNormalizedArg(1) is BlockArg)) arg = b.getNormalizedArg(1);
 		if (arg) {
 			var oldVal:String = arg.argValue;
 			if (oldVal == 'edge' || oldVal == '_edge_') arg.setArgValue('_edge_', Translator.map('edge'));
 			if (oldVal == 'mouse' || oldVal == '_mouse_') arg.setArgValue('_mouse_', Translator.map('mouse-pointer'));
 			if (oldVal == '_myself_') arg.setArgValue('_myself_', Translator.map('myself'));
 			if (oldVal == '_stage_') arg.setArgValue('_stage_', Translator.map('Stage'));
+			if (oldVal == '_random_') arg.setArgValue('_random_', Translator.map('random position'));
 		}
 	}
 
