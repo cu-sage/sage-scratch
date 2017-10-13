@@ -25,16 +25,20 @@
 // creates a copy of that block when it is dragged out of the palette.
 
 package ui {
-	import flash.geom.*;
+
 	import blocks.Block;
 	import interpreter.Interpreter;
 	import uiwidgets.*;
 	import scratch.ScratchObj;
 	import scratch.ScratchComment;
 
+import flash.events.Event;
+
+
 public class BlockPalette extends ScrollFrameContents {
 
 	public const isBlockPalette:Boolean = true;
+	public var hints:Hints = new Hints();
 
 	public function BlockPalette():void {
 		super();
@@ -53,6 +57,9 @@ public class BlockPalette extends ScrollFrameContents {
 	}
 
 	public function handleDrop(obj:*):Boolean {
+
+		trace("blockpalette.handledrop called");
+
 		// Delete blocks and stacks dropped onto the palette.
 		var c:ScratchComment = obj as ScratchComment;
 		if (c) {
@@ -61,14 +68,71 @@ public class BlockPalette extends ScrollFrameContents {
 			return true;
 		}
 		var b:Block = obj as Block;
+
+
+		//yc2937 if block was dragged from scripts pane to palette, decrement points
+
 		if (b) {
+
+			if (Scratch.app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
+				obj.allBlocksDo(function(b:Block):void {
+					trace ("dragged from scripts pane to palette: " + b.spec);
+
+					//sm4241 - parsons logic
+					//Scratch.app.parsonsLogic();
+					//Scratch.app.decrementPoints(b.pointValue);
+
+					// update block to hint on after deleting removed blocks
+					latestHint(b);
+				});
+			}
+
+			trace("blockpalette.handledrop resetting flag ");
+
+			Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
+
 			return b.deleteStack();
 		}
+
+		Scratch.app.blockDraggedFrom = Scratch.K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
+
 		return false;
 	}
 
 	public static function strings():Array {
 		return ['Cannot Delete', 'To delete a block definition, first remove all uses of the block.'];
+	}
+
+	// deletes blocks removed by user from latestBlockList
+	private function updateLatestBlock(b:Block):Block {
+		// update latest block for hinting purposes (to account for block(s) being removed)
+		var latestList:Array = b.getLatestList();
+		if (latestList.length > 0) {
+			if (latestList.indexOf(b) >= 0) {
+				latestList.splice(latestList.indexOf(b), 1);
+			}
+			if (latestList.length > 0) {
+				b.updateLatest(latestList[latestList.length - 1].bottomBlock(), false, true);
+			} else { // no more blocks present to use for hinting
+				b.updateLatest(null, false, true);
+			}
+		} else { // no more blocks present to use for hinting
+			b.updateLatest(null, false, true);
+		}
+		b.printLatest();
+		var latestBlock:Block = b.getLatestBlock();
+		return latestBlock;
+	}
+
+	private function latestHint(b:Block):void {
+		var latestBlock:Block = updateLatestBlock(b);
+		//if (latestBlock) {
+			// see if a hint can be issued based on the current latest block
+		var latestHint:Hints = new Hints(latestBlock);
+		if (latestHint) {
+			addChild(latestHint);
+			latestHint.checkHint();
+		}
 	}
 
 }}

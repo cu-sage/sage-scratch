@@ -39,6 +39,8 @@ public class Specs {
 	public static const PROCEDURE_DEF:String = "procDef";
 	public static const GET_PARAM:String = "getParam";
 
+//	public static const PARSON_DEF:String = "parsonDef";
+
 	public static const motionCategory:int = 1;
 	public static const looksCategory:int = 2;
 	public static const eventsCategory:int = 5;
@@ -46,6 +48,9 @@ public class Specs {
 	public static const operatorsCategory:int = 8;
 	public static const dataCategory:int = 9;
 	public static const myBlocksCategory:int = 10;
+
+	public static const parsonsCategory:int = 13;
+
 	public static const listCategory:int = 12;
 	public static const extensionsCategory:int = 20;
 
@@ -54,9 +59,10 @@ public class Specs {
 	public static var procedureColor:int = 0x632D99; // 0x531E99;
 	public static var parameterColor:int = 0x5947B1;
 	public static var extensionsColor:int = 0x4B4A60; // 0x72228C; // 0x672D79;
-
+	public static var parsonsColor:int = 0x800080;
 	private static const undefinedColor:int = 0xD42828;
 
+	//sm4241- adding category here (id=13, name=parsons colour=pink
 	public static const categories:Array = [
 	 // id   category name	color
 		[0,  "undefined",	0xD42828],
@@ -72,6 +78,7 @@ public class Specs {
 		[10, "More Blocks",	procedureColor],
 		[11, "Parameter",	parameterColor],
 		[12, "List",		listColor],
+		[13, "Parsons",		parsonsColor],
 		[20, "Extension",	extensionsColor],
 	];
 
@@ -394,8 +401,21 @@ public class Specs {
 		["hide all sprites",					" ", 99, "hideAll"],
 		["user id",								"r", 99, "getUserId"],
 
+		//parsons
+
+
 	];
 
 	public static var extensionSpecs:Array = ["when %m.booleanSensor", "when %m.sensor %m.lessMore %n", "sensor %m.booleanSensor?", "%m.sensor sensor value", "turn %m.motor on for %n secs", "turn %m.motor on", "turn %m.motor off", "set %m.motor power to %n", "set %m.motor2 direction to %m.motorDirection", "when distance %m.lessMore %n", "when tilt %m.eNe %n", "distance", "tilt"];
+
+	public static var pointDict:Object = {}
+
+	public static function getPointsForSpec(spec:String):Number{
+		if (pointDict[spec]) {
+			return pointDict[spec];
+		} else {
+			return 0;
+		}
+	}
 
 }}

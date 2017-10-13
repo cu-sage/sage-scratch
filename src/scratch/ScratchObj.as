@@ -35,7 +35,9 @@ import flash.utils.*;
 
 	import interpreter.*;
 
-	import scratch.ScratchComment;
+import mx.utils.UIDUtil;
+
+import scratch.ScratchComment;
 import scratch.ScratchSprite;
 
 import translation.Translator;
@@ -72,6 +74,7 @@ public class ScratchObj extends Sprite {
 	public var listCache:Object = {};
 	public var procCache:Object = {};
 	public var varCache:Object = {};
+	public var parsonScripts:Array = [];
 
 	public function clearCaches():void {
 		// Clear the list, procedure, and variable caches for this object.
@@ -561,7 +564,11 @@ public class ScratchObj extends Sprite {
 		// Update the scripts of this object after switching languages.
 		var newScripts:Array = [];
 		for each (var b:Block in scripts) {
-			var newStack:Block = BlockIO.arrayToStack(BlockIO.stackToArray(b), isStage);
+			var blocksOnly:Array = BlockIO.stackToArray(b);
+			var blockIds:Array = [];
+			for each (var block:Array in blocksOnly) blockIds.push(block[0]);
+			for each (var block:Array in blocksOnly) block.shift();
+			var newStack:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
 			newStack.x = b.x;
 			newStack.y = b.y;
 			newScripts.push(newStack);
@@ -606,7 +613,9 @@ public class ScratchObj extends Sprite {
 			variables[i] = Scratch.app.runtime.makeVariable(varObj);
 		}
 		lists = jsonObj.lists || [];
+		//sm4241 - to prevent scripts being displayed on script pane during play mode
 		scripts = jsonObj.scripts || [];
+		//parsonScripts = jsonObj.scripts || [];
 		scriptComments = jsonObj.scriptComments || [];
 		sounds = jsonObj.sounds || [];
 		costumes = jsonObj.costumes || [];
@@ -639,10 +648,36 @@ public class ScratchObj extends Sprite {
 		for (i = 0; i < scripts.length; i++) {
 			// entries are of the form: [x y stack]
 			var entry:Array = scripts[i];
-			var b:Block = BlockIO.arrayToStack(entry[2], isStage);
+			var blockIds:Array = [];
+			for each (var e:Array in entry[2]) {
+				if (UIDUtil.isUID(e[0])) blockIds.push(e[0]);
+			}
+			var blocksOnly:Array = entry[2];
+			for each (var e:Array in blocksOnly) {
+				if (UIDUtil.isUID(e[0])) e.shift();
+			}
+			var b:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
 			b.x = entry[0];
 			b.y = entry[1];
 			scripts[i] = b;
+		}
+
+		// parsonScripts
+		for (i = 0; i < parsonScripts.length; i++) {
+			// entries are of the form: [x y stack]
+			var entry:Array = parsonScripts[i];
+			var blockIds:Array = [];
+			for each (var e:Array in entry[2]) {
+				if (UIDUtil.isUID(e[0])) blockIds.push(e[0]);
+			}
+			var blocksOnly:Array = entry[2];
+			for each (var e:Array in blocksOnly) {
+				if (UIDUtil.isUID(e[0])) e.shift();
+			}
+			var b:Block = BlockIO.arrayToStack(blocksOnly, blockIds);
+			b.x = entry[0];
+			b.y = entry[1];
+			parsonScripts[i] = b;
 		}
 
 		// script comments

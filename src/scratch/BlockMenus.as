@@ -527,9 +527,22 @@ public class BlockMenus implements DragClient {
 			if (!block.isProcDef()) {
 				m.addItem('duplicate', duplicateStack);
 			}
-			m.addItem('delete', block.deleteStack);
-			m.addLine();
-			m.addItem('add comment', block.addComment);
+			if(!(!app.getPaletteBuilder().blockIncluded(block) && app.interp.sagePlayMode)) {
+				m.addItem('delete', block.deleteStack());
+				m.addLine();
+				m.addItem('add comment', block.addComment);
+			}
+		}
+		else // SAGE restrict in palette
+		{
+			var category:int = app.getPaletteBuilder().getBlockCategory(block.spec);
+			if(app.interp.sageDesignMode && app.getPaletteBuilder().paletteIncluded(category))
+			{
+				if(app.getPaletteBuilder().blockLabelCategoryIncluded(block.spec, category))
+					m.addItem('exclude', block.sageExclude);
+				else
+					m.addItem('include', block.sageInclude);
+			}
 		}
 		m.addItem('help', block.showHelp);
 		m.addLine();

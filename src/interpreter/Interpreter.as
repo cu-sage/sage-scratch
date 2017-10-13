@@ -444,6 +444,7 @@ public class Interpreter {
 		primTable["whenSceneStarts"]	= primNoop;
 		primTable["wait:elapsed:from:"]	= primWait;
 		primTable["doForever"]			= function(b:*):* { startCmdList(b.subStack1, true); };
+		primTable["doForeverParsons"]	= function(b:*):* { startCmdList(b.subStack1, true); };
 		primTable["doRepeat"]			= primRepeat;
 		primTable["broadcast:"]			= function(b:*):* { broadcast(arg(b, 0), false); }
 		primTable["doBroadcastAndWait"]	= function(b:*):* { broadcast(arg(b, 0), true); }
