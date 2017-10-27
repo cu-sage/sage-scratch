@@ -15,10 +15,3 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
-
-*.bat text eol=crlf
-
-.gitattributes text eol=lf
-.gitignore text eol=lf
-.gitmodules text eol=lf
-gradlew text eol=lf

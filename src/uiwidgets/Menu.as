@@ -77,8 +77,7 @@ public class Menu extends Sprite {
 	public function showOnStage(stage:Stage, x:int = -1, y:int = -1):void {
 		if (stringCollectionMode) {
 			for each (var item:MenuItem in allItems) {
-				// TODO: do we really want to remove parentheticals on all these?
-				TranslatableStrings.add(item.getLabel(), true);
+				TranslatableStrings.add(item.getLabel());
 			}
 			return;
 		}
@@ -109,7 +108,6 @@ public class Menu extends Sprite {
 	}
 
 	public function selected(itemValue:*):void {
-		stage.focus = null;
 		// Run the clientFunction, if there is one. Otherwise, if itemValue is a function, run that.
 		if (clientFunction != null) {
 			clientFunction(itemValue);

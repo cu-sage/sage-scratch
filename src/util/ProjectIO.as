@@ -32,8 +32,6 @@ import flash.events.*;
 import flash.net.URLLoader;
 import flash.utils.*;
 
-import logging.LogLevel;
-
 import scratch.*;
 
 import sound.WAVFile;
@@ -55,22 +53,8 @@ public class ProjectIO {
 		this.app = app;
 	}
 
-	private static var translationStrings:Object = {
-		imageLoadingErrorTitle: 'Image Loading Error',
-		imageLoadingErrorHeader: 'At least one backdrop or costume failed to load:',
-		imageLoadingErrorBackdrop: 'Backdrop: {costumeName}',
-		imageLoadingErrorSprite: 'Sprite: {spriteName}',
-		imageLoadingErrorCostume: 'Costume: {costumeName}'
-	};
-
 	public static function strings():Array {
-		var result:Array = [];
-		for each (var key:String in translationStrings) {
-			if (translationStrings.hasOwnProperty(key)) {
-				result.push(translationStrings[key]);
-			}
-		}
-		return result;
+		return [];
 	}
 
 	//----------------------------
@@ -101,10 +85,6 @@ public class ProjectIO {
 		addJSONData('sprite.json', spr, zip);
 		addImagesAndSounds(zip);
 		return zip.endWrite();
-	}
-
-	protected function getScratchStage():ScratchStage {
-		return new ScratchStage();
 	}
 
 	private function addJSONData(fileName:String, obj:*, zip:ZipIO):void {
@@ -145,14 +125,14 @@ public class ProjectIO {
 		else if (fail != null) fail();
 	}
 
-	protected function decodeFromZipFile(zipData:ByteArray):ScratchObj {
+	private function decodeFromZipFile(zipData:ByteArray):ScratchObj {
 		var jsonData:String;
 		images = [];
 		sounds = [];
 		try {
 			var files:Array = new ZipIO().read(zipData);
 		} catch (e:*) {
-			app.log(LogLevel.WARNING, 'Bad zip file; attempting to recover');
+			app.log('Bad zip file; attempting to recover');
 			try {
 				files = new ZipIO().recover(zipData);
 			} catch (e:*) {
@@ -175,7 +155,7 @@ public class ProjectIO {
 		if (jsonData == null) return null;
 		var jsonObj:Object = util.JSON.parse(jsonData);
 		if (jsonObj['children']) { // project JSON
-			var proj:ScratchStage = getScratchStage();
+			var proj:ScratchStage = new ScratchStage();
 			proj.readJSON(jsonObj);
 			if (proj.penLayerID >= 0) proj.penLayerPNG = images[proj.penLayerID]
 			else if (proj.penLayerMD5) proj.penLayerPNG = images[0];
@@ -221,121 +201,48 @@ public class ProjectIO {
 		}
 	}
 
-	// Load all images in all costumes from their image data, then call whenDone.
 	public function decodeAllImages(objList:Array, whenDone:Function, fail:Function = null):void {
-		// This should be called on success or failure of each image
-		function imageDone():void {
-			if (--numImagesToDecode == 0) {
-				allImagesLoaded(objList, imageDict, whenDone, fail);
+		// Load all images in all costumes from their image data, then call whenDone.
+		function imageDecoded():void {
+			for each (var o:* in imageDict) {
+				if (o == 'loading...') return; // not yet finished loading
 			}
+			allImagesLoaded();
+		}
+		var error:Boolean = false;
+		function decodeError():void {
+			if (error) return;
+			error = true;
+			if (fail != null) fail();
+		}
+		function allImagesLoaded():void {
+			if (error) return;
+			for each (c in allCostumes) {
+				if ((c.baseLayerData != null) && (c.baseLayerBitmap == null)) {
+					var img:* = imageDict[c.baseLayerData];
+					if (img is BitmapData) c.baseLayerBitmap = img;
+					if (img is SVGElement) c.setSVGRoot(img, false);
+				}
+				if ((c.textLayerData != null) && (c.textLayerBitmap == null)) c.textLayerBitmap = imageDict[c.textLayerData];
+			}
+			for each (c in allCostumes) c.generateOrFindComposite(allCostumes);
+			whenDone();
 		}
 
-		var numImagesToDecode:int = 1; // start at 1 to prevent early finish
+		var c:ScratchCostume;
+		var allCostumes:Array = [];
+		for each (var o:ScratchObj in objList) {
+			for each (c in o.costumes) allCostumes.push(c);
+		}
 		var imageDict:Dictionary = new Dictionary(); // maps image data to BitmapData
-		for each (var obj:ScratchObj in objList) {
-			for each (var c:ScratchCostume in obj.costumes) {
-				if ((c.baseLayerData != null) && (c.baseLayerBitmap == null)) {
-					++numImagesToDecode;
-					if (ScratchCostume.isSVGData(c.baseLayerData)) {
-						decodeSVG(c.baseLayerData, imageDict, imageDone);
-					}
-					else {
-						decodeImage(c.baseLayerData, imageDict, imageDone, imageDone);
-					}
-				}
-				if ((c.textLayerData != null) && (c.textLayerBitmap == null)) {
-					++numImagesToDecode;
-					decodeImage(c.textLayerData, imageDict, imageDone, imageDone);
-				}
-			}
-		}
-		// decrement the artificial 1 and also handle the case where no images are present.
-		imageDone();
-	}
-
-	private function allImagesLoaded(objList:Array, imageDict:Dictionary, whenDone:Function, fail:Function):void {
-		var errorCostumes:Vector.<ScratchCostume> = new Vector.<ScratchCostume>(2);
-
-		function makeErrorImage(obj:ScratchObj, c:ScratchCostume):* {
-			if (!errorDialog) {
-				errorDialog = new DialogBox();
-				errorDialog.addTitle(translationStrings.imageLoadingErrorTitle);
-				errorDialog.addText(Translator.map(translationStrings.imageLoadingErrorHeader) +'\n');
-			}
-
-			var itemText:String;
-			if (obj.isStage) {
-				itemText = Translator.map(translationStrings.imageLoadingErrorBackdrop);
-			}
-			else {
-				itemText = Translator.map(translationStrings.imageLoadingErrorSprite) + '\n' +
-						Translator.map(translationStrings.imageLoadingErrorCostume);
-			}
-
-			var context:Dictionary = new Dictionary();
-			context['spriteName'] = obj.objName;
-			context['costumeName'] = c.costumeName;
-			itemText = StringUtils.substitute(itemText, context);
-			errorDialog.addText(itemText + '\n');
-
-			var errorCostumeIndex:int = int(obj.isStage);
-			var errorCostume:ScratchCostume = errorCostumes[errorCostumeIndex] =
-					errorCostumes[errorCostumeIndex] || ScratchCostume.emptyBitmapCostume('', obj.isStage);
-			return errorCostume.baseLayerBitmap;
-		}
-
-		var allCostumes:Vector.<ScratchCostume> = new <ScratchCostume>[];
-		var errorDialog:DialogBox;
-		var img:*; // either BitmapData or SVGElement
-
-		for each (var obj:ScratchObj in objList) {
-			for each (var c:ScratchCostume in obj.costumes) {
-				allCostumes.push(c);
-				if ((c.baseLayerData != null) && (c.baseLayerBitmap == null)) {
-					img = imageDict[c.baseLayerData];
-					if (!img) {
-						c.baseLayerBitmap = makeErrorImage(obj, c);
-						c.baseLayerData = null;
-					}
-					else if (img is BitmapData) {
-						c.baseLayerBitmap = img;
-					}
-					else if (img is SVGElement) {
-						c.setSVGRoot(img, false);
-					}
-				}
-				if ((c.textLayerData != null) && (c.textLayerBitmap == null)) {
-					img = imageDict[c.textLayerData];
-					if (img) {
-						c.textLayerBitmap = imageDict[c.textLayerData];
-					}
-					else {
-						c.textLayerBitmap = makeErrorImage(obj, c);
-						c.textLayerData = null;
-					}
-				}
-			}
-		}
 		for each (c in allCostumes) {
-			c.generateOrFindComposite(allCostumes);
-		}
-
-		if (errorDialog) {
-			errorDialog.addButton('OK', errorDialog.accept);
-			errorDialog.showOnStage(Scratch.app.stage);
-
-			if (fail != null) {
-				fail();
+			if ((c.baseLayerData != null) && (c.baseLayerBitmap == null)) {
+				if (ScratchCostume.isSVGData(c.baseLayerData)) decodeSVG(c.baseLayerData, imageDict, imageDecoded);
+				else decodeImage(c.baseLayerData, imageDict, imageDecoded, decodeError);
 			}
-			else if (whenDone != null) {
-				whenDone();
-			}
+			if ((c.textLayerData != null) && (c.textLayerBitmap == null)) decodeImage(c.textLayerData, imageDict, imageDecoded, decodeError);
 		}
-		else {
-			if (whenDone != null) {
-				whenDone();
-			}
-		}
+		imageDecoded(); // handles case when there were no images to load
 	}
 
 	private function decodeImage(imageData:ByteArray, imageDict:Dictionary, doneFunction:Function, fail:Function):void {
@@ -347,10 +254,7 @@ public class ProjectIO {
 			if (fail != null) fail();
 		}
 		if (imageDict[imageData] != null) return; // already loading or loaded
-		if (!imageData || imageData.length == 0) {
-			if (fail != null) fail();
-			return;
-		}
+		imageDict[imageData] = 'loading...';
 		var loader:Loader = new Loader();
 		loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadDone);
 		loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, loadError);
@@ -362,16 +266,13 @@ public class ProjectIO {
 			imageDict[svgData] = svgRoot;
 			doneFunction();
 		}
-		if (imageDict[svgData] != null) {
-			// already loading or loaded
-			doneFunction();
-			return;
-		}
+		if (imageDict[svgData] != null) return; // already loading or loaded
 		var importer:SVGImporter = new SVGImporter(XML(svgData));
 		if (importer.hasUnloadedImages()) {
+			imageDict[svgData] = 'loading...';
 			importer.loadAllImages(loadDone);
 		} else {
-			loadDone(importer.root);
+			imageDict[svgData] = importer.root;
 		}
 	}
 
@@ -380,7 +281,7 @@ public class ProjectIO {
 			assetDict[md5] = data;
 			assetCount++;
 			if (!data) {
-				app.log(LogLevel.WARNING, 'missing asset: ' + md5);
+				app.log('missing asset: ' + md5);
 			}
 			if (app.lp) {
 				app.lp.setProgress(assetCount / assetsToFetch.length);
@@ -396,7 +297,7 @@ public class ProjectIO {
 		}
 		projectData.position = 0;
 		var projObject:Object = util.JSON.parse(projectData.readUTFBytes(projectData.length));
-		var proj:ScratchStage = getScratchStage();
+		var proj:ScratchStage = new ScratchStage();
 		proj.readJSON(projObject);
 		var assetsToFetch:Array = collectAssetsToFetch(proj.allObjects());
 		var assetDict:Object = new Object();
@@ -408,19 +309,16 @@ public class ProjectIO {
 	// Fetch a costume or sound from the server
 	//----------------------------
 
-	public function fetchImage(id:String, costumeName:String, width:int, whenDone:Function, otherData:Object = null):URLLoader {
+	public function fetchImage(id:String, costumeName:String, width:int, whenDone:Function):URLLoader {
 		// Fetch an image asset from the server and call whenDone with the resulting ScratchCostume.
 		var c:ScratchCostume;
 		function gotCostumeData(data:ByteArray):void {
 			if (!data) {
-				app.log(LogLevel.WARNING, 'Image not found on server: ' + id);
+				app.log('Image not found on server: ' + id);
 				return;
 			}
 			if (ScratchCostume.isSVGData(data)) {
-				if (otherData && otherData.centerX)
-					c = new ScratchCostume(costumeName, data, otherData.centerX, otherData.centerY, otherData.bitmapResolution);
-				else
-					c = new ScratchCostume(costumeName, data);
+				c = new ScratchCostume(costumeName, data);
 				c.baseLayerMD5 = id;
 				whenDone(c);
 			} else {
@@ -431,13 +329,10 @@ public class ProjectIO {
 			}
 		}
 		function imageError(event:IOErrorEvent):void {
-			app.log(LogLevel.WARNING, 'ProjectIO failed to load image', {id: id});
+			app.log('ProjectIO failed to load: ' + id);
 		}
 		function imageLoaded(e:Event):void {
-			if (otherData && otherData.centerX)
-				c = new ScratchCostume(costumeName, e.target.content.bitmapData, otherData.centerX, otherData.centerY, otherData.bitmapResolution);
-			else
-				c = new ScratchCostume(costumeName, e.target.content.bitmapData);
+			c = new ScratchCostume(costumeName, e.target.content.bitmapData);
 			if (width) c.bitmapResolution = c.baseLayerBitmap.width / width;
 			c.baseLayerMD5 = id;
 			whenDone(c);
@@ -449,7 +344,7 @@ public class ProjectIO {
 		// Fetch a sound asset from the server and call whenDone with the resulting ScratchSound.
 		function gotSoundData(sndData:ByteArray):void {
 			if (!sndData) {
-				app.log(LogLevel.WARNING, 'Sound not found on server', {id: id});
+				app.log('Sound not found on server: ' + id);
 				return;
 			}
 			var snd:ScratchSound;
@@ -457,6 +352,7 @@ public class ProjectIO {
 				snd = new ScratchSound(sndName, sndData); // try reading data as WAV file
 			} catch (e:*) { }
 			if (snd && (snd.sampleCount > 0)) { // WAV data
+				snd.md5 = id;
 				whenDone(snd);
 			} else { // try to read data as an MP3 file
 				MP3Loader.convertToScratchSound(sndName, sndData, whenDone);
@@ -494,7 +390,7 @@ public class ProjectIO {
 		// Download all media for the given list of ScratchObj objects.
 		function assetReceived(md5:String, data:ByteArray):void {
 			if (!data) {
-				app.log(LogLevel.WARNING, 'missing sprite asset', {md5: md5});
+				app.log('missing sprite asset: ' + md5);
 			}
 			assetDict[md5] = data;
 			assetCount++;
@@ -529,13 +425,7 @@ public class ProjectIO {
 			for each (var c:ScratchCostume in obj.costumes) {
 				data = assetDict[c.baseLayerMD5];
 				if (data) c.baseLayerData = data;
-				else {
-					// Asset failed to load so use an empty costume
-					// BUT retain the original MD5 and don't break the reference to the costume that failed to load.
-					var origMD5:String = c.baseLayerMD5;
-					c.baseLayerData = ScratchCostume.emptySVG();
-					c.baseLayerMD5 = origMD5;
-				}
+				else c.baseLayerData = ScratchCostume.emptySVG(); // missing asset data; use empty costume
 				if (c.textLayerMD5) c.textLayerData = assetDict[c.textLayerMD5];
 			}
 			for each (var snd:ScratchSound in obj.sounds) {

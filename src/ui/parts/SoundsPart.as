@@ -95,14 +95,12 @@ public class SoundsPart extends UIPart {
 			if ((obj.sounds[i] as ScratchSound) == snd) currentIndex = i;
 		}
 		(listFrame.contents as MediaPane).updateSelection();
-		refresh(false);
+		refresh();
 	}
 
-	public function refresh(refreshListContents:Boolean = true):void {
-		if (refreshListContents) {
-			var contents:MediaPane = listFrame.contents as MediaPane;
-			contents.refresh();
-		}
+	public function refresh():void {
+		var contents:MediaPane = listFrame.contents as MediaPane;
+		contents.refresh();
 
 		nameField.setContents('');
 		var viewedObj:ScratchObj = app.viewedObj();

@@ -57,8 +57,8 @@ package svgeditor.tools
 			currentEvent = event;
 			grabColor();
 
-			STAGE.addEventListener(MouseEvent.MOUSE_MOVE, mouseMove, false, 0, true);
-			STAGE.addEventListener(MouseEvent.MOUSE_UP, mouseUp, false, 0, true);
+			editor.stage.addEventListener(MouseEvent.MOUSE_MOVE, mouseMove, false, 0, true);
+			editor.stage.addEventListener(MouseEvent.MOUSE_UP, mouseUp, false, 0, true);
 			event.stopPropagation();
 		}
 
@@ -68,8 +68,8 @@ package svgeditor.tools
 		}
 
 		private function mouseUp(event:MouseEvent = null):void {
-			STAGE.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
-			STAGE.removeEventListener(MouseEvent.MOUSE_UP, mouseUp);
+			editor.stage.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
+			editor.stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUp);
 		}
 
 		private function grabColor():void {

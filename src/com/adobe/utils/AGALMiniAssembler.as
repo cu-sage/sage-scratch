@@ -1,34 +1,34 @@
 /*
-Copyright (c) 2011, Adobe Systems Incorporated
-All rights reserved.
+ Copyright (c) 2011, Adobe Systems Incorporated
+ All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
-modification, are permitted provided that the following conditions are
-met:
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are
+ met:
 
-* Redistributions of source code must retain the above copyright notice, 
-this list of conditions and the following disclaimer.
+ * Redistributions of source code must retain the above copyright notice,
+ this list of conditions and the following disclaimer.
 
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the 
-documentation and/or other materials provided with the distribution.
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
 
-* Neither the name of Adobe Systems Incorporated nor the names of its 
-contributors may be used to endorse or promote products derived from 
-this software without specific prior written permission.
+ * Neither the name of Adobe Systems Incorporated nor the names of its
+ contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.adobe.utils
 {
 	// ===========================================================================
@@ -48,6 +48,18 @@ package com.adobe.utils
 		protected static const USE_NEW_SYNTAX:Boolean			= false;
 		
 		protected static const REGEXP_OUTER_SPACES:RegExp		= /^\s+|\s+$/g;
+		
+		protected static const COMPONENTS:Object				= {
+			120:0,	// x
+			121:1,	// y
+			122:2,	// z
+			119:3,	// w
+			
+			114:0,	// r
+			103:1,	// g
+			98:2,	// b
+			97:3	// a
+		};
 		
 		// ======================================================================
 		//	Properties
@@ -126,12 +138,6 @@ package com.adobe.utils
 				
 				// find opcode
 				var opCode:Array = line.match( /^\w{3}/ig );
-				if ( !opCode ) 
-				{
-					if ( line.length >= 3 )
-						trace( "warning: bad line "+i+": "+lines[i] );
-					continue;
-				}
 				var opFound:OpCode = OPMAP[ opCode[0] ];
 				
 				// if debug is enabled, output the opcodes
@@ -186,11 +192,11 @@ package com.adobe.utils
 				// get operands, use regexp
 				var regs:Array;
 				if ( USE_NEW_SYNTAX )
-					regs = line.match( /vc\[([vif][acost]?)(\d*)?(\.[xyzw](\+\d{1,3})?)?\](\.[xyzw]{1,4})?|([vif][acost]?)(\d*)?(\.[xyzw]{1,4})?/gi );
+					regs = line.match( /vc\[([vif][acost]?)(\d*)?(\.[xyzwrgba](\+\d{1,3})?)?\](\.[xyzwrgba]{1,4})?|([vif][acost]?)(\d*)?(\.[xyzwrgba]{1,4})?/gi );
 				else
-					regs = line.match( /vc\[([vof][actps]?)(\d*)?(\.[xyzw](\+\d{1,3})?)?\](\.[xyzw]{1,4})?|([vof][actps]?)(\d*)?(\.[xyzw]{1,4})?/gi );
+					regs = line.match( /vc\[([vof][actps]?)(\d*)?(\.[xyzwrgba](\+\d{1,3})?)?\](\.[xyzwrgba]{1,4})?|([vof][actps]?)(\d*)?(\.[xyzwrgba]{1,4})?/gi );
 				
-				if ( !regs || regs.length != opFound.numRegister )
+				if ( regs.length != opFound.numRegister )
 				{
 					_error = "error: wrong number of operands. found "+regs.length+" but expected "+opFound.numRegister+".";
 					break;					
@@ -204,7 +210,7 @@ package com.adobe.utils
 				{
 					var isRelative:Boolean = false;
 					var relreg:Array = regs[ j ].match( /\[.*\]/ig );
-					if ( relreg && relreg.length > 0 )
+					if ( relreg.length > 0 )
 					{
 						regs[ j ] = regs[ j ].replace( relreg[ 0 ], "0" );
 						
@@ -214,12 +220,6 @@ package com.adobe.utils
 					}
 					
 					var res:Array = regs[j].match( /^\b[A-Za-z]{1,2}/ig );
-					if ( !res ) 
-					{
-						_error = "error: could not parse operand "+j+" ("+regs[j]+").";
-						badreg = true;
-						break;
-					}
 					var regFound:Register = REGMAP[ res[ 0 ] ];
 					
 					// if debug is enabled, output the registers
@@ -274,7 +274,7 @@ package com.adobe.utils
 					}
 					
 					var regmask:uint		= 0;
-					var maskmatch:Array		= regs[j].match( /(\.[xyzw]{1,4})/ );
+					var maskmatch:Array		= regs[j].match( /(\.[xyzwrgba]{1,4})/ );
 					var isDest:Boolean		= ( j == 0 && !( opFound.flags & OP_NO_DEST ) );
 					var isSampler:Boolean	= ( j == 2 && ( opFound.flags & OP_SPECIAL_TEX ) );
 					var reltype:uint		= 0;
@@ -292,10 +292,11 @@ package com.adobe.utils
 					{
 						regmask = 0;
 						var cv:uint; 
-						var maskLength:uint = maskmatch[0].length;
+						var maskLength:uint = maskmatch[ 0 ].length;
+						var mask:String = maskmatch[ 0 ];
 						for ( var k:int = 1; k < maskLength; k++ )
 						{
-							cv = maskmatch[0].charCodeAt(k) - "x".charCodeAt(0);
+							cv = COMPONENTS[ mask.charCodeAt( k ) ];
 							if ( cv > 2 )
 								cv = 3;
 							if ( isDest )
@@ -323,14 +324,15 @@ package com.adobe.utils
 							break;
 						}
 						reltype = regFoundRel.emitCode;
-						var selmatch:Array = relreg[0].match( /(\.[xyzw]{1,1})/ );						
+						var selmatch:Array = relreg[0].match( /(\.[xyzwrgba]{1,1})/ );						
 						if ( selmatch.length==0 )
 						{
 							_error = "error: bad index register select"; 
 							badreg = true; 
 							break;						
 						}
-						relsel = selmatch[0].charCodeAt(1) - "x".charCodeAt(0);
+						
+						relsel = COMPONENTS[ selmatch[ 0 ].charCodeAt( 1 ) ];
 						if ( relsel > 2 )
 							relsel = 3; 
 						var relofs:Array = relreg[0].match( /\+\d{1,3}/ig );
@@ -361,7 +363,7 @@ package com.adobe.utils
 							if ( verbose )
 								trace( "  emit sampler" );
 							var samplerbits:uint = 5; // type 5 
-							var optsLength:uint = opts == null ? 0 : opts.length;
+							var optsLength:uint = opts.length;
 							var bias:Number = 0; 
 							for ( k = 0; k<optsLength; k++ )
 							{
@@ -450,6 +452,7 @@ package com.adobe.utils
 			if ( verbose )
 				trace( "AGALMiniAssembler.assemble time: " + ( ( getTimer() - start ) / 1000 ) + "s" );
 			
+			_agalcode = agalcode
 			return agalcode;
 		}
 		
@@ -515,30 +518,21 @@ package com.adobe.utils
 			REGMAP[ FS ]	= new Register( FS,	"texture sampler",		0x5,	7,		REG_FRAG | REG_READ );
 			REGMAP[ FO ]	= new Register( FO,	"fragment output",		0x3,	0,		REG_FRAG | REG_WRITE );
 			
-			SAMPLEMAP[ RGBA ]		= new Sampler( RGBA,		SAMPLER_TYPE_SHIFT,			0 );
-			SAMPLEMAP[ DXT1 ]		= new Sampler( DXT1,		SAMPLER_TYPE_SHIFT,			1 );
-			SAMPLEMAP[ DXT5 ]		= new Sampler( DXT5,		SAMPLER_TYPE_SHIFT,			2 );
-			SAMPLEMAP[ D2 ]			= new Sampler( D2,			SAMPLER_DIM_SHIFT,			0 );
-			SAMPLEMAP[ D3 ]			= new Sampler( D3,			SAMPLER_DIM_SHIFT,			2 );
-			SAMPLEMAP[ CUBE ]		= new Sampler( CUBE,		SAMPLER_DIM_SHIFT,			1 );
-			SAMPLEMAP[ MIPNEAREST ]	= new Sampler( MIPNEAREST,	SAMPLER_MIPMAP_SHIFT,		1 );
-			SAMPLEMAP[ MIPLINEAR ]	= new Sampler( MIPLINEAR,	SAMPLER_MIPMAP_SHIFT,		2 );
-			SAMPLEMAP[ MIPNONE ]	= new Sampler( MIPNONE,		SAMPLER_MIPMAP_SHIFT,		0 );
-			SAMPLEMAP[ NOMIP ]		= new Sampler( NOMIP,		SAMPLER_MIPMAP_SHIFT,		0 );
-			SAMPLEMAP[ NEAREST ]	= new Sampler( NEAREST,		SAMPLER_FILTER_SHIFT,		0 );
-			SAMPLEMAP[ LINEAR ]		= new Sampler( LINEAR,		SAMPLER_FILTER_SHIFT,		1 );
-			SAMPLEMAP[ ANISOTROPIC2X ]	= new Sampler( ANISOTROPIC2X, SAMPLER_FILTER_SHIFT, 2 );
-			SAMPLEMAP[ ANISOTROPIC4X ]	= new Sampler( ANISOTROPIC4X, SAMPLER_FILTER_SHIFT,	3 );
-			SAMPLEMAP[ ANISOTROPIC8X ]	= new Sampler( ANISOTROPIC8X, SAMPLER_FILTER_SHIFT,	4 );
-			SAMPLEMAP[ ANISOTROPIC16X ]	= new Sampler( ANISOTROPIC16X, SAMPLER_FILTER_SHIFT,5 );
-			SAMPLEMAP[ CENTROID ]	= new Sampler( CENTROID,	SAMPLER_SPECIAL_SHIFT,		1 << 0 );
-			SAMPLEMAP[ SINGLE ]		= new Sampler( SINGLE,		SAMPLER_SPECIAL_SHIFT,		1 << 1 );
-			SAMPLEMAP[ DEPTH ]		= new Sampler( DEPTH,		SAMPLER_SPECIAL_SHIFT,		1 << 2 );
-			SAMPLEMAP[ REPEAT ]		= new Sampler( REPEAT,		SAMPLER_REPEAT_SHIFT,		1 );
-			SAMPLEMAP[ WRAP ]		= new Sampler( WRAP,		SAMPLER_REPEAT_SHIFT,		1 );
-			SAMPLEMAP[ CLAMP ]		= new Sampler( CLAMP,		SAMPLER_REPEAT_SHIFT,		0 );
-			SAMPLEMAP[ CLAMP_U_REPEAT_V ]	= new Sampler( CLAMP_U_REPEAT_V, SAMPLER_REPEAT_SHIFT, 2 );
-			SAMPLEMAP[ REPEAT_U_CLAMP_V ]	= new Sampler( REPEAT_U_CLAMP_V, SAMPLER_REPEAT_SHIFT, 3 );
+			SAMPLEMAP[ D2 ]			= new Sampler( D2,			SAMPLER_DIM_SHIFT,		0 );
+			SAMPLEMAP[ D3 ]			= new Sampler( D3,			SAMPLER_DIM_SHIFT,		2 );
+			SAMPLEMAP[ CUBE ]		= new Sampler( CUBE,		SAMPLER_DIM_SHIFT,		1 );
+			SAMPLEMAP[ MIPNEAREST ]	= new Sampler( MIPNEAREST,	SAMPLER_MIPMAP_SHIFT,	1 );
+			SAMPLEMAP[ MIPLINEAR ]	= new Sampler( MIPLINEAR,	SAMPLER_MIPMAP_SHIFT,	2 );
+			SAMPLEMAP[ MIPNONE ]	= new Sampler( MIPNONE,		SAMPLER_MIPMAP_SHIFT,	0 );
+			SAMPLEMAP[ NOMIP ]		= new Sampler( NOMIP,		SAMPLER_MIPMAP_SHIFT,	0 );
+			SAMPLEMAP[ NEAREST ]	= new Sampler( NEAREST,		SAMPLER_FILTER_SHIFT,	0 );
+			SAMPLEMAP[ LINEAR ]		= new Sampler( LINEAR,		SAMPLER_FILTER_SHIFT,	1 );
+			SAMPLEMAP[ CENTROID ]	= new Sampler( CENTROID,	SAMPLER_SPECIAL_SHIFT,	1 << 0 );
+			SAMPLEMAP[ SINGLE ]		= new Sampler( SINGLE,		SAMPLER_SPECIAL_SHIFT,	1 << 1 );
+			SAMPLEMAP[ DEPTH ]		= new Sampler( DEPTH,		SAMPLER_SPECIAL_SHIFT,	1 << 2 );
+			SAMPLEMAP[ REPEAT ]		= new Sampler( REPEAT,		SAMPLER_REPEAT_SHIFT,	1 );
+			SAMPLEMAP[ WRAP ]		= new Sampler( WRAP,		SAMPLER_REPEAT_SHIFT,	1 );
+			SAMPLEMAP[ CLAMP ]		= new Sampler( CLAMP,		SAMPLER_REPEAT_SHIFT,	0 );
 		}
 		
 		// ======================================================================
@@ -555,7 +549,6 @@ package com.adobe.utils
 		private static const VERTEX:String						= "vertex";
 		
 		// masks and shifts
-		private static const SAMPLER_TYPE_SHIFT:uint			= 8;
 		private static const SAMPLER_DIM_SHIFT:uint				= 12;
 		private static const SAMPLER_SPECIAL_SHIFT:uint			= 16;
 		private static const SAMPLER_REPEAT_SHIFT:uint			= 20;
@@ -575,7 +568,7 @@ package com.adobe.utils
 		private static const OP_SPECIAL_TEX:uint				= 0x8;
 		private static const OP_SPECIAL_MATRIX:uint				= 0x10;
 		private static const OP_FRAG_ONLY:uint					= 0x20;
-		//private static const OP_VERT_ONLY:uint				= 0x40;
+		private static const OP_VERT_ONLY:uint					= 0x40;
 		private static const OP_NO_DEST:uint					= 0x80;
 		
 		// opcodes
@@ -647,21 +640,12 @@ package com.adobe.utils
 		private static const NOMIP:String						= "nomip";
 		private static const NEAREST:String						= "nearest";
 		private static const LINEAR:String						= "linear";
-		private static const ANISOTROPIC2X:String				= "anisotropic2x"; //Introduced by Flash 14
-		private static const ANISOTROPIC4X:String				= "anisotropic4x"; //Introduced by Flash 14
-		private static const ANISOTROPIC8X:String				= "anisotropic8x"; //Introduced by Flash 14
-		private static const ANISOTROPIC16X:String				= "anisotropic16x"; //Introduced by Flash 14
 		private static const CENTROID:String					= "centroid";
 		private static const SINGLE:String						= "single";
 		private static const DEPTH:String						= "depth";
 		private static const REPEAT:String						= "repeat";
 		private static const WRAP:String						= "wrap";
 		private static const CLAMP:String						= "clamp";
-		private static const REPEAT_U_CLAMP_V:String			= "repeat_u_clamp_v"; //Introduced by Flash 13
-		private static const CLAMP_U_REPEAT_V:String			= "clamp_u_repeat_v"; //Introduced by Flash 13
-		private static const RGBA:String						= "rgba";
-		private static const DXT1:String						= "dxt1";
-		private static const DXT5:String						= "dxt5";
 	}
 }
 

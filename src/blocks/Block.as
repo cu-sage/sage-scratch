@@ -31,24 +31,19 @@
 // sequence from a specification string (e.g. "%n + %n") and type (e.g. reporter).
 
 package blocks {
-import assets.Resources;
-
 import extensions.ExtensionManager;
 
 import flash.display.*;
-import flash.events.*;
-import flash.filters.GlowFilter;
-import flash.geom.*;
-import flash.net.URLLoader;
-import flash.text.*;
-
-import scratch.*;
-
-import translation.Translator;
-
-import uiwidgets.*;
-
-import util.*;
+	import flash.events.*;
+	import flash.filters.GlowFilter;
+	import flash.geom.*;
+	import flash.net.URLLoader;
+	import flash.text.*;
+	import assets.Resources;
+	import translation.Translator;
+	import util.*;
+	import uiwidgets.*;
+	import scratch.*;
 
 public class Block extends Sprite {
 
@@ -77,13 +72,12 @@ public class Block extends Sprite {
 	public var rightToLeft:Boolean;
 
 	public var isHat:Boolean = false;
-	public var isAsyncHat:Boolean = false;
 	public var isReporter:Boolean = false;
 	public var isTerminal:Boolean = false;	// blocks that end a stack like "stop" or "forever"
 
 	// Blocking operations
 	public var isRequester:Boolean = false;
-	public var forceAsync:Boolean = false;	// We've forced requester-like treatment on a non-requester block.
+	public var forcedRequester:Boolean = false;	// We've forced requester-like treatment on a non-requester block.
 	public var requestState:int = 0;		// 0 - no request made, 1 - awaiting response, 2 - data ready
 	public var response:* = null;
 	public var requestLoader:URLLoader = null;
@@ -98,6 +92,8 @@ public class Block extends Sprite {
 	private var labelsAndArgs:Array = [];
 	private var argTypes:Array = [];
 	private var elseLabel:TextField;
+	
+	//private var isIncluded:Boolean;
 
 	private var indentTop:int = 2, indentBottom:int = 3;
 	private var indentLeft:int = 4, indentRight:int = 3;
@@ -115,6 +111,7 @@ public class Block extends Sprite {
 		this.spec = Translator.map(spec);
 		this.type = type;
 		this.op = op;
+		
 
 		if ((Specs.CALL == op) ||
 			(Specs.GET_LIST == op) ||
@@ -127,35 +124,39 @@ public class Block extends Sprite {
 
 		if (color == -1) return; // copy for clone; omit graphics
 
-		var shape:int;
+		createBase(color);
+		
+		addChildAt(base, 0);
+		setSpec(this.spec, defaultArgs);
+
+		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
+	}
+	
+	// SAGE refactor to simplify color change on include/exclude
+	private function createBase(color:int):void {
 		if ((type == " ") || (type == "") || (type == "w")) {
 			base = new BlockShape(BlockShape.CmdShape, color);
 			indentTop = 3;
 		} else if (type == "b") {
 			base = new BlockShape(BlockShape.BooleanShape, color);
 			isReporter = true;
-			forceAsync = Scratch.app.extensionManager.shouldForceAsync(op);
-			isRequester = forceAsync;
 			indentLeft = 9;
 			indentRight = 7;
-		} else if (type == "r" || type == "R") {
+		} else if (type == "r" || type == "R" || type == "rR") {
 			this.type = 'r';
 			base = new BlockShape(BlockShape.NumberShape, color);
 			isReporter = true;
-			forceAsync = (type == 'r') && Scratch.app.extensionManager.shouldForceAsync(op);
-			isRequester = (type == 'R') || forceAsync;
+			isRequester = ((type == 'R') || (type == 'rR'));
+			forcedRequester = (type == 'rR');
 			indentTop = 2;
 			indentBottom = 2;
 			indentLeft = 6;
 			indentRight = 4;
-		} else if (type == "h" || type == 'H') {
+		} else if (type == "h") {
 			base = new BlockShape(BlockShape.HatShape, color);
 			isHat = true;
-			forceAsync = (type == 'h') && Scratch.app.extensionManager.shouldForceAsync(op);
-			isAsyncHat = (type == 'H') || forceAsync;
 			indentTop = 12;
-		}
-		else if (type == "c") {
+		} else if (type == "c") {
 			base = new BlockShape(BlockShape.LoopShape, color);
 		} else if (type == "cf") {
 			base = new BlockShape(BlockShape.FinalLoopShape, color);
@@ -177,10 +178,6 @@ public class Block extends Sprite {
 		} else {
 			base = new BlockShape(BlockShape.RectShape, color);
 		}
-		addChildAt(base, 0);
-		setSpec(this.spec, defaultArgs);
-
-		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
 	}
 
 	public function setSpec(newSpec:String, defaultArgs:Array = null):void {
@@ -222,37 +219,6 @@ public class Block extends Sprite {
 		for each (var item:* in labelsAndArgs) addChild(item);
 		if (defaultArgs) setDefaultArgs(defaultArgs);
 		fixArgLayout();
-	}
-
-	public function get broadcastMsg():String {
-		for each (var arg:Object in args) {
-			if (arg is BlockArg && arg.menuName == "broadcast") {
-				return arg.argValue;
-			}
-		}
-
-		return null;
-	}
-
-	public function set broadcastMsg(listName:String):void {
-		for each (var arg:Object in args) {
-			if (arg is BlockArg && arg.menuName == "broadcast") {
-				arg.setArgValue(listName);
-			}
-		}
-	}
-
-	// Convert a left-to-right argument index into a current argument index:
-	// - If the block is LTR, then return the index as it is,
-	// - Otherwise count back from the end to return the new index.
-	public function getNormalizedArgIndex(ltrIndex:int):int {
-		return rightToLeft ? args.length - 1 - ltrIndex : ltrIndex;
-	}
-
-	// Retrieve the argument which would have the given index in LTR mode,
-	// regardless of whether this block is currently LTR or RTL.
-	public function getNormalizedArg(ltrIndex:int):* {
-		return args[getNormalizedArgIndex(ltrIndex)];
 	}
 
 	public function normalizedArgs():Array {
@@ -338,11 +304,6 @@ public class Block extends Sprite {
 			if (o is TextField) argType = 'label';
 			argTypes.push(argType);
 		}
-	}
-
-	public function argType(arg:DisplayObject):String {
-		var i:int = labelsAndArgs.indexOf(arg);
-		return i == -1 ? '' : argTypes[i];
 	}
 
 	public function allBlocksDo(f:Function):void {
@@ -448,7 +409,6 @@ public class Block extends Sprite {
 			if ('_mouse_' == v) argLabel = Translator.map('mouse-pointer');
 			if ('_myself_' == v) argLabel = Translator.map('myself');
 			if ('_stage_' == v) argLabel = Translator.map('Stage');
-			if ('_random_' == v) argLabel = Translator.map('random position');
 			if (args[i] is BlockArg) args[i].setArgValue(v, argLabel);
 		}
 		defaultArgValues = defaults;
@@ -500,7 +460,7 @@ public class Block extends Sprite {
 		for (i = 0; i < labelsAndArgs.length; i++) {
 			item = labelsAndArgs[i];
 			item.y = indentTop + ((maxH - item.height) / 2) + vOffset;
-			if ((item is BlockArg) && (!BlockArg(item).numberType)) item.y += 1;
+			if ((item is BlockArg) && (!BlockArg(item).isNumber)) item.y += 1;
 		}
 
 		if ([' ', '', 'o'].indexOf(type) >= 0) x = Math.max(x, minCommandWidth); // minimum width for command blocks
@@ -575,10 +535,10 @@ public class Block extends Sprite {
 
 	public function duplicate(forClone:Boolean, forStage:Boolean = false):Block {
 		var newSpec:String = spec;
-		if (op == 'whenClicked') newSpec = forStage ? 'when Stage clicked' : 'when this sprite clicked';
+		if (op == 'whenClicked') newSpec = forStage ? 'when Stage clicked' : 'when this sprite clicked';				
 		var dup:Block = new Block(newSpec, type, (int)(forClone ? -1 : base.color), op);
 		dup.isRequester = isRequester;
-		dup.forceAsync = forceAsync;
+		dup.forcedRequester = forcedRequester;
 		dup.parameterNames = parameterNames;
 		dup.defaultArgValues = defaultArgValues;
 		dup.warpProcFlag = warpProcFlag;
@@ -647,10 +607,6 @@ public class Block extends Sprite {
 	private function collectArgs():void {
 		var i:int;
 		args = [];
-		if (isRequester && requestState == 2) {
-			// Assume this means that our args have changed. See https://github.com/LLK/scratchx/issues/61
-			requestState = 0;
-		}
 		for (i = 0; i < labelsAndArgs.length; i++) {
 			var a:* = labelsAndArgs[i];
 			if ((a is Block) || (a is BlockArg)) args.push(a);
@@ -842,21 +798,25 @@ public class Block extends Sprite {
 	}
 
 	public function showHelp():void {
-		var extName:String = ExtensionManager.unpackExtensionName(op);
-		if (extName) {
-			if (Scratch.app.extensionManager.isInternal(extName)) {
-				Scratch.app.showTip('ext:' + extName);
-			}
-			else {
-				DialogBox.notify(
-						'Help Missing',
-						'There is no documentation available for experimental extension "' + extName + '".',
-						Scratch.app.stage);
-			}
+		var i:int = -1;
+		if((i = op.indexOf('.')) > -1) {
+			var extName:String = op.substr(0, i);
+			if(Scratch.app.extensionManager.isInternal(extName))
+				Scratch.app.showTip('ext:'+extName);
+			else
+				DialogBox.notify('Help Missing', 'There is no documentation available for experimental extension "'+extName+'".', Scratch.app.stage);
 		}
 		else {
 			Scratch.app.showTip(op);
 		}
+	}
+	
+	public function sageInclude():void {
+		Scratch.app.paletteBuilder.updateBlock(this.spec, true);
+	}
+	
+	public function sageExclude():void {
+		Scratch.app.paletteBuilder.updateBlock(this.spec, false);
 	}
 
 	public function duplicateStack(deltaX:Number, deltaY:Number):void {
@@ -921,7 +881,14 @@ public class Block extends Sprite {
 	/* Dragging */
 
 	public function objToGrab(evt:MouseEvent):Block {
-		if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
+		//if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
+		if (isEmbeddedParameter() || isInPalette()) 
+		{
+			if (!Scratch.app.getPaletteBuilder().blockIncluded(this) && Scratch.app.interp.sagePlayMode)
+				return null; // block should not respond when restricted
+			else
+				return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
+		}
 		return this;
 	}
 
@@ -930,14 +897,6 @@ public class Block extends Sprite {
 	public function click(evt:MouseEvent):void {
 		if (editArg(evt)) return;
 		Scratch.app.runtime.interp.toggleThread(topBlock(), Scratch.app.viewedObj(), 1);
-	}
-
-	public function demo():void{
-		//make a test duplicate and exec
-		var b:Block = this.duplicate(false);
-		b.nextBlock = null;
-		b.visible = false;
-		Scratch.app.runtime.interp.toggleThread(b, Scratch.app.viewedObj(), 1);
 	}
 
 	public function doubleClick(evt:MouseEvent):void {
@@ -1045,10 +1004,10 @@ public class Block extends Sprite {
 			space = true;
 			var ba:BlockArg, b:Block, tf:TextField;
 			if ((ba = x as BlockArg)) {
-				s += ba.numberType ? "(" : "[";
+				s += ba.isNumber ? "(" : "[";
 				s += ba.argValue;
 				if (!ba.isEditable) s += " v";
-				s += ba.numberType ? ")" : "]";
+				s += ba.isNumber ? ")" : "]";
 			} else if ((b = x as Block)) {
 				s += b.getSummary();
 			} else if ((tf = x as TextField)) {

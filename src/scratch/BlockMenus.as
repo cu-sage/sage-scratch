@@ -18,26 +18,17 @@
  */
 
 package scratch {
-import blocks.*;
-
-import extensions.ExtensionManager;
-
-import filters.*;
-
-import flash.display.*;
-import flash.events.*;
-import flash.geom.*;
-import flash.ui.*;
-
-import sound.*;
-
-import translation.Translator;
-
-import ui.ProcedureSpecEditor;
-
-import uiwidgets.*;
-
-import util.*;
+	import flash.display.*;
+	import flash.events.*;
+	import flash.geom.*;
+	import flash.ui.*;
+	import blocks.*;
+	import filters.*;
+	import sound.*;
+	import translation.Translator;
+	import ui.ProcedureSpecEditor;
+	import uiwidgets.*;
+	import util.*;
 
 public class BlockMenus implements DragClient {
 
@@ -65,7 +56,7 @@ public class BlockMenus implements DragClient {
 			if ((comparisonOps.indexOf(op)) > -1) { menuHandler.changeOpMenu(evt, comparisonOps); return; }
 			if (menuName == null) { menuHandler.genericBlockMenu(evt); return; }
 		}
-		if (ExtensionManager.hasExtensionPrefix(op) && menuHandler.extensionMenu(evt, menuName)) return;
+		if (op.indexOf('.') > -1 && menuHandler.extensionMenu(evt, menuName)) return;
 		if (menuName == 'attribute') menuHandler.attributeMenu(evt);
 		if (menuName == 'backdrop') menuHandler.backdropMenu(evt);
 		if (menuName == 'booleanSensor') menuHandler.booleanSensorMenu(evt);
@@ -89,11 +80,10 @@ public class BlockMenus implements DragClient {
 		if (menuName == 'scrollAlign') menuHandler.scrollAlignMenu(evt);
 		if (menuName == 'sensor') menuHandler.sensorMenu(evt);
 		if (menuName == 'sound') menuHandler.soundMenu(evt);
-		if (menuName == 'spriteOnly') menuHandler.spriteMenu(evt, false, false, false, true, false);
-		if (menuName == 'spriteOrMouse') menuHandler.spriteMenu(evt, true, false, false, false, false);
-		if (menuName == 'location') menuHandler.spriteMenu(evt, true, false, false, false, true);
-		if (menuName == 'spriteOrStage') menuHandler.spriteMenu(evt, false, false, true, false, false);
-		if (menuName == 'touching') menuHandler.spriteMenu(evt, true, true, false, false, false);
+		if (menuName == 'spriteOnly') menuHandler.spriteMenu(evt, false, false, false, true);
+		if (menuName == 'spriteOrMouse') menuHandler.spriteMenu(evt, true, false, false, false);
+		if (menuName == 'spriteOrStage') menuHandler.spriteMenu(evt, false, false, true, false);
+		if (menuName == 'touching') menuHandler.spriteMenu(evt, true, true, false, false);
 		if (menuName == 'stageOrThis') menuHandler.stageOrThisSpriteMenu(evt);
 		if (menuName == 'stop') menuHandler.stopMenu(evt);
 		if (menuName == 'timeAndDate') menuHandler.timeAndDateMenu(evt);
@@ -131,11 +121,10 @@ public class BlockMenus implements DragClient {
 //			handler.scrollAlignMenu(evt);
 			handler.sensorMenu(evt);
 			handler.soundMenu(evt);
-			handler.spriteMenu(evt, false, false, false, true, false);
-			handler.spriteMenu(evt, true, false, false, false, false);
-			handler.spriteMenu(evt, true, false, false, false, true);
-			handler.spriteMenu(evt, false, false, true, false, false);
-			handler.spriteMenu(evt, true, true, false, false, false);
+			handler.spriteMenu(evt, false, false, false, true);
+			handler.spriteMenu(evt, true, false, false, false);
+			handler.spriteMenu(evt, false, false, true, false);
+			handler.spriteMenu(evt, true, true, false, false);
 			handler.stageOrThisSpriteMenu(evt);
 			handler.stopMenu(evt);
 			handler.timeAndDateMenu(evt);
@@ -145,7 +134,7 @@ public class BlockMenus implements DragClient {
 			handler.videoStateMenu(evt);
 		}
 		return [
-			'up arrow', 'down arrow', 'right arrow', 'left arrow', 'space', 'any',
+			'up arrow', 'down arrow', 'right arrow', 'left arrow', 'space',
 			'other scripts in sprite', 'other scripts in stage',
 			'backdrop #', 'backdrop name', 'volume', 'OK', 'Cancel',
 			'Edit Block', 'Rename' , 'New name', 'Delete', 'Broadcast', 'New Message', 'Message Name',
@@ -168,7 +157,7 @@ public class BlockMenus implements DragClient {
 		// translated. This mechanism prevents translating proper names such as sprite,
 		// costume, or variable names.
 		function isGeneric(s:String):Boolean {
-			return ['duplicate', 'delete', 'add comment', 'clean up'].indexOf(s) > -1;
+			return ['duplicate', 'delete', 'add comment'].indexOf(s) > -1;
 		}
 		switch (menuName) {
 		case 'attribute':
@@ -184,10 +173,8 @@ public class BlockMenus implements DragClient {
 			return ['delete list'].indexOf(item) > -1;
 		case 'sound':
 			return ['record...'].indexOf(item) > -1;
-		case 'sprite':
 		case 'spriteOnly':
 		case 'spriteOrMouse':
-		case 'location':
 		case 'spriteOrStage':
 		case 'touching':
 			return false; // handled directly by menu code
@@ -216,13 +203,9 @@ public class BlockMenus implements DragClient {
 	}
 
 	private function attributeMenu(evt:MouseEvent):void {
-		// If all else fails, fall back to the stage menus (better than nothing?)
-		var obj:* = app.stagePane;
-		if (block) {
-			var targetArg:BlockArg = block.getNormalizedArg(1) as BlockArg;
-			if (targetArg) {
-				obj = app.stagePane.objNamed(targetArg.argValue);
-			}
+		var obj:*;
+		if (block && block.args[1]) {
+			obj = app.stagePane.objNamed(block.args[1].argValue);
 		}
 		var attributes:Array = obj is ScratchStage ? stageAttributes : spriteAttributes;
 		var m:Menu = new Menu(setBlockArg, 'attribute');
@@ -311,7 +294,7 @@ public class BlockMenus implements DragClient {
 
 	private function keyMenu(evt:MouseEvent):void {
 		var ch:int;
-		var namedKeys:Array = ['space', 'up arrow', 'down arrow', 'right arrow', 'left arrow', 'any'];
+		var namedKeys:Array = ['up arrow', 'down arrow', 'right arrow', 'left arrow', 'space'];
 		var m:Menu = new Menu(setBlockArg, 'key');
 		for each (var s:String in namedKeys) m.addItem(s);
 		for (ch = 97; ch < 123; ch++) m.addItem(String.fromCharCode(ch)); // a-z
@@ -347,12 +330,7 @@ public class BlockMenus implements DragClient {
 	}
 
 	private function notePicker(evt:MouseEvent):void {
-		function pianoCallback(note:int):void{
-			setBlockArg(note);
-			block.demo();
-
-		}
-		var piano:Piano = new Piano(block.base.color, app.viewedObj().instrument, pianoCallback);
+		var piano:Piano = new Piano(block.base.color, app.viewedObj().instrument, setBlockArg);
 		if (!isNaN(blockArg.argValue)) {
 			piano.selectNote(int(blockArg.argValue));
 		}
@@ -404,38 +382,35 @@ public class BlockMenus implements DragClient {
 		app.soundsPart.recordSound();
 	}
 
-	private function spriteMenu(evt:MouseEvent, includeMouse:Boolean, includeEdge:Boolean, includeStage:Boolean, includeSelf:Boolean, includeRandom:Boolean):void {
+	private function spriteMenu(evt:MouseEvent, includeMouse:Boolean, includeEdge:Boolean, includeStage:Boolean, includeSelf:Boolean):void {
 		function setSpriteArg(s:*):void {
 			if (blockArg == null) return;
 			if (s == 'edge') blockArg.setArgValue('_edge_', Translator.map('edge'));
 			else if (s == 'mouse-pointer') blockArg.setArgValue('_mouse_', Translator.map('mouse-pointer'));
 			else if (s == 'myself') blockArg.setArgValue('_myself_', Translator.map('myself'));
 			else if (s == 'Stage') blockArg.setArgValue('_stage_', Translator.map('Stage'));
-			else if (s == 'random position') blockArg.setArgValue('_random_', Translator.map('random position'));
 			else blockArg.setArgValue(s);
 			if (block.op == 'getAttribute:of:') {
 				var obj:ScratchObj = app.stagePane.objNamed(s);
-				var attribArg:BlockArg = block.getNormalizedArg(0);
-				var attr:String = attribArg.argValue;
+				var attr:String = block.args[0].argValue;
 				var validAttrs:Array = obj && obj.isStage ? stageAttributes : spriteAttributes;
 				if (validAttrs.indexOf(attr) == -1 && !obj.ownsVar(attr)) {
-					attribArg.setArgValue(validAttrs[0]);
+					block.args[0].setArgValue(validAttrs[0]);
 				}
 			}
 			Scratch.app.setSaveNeeded();
 		}
 		var spriteNames:Array = [];
 		var m:Menu = new Menu(setSpriteArg, 'sprite');
-		if (includeMouse) m.addItem(Translator.map('mouse-pointer'), 'mouse-pointer');
-		if (includeRandom) m.addItem(Translator.map('random position'), 'random position');
-		if (includeEdge) m.addItem(Translator.map('edge'), 'edge');
+		if (includeMouse) m.addItem('mouse-pointer', 'mouse-pointer');
+		if (includeEdge) m.addItem('edge', 'edge');
 		m.addLine();
 		if (includeStage) {
-			m.addItem(Translator.map('Stage'), 'Stage');
+			m.addItem(app.stagePane.objName, 'Stage');
 			m.addLine();
 		}
 		if (includeSelf && !app.viewedObj().isStage) {
-			m.addItem(Translator.map('myself'), 'myself');
+			m.addItem('myself', 'myself');
 			m.addLine();
 			spriteNames.push(app.viewedObj().objName);
 		}
@@ -524,15 +499,37 @@ public class BlockMenus implements DragClient {
 		if (!block) return;
 		m.addLine();
 		if (!isInPalette(block)) {
-			if (!block.isProcDef()) {
+			if (!block.isProcDef() && (!(!stackIncluded(block) && app.interp.sagePlayMode))) {
 				m.addItem('duplicate', duplicateStack);
 			}
-			m.addItem('delete', block.deleteStack);
-			m.addLine();
-			m.addItem('add comment', block.addComment);
+			if(!(!app.getPaletteBuilder().blockIncluded(block) && app.interp.sagePlayMode)) {
+				m.addItem('delete', block.deleteStack);
+				m.addLine();
+				m.addItem('add comment', block.addComment);
+			}
 		}
-		m.addItem('help', block.showHelp);
+		else // SAGE restrict in palette
+		{
+			var category:int = app.getPaletteBuilder().getBlockCategory(block.spec);
+			if(app.interp.sageDesignMode && app.getPaletteBuilder().paletteIncluded(category))
+			{
+				if(app.getPaletteBuilder().blockLabelCategoryIncluded(block.spec, category))
+					m.addItem('exclude', block.sageExclude);
+				else
+					m.addItem('include', block.sageInclude);
+			}
+		}
+		if(!(!app.getPaletteBuilder().blockIncluded(block) && app.interp.sagePlayMode))
+			m.addItem('help', block.showHelp);
 		m.addLine();
+	}	
+	
+	private function stackIncluded(b:Block):Boolean {
+		while (b != null) {
+			if (!app.getPaletteBuilder().blockIncluded(b)) return false;
+			else b = b.nextBlock;	
+		}
+		return true;
 	}
 
 	private function duplicateStack():void {
@@ -557,25 +554,7 @@ public class BlockMenus implements DragClient {
 		var m:Menu = new Menu(null, 'proc');
 		addGenericBlockItems(m);
 		m.addItem('edit', editProcSpec);
-		if (block.op==Specs.CALL) {
-			m.addItem('define', jumpToProcDef);
-		}
 		showMenu(m);
-	}
-
-	private function jumpToProcDef():void {
-		if(!app.editMode) return;
-		if (block.op != Specs.CALL) return;
-		var def:Block = app.viewedObj().lookupProcedure(block.spec);
-		if (!def) return;
-		var pane:ScriptsPane = def.parent as ScriptsPane;
-		if (!pane) return;
-		if (pane.parent is ScrollFrame) {
-		   pane.x = 5 - def.x*pane.scaleX;
-		   pane.y = 5 - def.y*pane.scaleX;
-		   (pane.parent as ScrollFrame).constrainScroll();
-		   (pane.parent as ScrollFrame).updateScrollbars();
-		}
 	}
 
 	private function editProcSpec():void {
@@ -616,7 +595,6 @@ public class BlockMenus implements DragClient {
 			}
 		}
 		app.runtime.updateCalls();
-		app.scriptsPane.fixCommentLayout();
 		app.updatePalette();
 	}
 
@@ -683,20 +661,23 @@ public class BlockMenus implements DragClient {
 	}
 
 	private function renameVar():void {
-		var oldName:String = blockVarOrListName();
 		function doVarRename(dialog:DialogBox):void {
 			var newName:String = dialog.getField('New name').replace(/^\s+|\s+$/g, '');
-			if (newName.length == 0 || block.op != Specs.GET_VAR) return;
+			if (newName.length == 0 || app.viewedObj().lookupVar(newName)) return;
+			if (block.op != Specs.GET_VAR) return;
+			var oldName:String = blockVarOrListName();
 
 			if (oldName.charAt(0) == '\u2601') { // Retain the cloud symbol
 				newName = '\u2601 ' + newName;
 			}
 
-			app.runtime.renameVariable(oldName, newName);
+			app.runtime.renameVariable(oldName, newName, block);
+			setBlockVarOrListName(newName);
+			app.updatePalette();
 		}
 		var d:DialogBox = new DialogBox(doVarRename);
 		d.addTitle(Translator.map('Rename') + ' ' + blockVarOrListName());
-		d.addField('New name', 120, oldName);
+		d.addField('New name', 120);
 		d.addAcceptCancelButtons('OK');
 		d.showOnStage(app.stage);
 	}
@@ -782,27 +763,14 @@ public class BlockMenus implements DragClient {
 
 	// ***** Broadcast menu *****
 
-	private function renameBroadcast():void {
-		function doVarRename(dialog:DialogBox):void {
-			var newName:String = dialog.getField('New name').replace(/^\s+|\s+$/g, '');
-			if (newName.length == 0) return;
-			var oldName:String = block.broadcastMsg;
-
-			app.runtime.renameBroadcast(oldName, newName);
-		}
-		var d:DialogBox = new DialogBox(doVarRename);
-		d.addTitle(Translator.map('Rename') + ' ' + block.broadcastMsg);
-		d.addField('New name', 120, block.broadcastMsg);
-		d.addAcceptCancelButtons('OK');
-		d.showOnStage(app.stage);
-	}
-
 	private function broadcastMenu(evt:MouseEvent):void {
 		function broadcastMenuSelection(selection:*):void {
 			if (selection is Function) selection();
 			else setBlockArg(selection);
 		}
 		var msgNames:Array = app.runtime.collectBroadcasts();
+		if (msgNames.indexOf('message1') <= -1) msgNames.push('message1');
+		msgNames.sort();
 
 		var m:Menu = new Menu(broadcastMenuSelection, 'broadcast');
 		for each (var msg:String in msgNames) m.addItem(msg);
@@ -827,24 +795,18 @@ public class BlockMenus implements DragClient {
 	private function broadcastInfoMenu(evt:MouseEvent):void {
 		function showBroadcasts(selection:*):void {
 			if (selection is Function) { selection(); return; }
-			var sprites:Array = null; // so we can tell if it got set below
-			if (block.args[0] is BlockArg) {
-				var msg:String = block.args[0].argValue;
-				if (selection == 'show senders') sprites = app.runtime.allSendersOfBroadcast(msg);
-				if (selection == 'show receivers') sprites = app.runtime.allReceiversOfBroadcast(msg);
-			}
+			var msg:String = block.args[0].argValue;
+			var sprites:Array = [];
+			if (selection == 'show senders') sprites = app.runtime.allSendersOfBroadcast(msg);
+			if (selection == 'show receivers') sprites = app.runtime.allReceiversOfBroadcast(msg);
 			if (selection == 'clear senders/receivers') sprites = [];
-			if (sprites!=null) app.highlightSprites(sprites);
+			app.highlightSprites(sprites);
 		}
 		var m:Menu = new Menu(showBroadcasts, 'broadcastInfo');
 		addGenericBlockItems(m);
 		if (!isInPalette(block)) {
-			// only add these items if it doesn't contain an expression
-			if (block.args[0] is BlockArg) {
-				m.addItem('rename broadcast', renameBroadcast);
-				m.addItem('show senders');
-				m.addItem('show receivers');
-			}
+			m.addItem('show senders');
+			m.addItem('show receivers');
 			m.addItem('clear senders/receivers');
 		}
 		showMenu(m);

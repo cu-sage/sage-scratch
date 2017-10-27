@@ -29,6 +29,7 @@
 package util {
 	import flash.display.BitmapData;
 	import flash.utils.*;
+	import uiwidgets.DialogBox;
 
 public class JSON {
 
@@ -259,6 +260,24 @@ public class JSON {
 	private function error(msg:String):* {
 		throw new Error(msg + " [pos=" + src.pos()) + "] in " + buf;
 	}
+	
+	// helper to convert Object to Dictionary
+	public static function objToDict(obj:Object):Dictionary {
+		var dict:Dictionary = new Dictionary();
+		for (var k:String in obj) {
+			dict[k] = obj[k];
+		}
+		return dict;
+	}
+	
+	// deep array copy
+	public static function clone(src:Object):* 
+	{ 
+    	var ba:ByteArray = new ByteArray(); 
+    	ba.writeObject(src); 
+    	ba.position = 0; 
+    	return(ba.readObject()); 
+	}
 
 	//----------------------------
 	// Object to JSON support
@@ -277,7 +296,6 @@ public class JSON {
 		if (value is Number) buf += isFinite(value) ? value : '0';
 		else if (value is Boolean) buf += value;
 		else if (value is String) buf += '"' + encodeString(value) + '"';
-		else if (value is ByteArray) buf += '"' + encodeString(value.toString()) + '"';
 		else if (value == null) buf += "null";
 		else if (value is Array) writeArray(value);
 		else if (value is BitmapData) buf += "null"; // bitmaps sometimes appear in old project info objects
@@ -290,7 +308,7 @@ public class JSON {
 		buf += "{";
 		if (doFormatting) buf += "\n";
 		indent();
-		if (isClass(obj, 'Object') || isClass(obj, 'Dictonary')) {
+		if (isClass(obj, 'Object') || isClass(obj, 'Dictionary')) {
 			for (var k:String in obj) writeKeyValue(k, obj[k]);
 		} else {
 			obj.writeJSON(this);

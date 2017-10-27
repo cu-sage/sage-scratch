@@ -23,23 +23,21 @@
 // This part holds the palette and scripts pane for the current sprite (or stage).
 
 package ui.parts {
-import flash.display.*;
-import flash.text.*;
-import flash.utils.getTimer;
-
-import scratch.*;
-
-import ui.*;
-
-import uiwidgets.*;
+	import flash.display.*;
+	import flash.text.*;
+	import flash.utils.getTimer;
+	import scratch.*;
+	import ui.*;
+	import uiwidgets.*;
+	import util.*;
 
 public class ScriptsPart extends UIPart {
 
 	private var shape:Shape;
 	private var selector:PaletteSelector;
 	private var spriteWatermark:Bitmap;
-	protected var paletteFrame:ScrollFrame;
-	protected var scriptsFrame:ScrollFrame;
+	private var paletteFrame:ScrollFrame;
+	private var scriptsFrame:ScrollFrame;
 	private var zoomWidget:ZoomWidget;
 
 	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor, true);
@@ -68,33 +66,31 @@ public class ScriptsPart extends UIPart {
 		paletteFrame.setContents(palette);
 		addChild(paletteFrame);
 
-		app.palette = palette;
-		app.scriptsPane = addScriptsPane();
-
-		addChild(zoomWidget = new ZoomWidget(app.scriptsPane));
-	}
-
-	protected function addScriptsPane():ScriptsPane {
 		var scriptsPane:ScriptsPane = new ScriptsPane(app);
 		scriptsFrame = new ScrollFrame();
 		scriptsFrame.setContents(scriptsPane);
 		addChild(scriptsFrame);
-		
-		return scriptsPane;
+
+		app.palette = palette;
+		app.scriptsPane = scriptsPane;
+
+		addChild(zoomWidget = new ZoomWidget(scriptsPane));
 	}
 
-	public function resetCategory():void {
-		if (Scratch.app.isExtensionDevMode) {
-			selector.select(Specs.myBlocksCategory);
-		} else {
-			selector.select(Specs.motionCategory);
-		}
-	}
+	public function resetCategory():void { selector.select(Specs.motionCategory) }
 
 	public function updatePalette():void {
 		selector.updateTranslation();
 		selector.select(selector.selectedCategory);
 	}
+	
+	public function getSagePalettes():Array {
+		return selector.sageCategories;
+	}
+	
+	public function setSagePalettes(palettes:Array):void {
+		selector.sageCategories = util.JSON.clone(palettes);
+	}	
 
 	public function updateSpriteWatermark():void {
 		var target:ScratchObj = app.viewedObj();
@@ -108,7 +104,7 @@ public class ScriptsPart extends UIPart {
 	public function step():void {
 		// Update the mouse readouts. Do nothing if they are up-to-date (to minimize CPU load).
 		var target:ScratchObj = app.viewedObj();
-		if (!target || target.isStage) {
+		if (target.isStage) {
 			if (xyDisplay.visible) xyDisplay.visible = false;
 		} else {
 			if (!xyDisplay.visible) xyDisplay.visible = true;
@@ -146,32 +142,20 @@ public class ScriptsPart extends UIPart {
 	}
 
 	private function fixlayout():void {
-		if (!app.isMicroworld) {
-			selector.x = 1;
-			selector.y = 5;
-			paletteFrame.x = selector.x;
-			paletteFrame.y = selector.y + selector.height + 2;
-			paletteFrame.setWidthHeight(selector.width + 1, h - paletteFrame.y - 2); // 5
-
-			scriptsFrame.x = selector.x + selector.width + 2;
-			scriptsFrame.y = selector.y + 1;
-
-			zoomWidget.x = w - zoomWidget.width - 15;
-			zoomWidget.y = h - zoomWidget.height - 15;
-		}
-		else {
-			scriptsFrame.x = 1;
-			scriptsFrame.y = 1;
-
-			selector.visible = false;
-			paletteFrame.visible = false;
-			zoomWidget.visible = false;
-		}
+		selector.x = 1;
+		selector.y = 5;
+		paletteFrame.x = selector.x;
+		paletteFrame.y = selector.y + selector.height + 2;
+		paletteFrame.setWidthHeight(selector.width + 1, h - paletteFrame.y - 2); // 5
+		scriptsFrame.x = selector.x + selector.width + 2;
+		scriptsFrame.y = selector.y + 1;
 		scriptsFrame.setWidthHeight(w - scriptsFrame.x - 5, h - scriptsFrame.y - 5);
 		spriteWatermark.x = w - 60;
 		spriteWatermark.y = scriptsFrame.y + 10;
 		xyDisplay.x = spriteWatermark.x + 1;
 		xyDisplay.y = spriteWatermark.y + 43;
+		zoomWidget.x = w - zoomWidget.width - 15;
+		zoomWidget.y = h - zoomWidget.height - 15;
 	}
 
 	private function redraw():void {
@@ -190,12 +174,10 @@ public class ScriptsPart extends UIPart {
 		var lineY:int = selector.y + selector.height;
 		var darkerBorder:int = CSS.borderColor - 0x141414;
 		var lighterBorder:int = 0xF2F2F2;
-		if (!app.isMicroworld) {
-			g.lineStyle(1, darkerBorder, 1, true);
-			hLine(g, paletteFrame.x + 8, lineY, paletteW - 20);
-			g.lineStyle(1, lighterBorder, 1, true);
-			hLine(g, paletteFrame.x + 8, lineY + 1, paletteW - 20);
-		}
+		g.lineStyle(1, darkerBorder, 1, true);
+		hLine(g, paletteFrame.x + 8, lineY, paletteW - 20);
+		g.lineStyle(1, lighterBorder, 1, true);
+		hLine(g, paletteFrame.x + 8, lineY + 1, paletteW - 20);
 
 		g.lineStyle(1, darkerBorder, 1, true);
 		g.drawRect(scriptsFrame.x - 1, scriptsFrame.y - 1, scriptsW + 1, scriptsH + 1);

@@ -82,7 +82,7 @@ public class FilterPack {
 	}
 
 	public function setFilter(filterName:String, newValue:Number):Boolean {
-		if (newValue != newValue) return false;
+		if (isNaN(newValue)) return false;
 		if (filterName == "brightness") newValue = Math.max(-100, Math.min(newValue, 100));
 		if (filterName == "color") newValue = newValue % 200;
 		if (filterName == "ghost") newValue = Math.max(0, Math.min(newValue, 100));
@@ -102,17 +102,15 @@ public class FilterPack {
 		return result;
 	}
 
-	private static var emptyArray:Array = [];
-	private var newFilters:Array = [];
 	public function buildFilters(force:Boolean = false):Array {
 		// disable filters not running on x86 because PixelBender is really slow
-		if((Scratch.app.isIn3D || Capabilities.cpuArchitecture != 'x86') && !force) return emptyArray;
+		if((Scratch.app.isIn3D || Capabilities.cpuArchitecture != 'x86') && !force) return [];
 
 		var scale:Number = targetObj.isStage ? 1 : Scratch.app.stagePane.scaleX;
 		var srcWidth:Number = targetObj.width * scale;
 		var srcHeight:Number = targetObj.height * scale;
 		var n:Number;
-		newFilters.length = 0;
+		var newFilters:Array = [];
 
 		if (filterDict["whirl"] != 0) {
 			// range: -infinity..infinity

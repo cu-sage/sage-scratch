@@ -38,17 +38,16 @@ import translation.Translator;
 		 *
 		 */
 		static public function add(dObj:DisplayObject, opts:Object):void {
-			if (!instance) instance = new SimpleTooltip();
-			if (!dObj) return;
+			if(!instance) instance = new SimpleTooltip();
 			instance.addTooltip(dObj, opts);
 		}
 
 		static public function hideAll():void {
-			if (instance) instance.forceHide();
+			if(instance) instance.forceHide();
 		}
 
 		static public function showOnce(dObj:DisplayObject, opts:Object):void {
-			if (!instance) instance = new SimpleTooltip();
+			if(!instance) instance = new SimpleTooltip();
 			instance.showOnce(dObj, opts);
 		}
 	}

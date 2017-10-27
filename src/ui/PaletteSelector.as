@@ -26,8 +26,10 @@
 
 package ui {
 	import flash.display.*;
+	import flash.utils.Dictionary;
 	import translation.Translator;
 	import scratch.PaletteBuilder;
+	import uiwidgets.*;
 
 public class PaletteSelector extends Sprite {
 
@@ -35,7 +37,15 @@ public class PaletteSelector extends Sprite {
 		'Motion', 'Looks', 'Sound', 'Pen', 'Data', // column 1
 		'Events', 'Control', 'Sensing', 'Operators', 'More Blocks']; // column 2
 
+	public var sageCategories:Array = [
+		false, // placeholder
+		true, true, true, true, true, // column 1
+		true, true, true, true, true]; // column 2
+		
+	public var sageBlockIncludes:Dictionary;
+
 	public var selectedCategory:int = 0;
+	
 	private var app:Scratch;
 
 	public function PaletteSelector(app:Scratch) {
@@ -43,12 +53,25 @@ public class PaletteSelector extends Sprite {
 		initCategories();
 	}
 
-	public static function strings():Array {
-		return categories.concat([
-			'when Stage clicked'
-		]);
+	public static function strings():Array { return categories }
+	
+	public function updateTranslation():void { 
+		initCategories();
+		updateCategorySelection(); 
 	}
-	public function updateTranslation():void { initCategories() }
+	
+	// update palette selected if entering play mode on unSageSelected palette 
+	private function updateCategorySelection():void {
+		if(app.interp.sagePlayMode && !sageCategories[selectedCategory])
+		{
+			for(var i:int=1; i<sageCategories.length; ++i)
+				if(sageCategories[i])
+				{
+					select(i);
+					break;
+				}
+		}
+	}
 
 	public function select(id:int, shiftKey:Boolean = false):void {
 		for (var i:int = 0; i < numChildren; i++) {
@@ -58,6 +81,25 @@ public class PaletteSelector extends Sprite {
 		var oldID:int = selectedCategory;
 		selectedCategory = id;
 		app.getPaletteBuilder().showBlocksForCategory(selectedCategory, (id != oldID), shiftKey);
+	}
+	
+	public function sageSelect(pLabel:String, checkbox:IconButton):void {
+		var entry:Array = Specs.entryForCategory(pLabel);
+		sageCategories[entry[0]] = !sageCategories[entry[0]];
+		var offCount:int = 0;
+		for(var i:int=0; i<sageCategories.length; ++i)
+			if(!sageCategories[i])
+				++offCount;
+		if(offCount == sageCategories.length)
+		{
+			sageCategories[entry[0]] = !sageCategories[entry[0]];
+			checkbox.turnOn();
+			DialogBox.notify('SAGE Alert', 'At least one palette must be selected');
+		}
+		else { // update BlockPalette & ScriptsPane
+			app.getStage().refresh();
+			app.getViewedObject().updateScriptsAfterTranslation(); // resest ScriptsPane
+		}
 	}
 
 	private function initCategories():void {
@@ -75,7 +117,7 @@ public class PaletteSelector extends Sprite {
 				y = startY;
 			}
 			var entry:Array = Specs.entryForCategory(categories[i]);
-			var item:PaletteSelectorItem = new PaletteSelectorItem(entry[0], Translator.map(entry[1]), entry[2]);
+			var item:PaletteSelectorItem = new PaletteSelectorItem(entry[0], Translator.map(entry[1]), entry[2], app.interp.sageDesignMode, app.interp.sagePlayMode, sageCategories[entry[0]]);
 			itemH = item.height;
 			item.x = x;
 			item.y = y;
@@ -91,5 +133,7 @@ public class PaletteSelector extends Sprite {
 		g.beginFill(0xFFFF00, 0); // invisible (alpha = 0) rectangle used to set size
 		g.drawRect(0, 0, w, h);
 	}
+	
+	
 
 }}

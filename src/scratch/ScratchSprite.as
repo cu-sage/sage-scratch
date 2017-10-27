@@ -24,25 +24,19 @@
 // rotation style, size, draggability, and pen state.
 
 package scratch {
-import filters.FilterPack;
-
-import flash.display.*;
-import flash.events.*;
+	import flash.display.*;
+	import flash.events.*;
+import flash.filters.GlowFilter;
 import flash.geom.*;
-import flash.net.FileReference;
+import flash.geom.ColorTransform;
 import flash.utils.*;
-
-import interpreter.Variable;
-
-import logging.LogLevel;
-
-import translation.Translator;
-
-import uiwidgets.Menu;
-
-import util.*;
-
-import watchers.ListWatcher;
+	import flash.net.FileReference;
+	import filters.FilterPack;
+	import interpreter.Variable;
+	import translation.Translator;
+	import uiwidgets.Menu;
+	import util.*;
+	import watchers.ListWatcher;
 
 public class ScratchSprite extends ScratchObj {
 
@@ -71,8 +65,8 @@ public class ScratchSprite extends ScratchObj {
 	public var spriteInfo:Object = {};
 	private var geomShape:Shape;
 
-	public function ScratchSprite(name:String = null) {
-		objName = Scratch.app.stagePane.unusedSpriteName(name || Translator.map('Sprite1'));
+	public function ScratchSprite(name:String = 'Sprite1') {
+		objName = name;
 		filterPack = new FilterPack(this);
 		initMedia();
 		img = new Sprite();
@@ -376,10 +370,10 @@ public class ScratchSprite extends ScratchObj {
 			if (Scratch.app.isIn3D) {
 				var oldGhost:Number = filterPack.getFilterSetting('ghost');
 				filterPack.setFilter('ghost', 0);
-				updateEffectsFor3D();
+				updateEffects();
 				var bm:BitmapData = Scratch.app.render3D.getRenderedChild(this, b.width * scaleX, b.height * scaleY);
 				filterPack.setFilter('ghost', oldGhost);
-				updateEffectsFor3D();
+				updateEffects();
 //	    		if(objName == 'Tank 2 down bumper ') {
 //		    		if(!testSpr.parent) {
 //			    		testBM.filters = [new GlowFilter(0xFF00FF, 0.8)];
@@ -447,6 +441,7 @@ public class ScratchSprite extends ScratchObj {
 	}
 
 	public override function defaultArgsFor(op:String, specDefaults:Array):Array {
+		if ('gotoSpriteOrMouse:' == op) return ['_mouse_'];
 		if ('gotoX:y:' == op) return [Math.round(scratchX), Math.round(scratchY)];
 		if ('glideSecs:toX:y:elapsed:from:' == op) return [1, Math.round(scratchX), Math.round(scratchY)];
 		if ('setSizeTo:' == op) return [Math.round(getSize() * 10) / 10];
@@ -553,7 +548,7 @@ public class ScratchSprite extends ScratchObj {
 
 	private function saveToLocalFile():void {
 		function success():void {
-			Scratch.app.log(LogLevel.INFO, 'sprite saved to file', {filename: file.name});
+			Scratch.app.log('sprite saved to file: ' + file.name);
 		}
 		var zipData:ByteArray = new ProjectIO(Scratch.app).encodeSpriteAsZipFile(copyToShare());
 		var defaultName:String = objName + '.sprite2';
