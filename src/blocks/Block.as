@@ -40,26 +40,15 @@ import flash.events.*;
 import flash.filters.GlowFilter;
 import flash.geom.*;
 import flash.net.URLLoader;
-import flash.net.URLRequest;
 import flash.text.*;
-import assets.Resources;
 
-import flash.utils.Dictionary;
-
-import flash.utils.Timer;
-
-import org.osmf.events.TimeEvent;
+import scratch.*;
 
 import translation.Translator;
 
-import ui.Hints;
-import ui.PaletteSelector;
-import ui.PaletteSelectorItem;
+import uiwidgets.*;
 
 import util.*;
-import uiwidgets.*;
-import scratch.*;
-import mx.utils.UIDUtil;
 
 public class Block extends Sprite {
 
@@ -69,7 +58,6 @@ public class Block extends Sprite {
 
 	public static var argTextFormat:TextFormat;
 	public static var blockLabelFormat:TextFormat;
-	public static var pointLabelFormat:TextFormat;
 	private static var vOffset:int;
 
 //	private static const blockLabelFormat:TextFormat = new TextFormat('LucidaBoldEmbedded', 10, 0xFFFFFF, true);
@@ -111,8 +99,6 @@ public class Block extends Sprite {
 	private var argTypes:Array = [];
 	private var elseLabel:TextField;
 
-	//private var isIncluded:Boolean;
-
 	private var indentTop:int = 2, indentBottom:int = 3;
 	private var indentLeft:int = 4, indentRight:int = 3;
 
@@ -125,33 +111,10 @@ public class Block extends Sprite {
 
 	private var originalParent:DisplayObjectContainer, originalRole:int, originalIndex:int, originalPosition:Point;
 
-
-	//points
-	public var pointValue:int;
-	// unique block ID
-	private var id:String;
-
-	// hinting
-	public static var latestBlock:Block;
-	public static var latestBlockList:Array = [];
-	public var hints:Hints = new Hints();
-
-	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false, id:String = null) {
-		trace("block constructor called ---------------------------------");
-
-		trace("spec: " + spec);
-		trace("type: " + type);
-		trace("color: " + color.toString());
-
+	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null) {
 		this.spec = Translator.map(spec);
 		this.type = type;
 		this.op = op;
-		this.pointValue = Specs.getPointsForSpec(spec);
-		if (id == null) { // ID needs to be set
-			this.id = UIDUtil.createUID();
-			Scratch.app.updateIdCt();
-		}
-		else this.id = id;
 
 		if ((Specs.CALL == op) ||
 			(Specs.GET_LIST == op) ||
@@ -164,16 +127,7 @@ public class Block extends Sprite {
 
 		if (color == -1) return; // copy for clone; omit graphics
 
-		createBase(color);
-
-		addChildAt(base, 0);
-		setSpec(this.spec, defaultArgs, pointsEditable);
-
-		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
-	}
-
-	// SAGE refactor to simplify color change on include/exclude
-	private function createBase(color:int):void {
+		var shape:int;
 		if ((type == " ") || (type == "") || (type == "w")) {
 			base = new BlockShape(BlockShape.CmdShape, color);
 			indentTop = 3;
@@ -229,10 +183,7 @@ public class Block extends Sprite {
 		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
 	}
 
-
-	//juliesetspec
-	public function setSpec(newSpec:String, defaultArgs:Array = null, pointsEditable:Boolean = false):void {
-
+	public function setSpec(newSpec:String, defaultArgs:Array = null):void {
 		for each (var o:DisplayObject in labelsAndArgs) {
 			if (o.parent != null) o.parent.removeChild(o);
 		}
@@ -268,18 +219,6 @@ public class Block extends Sprite {
 			argTypes.reverse();
 			if (defaultArgs) defaultArgs.reverse();
 		}
-
-
-		trace("from pointdict: " + Specs.pointDict[spec]);
-		var pointVal:int = Specs.pointDict[spec];
-
-		if (Scratch.app.interp.sageDesignMode && pointsEditable) {
-			labelsAndArgs.push(new PointArg(spec, pointVal));
-		} else {
-			labelsAndArgs.push(makePointLabel(pointVal));
-		}
-
-
 		for each (var item:* in labelsAndArgs) addChild(item);
 		if (defaultArgs) setDefaultArgs(defaultArgs);
 		fixArgLayout();
@@ -331,47 +270,10 @@ public class Block extends Sprite {
 		fixArgLayout();
 	}
 
-	//yc2937
-	//changes the point argument to a label, if a point arg exists
-	public function changePointArgToLabel():void {
-		trace("block.changepointargtolabel called");
-		for (var i:int = 0; i < labelsAndArgs.length; i++) {
-			if (labelsAndArgs[i] is PointArg) {
-				var item:PointArg = labelsAndArgs[i] as PointArg;
-				if (item) {
-					trace("block.changepointargtolabel changed");
-					removeChild(item);
-					labelsAndArgs[i] = makePointLabel(Specs.getPointsForSpec(item.getSpec()));
-					addChildAt(labelsAndArgs[i],i);
-					/*
-					labelsAndArgs.push(makePointLabel(888));
-					item.argValue = 999;
-					base.redraw()
-					*/
-
-
-				}
-			}
-		}
-		/*
-		for each (var item:* in labelsAndArgs) {
-			if (item is PointArg) {
-				var itemPointArg:PointArg = item as PointArg;
-
-				item = makeLabel(itemPointArg.argValue);
-			}
-		}
-		*/
-
-		fixArgLayout();
-
-	}
-
 	public static function setFonts(labelSize:int, argSize:int, boldFlag:Boolean, vOffset:int):void {
 		var font:String = Resources.chooseFont([
 			'Lucida Grande', 'Verdana', 'Arial', 'DejaVu Sans']);
 		blockLabelFormat = new TextFormat(font, labelSize, 0xFFFFFF, boldFlag);
-		pointLabelFormat = new TextFormat(font, labelSize-2, 0x777777, boldFlag);
 		argTextFormat = new TextFormat(font, argSize, 0x505050, false);
 		Block.vOffset = vOffset;
 	}
@@ -405,24 +307,10 @@ public class Block extends Sprite {
 		return Block(parent).op == 'proc_declaration';
 	}
 
-	//block is currently in scripts pane
 	public function isInPalette():Boolean {
 		var o:DisplayObject = parent;
 		while (o) {
 			if ('isBlockPalette' in o) return true;
-			o = o.parent;
-		}
-		return false;
-	}
-
-	//block is currently in scripts pane
-	public function isInScriptsPane():Boolean {
-		var o:DisplayObject = parent;
-		while (o) {
-			if ('isScriptsPane' in o) {
-				trace("Block.isinscriptspane true");
-				return true;
-			}
 			o = o.parent;
 		}
 		return false;
@@ -452,7 +340,11 @@ public class Block extends Sprite {
 		}
 	}
 
-	// call f on all blocks
+	public function argType(arg:DisplayObject):String {
+		var i:int = labelsAndArgs.indexOf(arg);
+		return i == -1 ? '' : argTypes[i];
+	}
+
 	public function allBlocksDo(f:Function):void {
 		f(this);
 		for each (var arg:* in args) {
@@ -616,7 +508,7 @@ public class Block extends Sprite {
 		if (['h'].indexOf(type) >= 0) x = Math.max(x, minHatWidth); // minimum width for hat blocks
 		if (elseLabel) x = Math.max(x, indentLeft + elseLabel.width + 2);
 
-		base.setWidthAndTopHeight(x + indentRight + 10, indentTop + maxH + indentBottom);
+		base.setWidthAndTopHeight(x + indentRight, indentTop + maxH + indentBottom);
 		if ((type == "c") || (type == "e")) fixStackLayout();
 		base.redraw();
 		fixElseLabel();
@@ -682,7 +574,6 @@ public class Block extends Sprite {
 	}
 
 	public function duplicate(forClone:Boolean, forStage:Boolean = false):Block {
-		// called only on blocks dragged from palette (not those that are duplicated)
 		var newSpec:String = spec;
 		if (op == 'whenClicked') newSpec = forStage ? 'when Stage clicked' : 'when this sprite clicked';
 		var dup:Block = new Block(newSpec, type, (int)(forClone ? -1 : base.color), op);
@@ -721,7 +612,7 @@ public class Block extends Sprite {
 		collectArgs();
 		for (i = 0; i < srcArgs.length; i++) {
 			var argToCopy:* = srcArgs[i];
-			if (argToCopy is BlockArg && !argToCopy is PointArg) {
+			if (argToCopy is BlockArg) {
 				var arg:BlockArg = argToCopy;
 				BlockArg(args[i]).setArgValue(arg.argValue, arg.labelOrNull());
 			}
@@ -913,30 +804,10 @@ public class Block extends Sprite {
 			var icon:* = Specs.IconNamed(s.slice(1));
 			return (icon) ? icon : makeLabel(s);
 		}
-		//return makePointLabel(66);
 		return makeLabel(ReadStream.unescape(s));
 	}
 
-	private function makePointLabel(pointValue:Number):Sprite {
-		var pLoad:Loader = new Loader();
-		pLoad.load(new URLRequest("star.png"))
-
-		var background = new Sprite();
-		var text = makeLabel(pointValue.toString());
-		text.setTextFormat(pointLabelFormat);
-		//background.addChild(t);
-		background.addChild(pLoad)
-		background.addChild(text);
-		text.x = 5;
-		text.y = 2;
-		//addChild(background);
-		base.setWidth(base.width + 100);
-		return background;
-	}
-
 	private function makeLabel(label:String):TextField {
-
-		trace("makelabel called");
 		var text:TextField = new TextField();
 		text.autoSize = TextFieldAutoSize.LEFT;
 		text.selectable = false;
@@ -988,29 +859,15 @@ public class Block extends Sprite {
 		}
 	}
 
-	public function sageInclude():void {
-		Scratch.app.paletteBuilder.updateBlock(this.spec, true);
-	}
-
-	public function sageExclude():void {
-		Scratch.app.paletteBuilder.updateBlock(this.spec, false);
-	}
-
 	public function duplicateStack(deltaX:Number, deltaY:Number):void {
-		// called on a block that is being cloned.
 		if (isProcDef() || op == 'proc_declaration') return; // don't duplicate procedure definition
 		var forStage:Boolean = Scratch.app.viewedObj() && Scratch.app.viewedObj().isStage;
-		var blockIds:Array = []; // get list of IDs only
-		for each (var b:Array in BlockIO.stackToArray(this)) {
-			blockIds.push(b[0]);
-		}
-		var newStack:Block = BlockIO.stringToStack(BlockIO.stackToString(this), forStage, blockIds);
+		var newStack:Block = BlockIO.stringToStack(BlockIO.stackToString(this), forStage);
 		var p:Point = localToGlobal(new Point(0, 0));
 		newStack.x = p.x + deltaX;
 		newStack.y = p.y + deltaY;
 		Scratch.app.gh.grabOnMouseUp(newStack);
 	}
-
 
 	public function deleteStack():Boolean {
 		if (op == 'proc_declaration') {
@@ -1025,14 +882,6 @@ public class Block extends Sprite {
 		if (top == this && app.interp.isRunning(top, app.viewedObj())) {
 			app.interp.toggleThread(top, app.viewedObj());
 		}
-		/*
-		//if deleting stack from scripts pane, also decrement points
-		if (fromScriptsPane == true) {
-			top.allBlocksDo(function (b:Block):void {
-				Scratch.app.decrementPoints(b.pointValue);
-			});
-		}*/
-
 		// TODO: Remove any waiting reporter data in the Scratch.app.extensionManager
 		if (parent is Block) Block(parent).removeBlock(this);
 		else if (parent) parent.removeChild(this);
@@ -1043,7 +892,6 @@ public class Block extends Sprite {
 		if (top != this) x += top.width + 5;
 		app.runtime.recordForUndelete(this, x, y, 0, app.viewedObj());
 		app.scriptsPane.saveScripts();
-		app.parsonsLogic();
 		SCRATCH::allow3d { app.runtime.checkForGraphicEffects(); }
 		app.updatePalette();
 		return true;
@@ -1072,28 +920,8 @@ public class Block extends Sprite {
 
 	/* Dragging */
 
-	//yc2937
 	public function objToGrab(evt:MouseEvent):Block {
-		trace("block.objtograb called");
-		//if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
-
-		if (isInPalette()) {
-			trace("block.objtograb is in palette true");
-			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_PALETTE;
-		}
-		if (isInScriptsPane()) {
-			trace("block.objtograb is inscriptsname true");
-			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_SCRIPTS_PANE;
-		}
-
-		if (isEmbeddedParameter() || isInPalette())
-		{
-			if (!Scratch.app.getPaletteBuilder().blockIncluded(this) && Scratch.app.interp.sagePlayMode)
-				return null; // block should not respond when restricted
-			else {
-				return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
-			}
-		}
+		if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
 		return this;
 	}
 
@@ -1120,16 +948,6 @@ public class Block extends Sprite {
 	private function editArg(evt:MouseEvent):Boolean {
 		var arg:BlockArg = evt.target as BlockArg;
 		if (!arg) arg = evt.target.parent as BlockArg;
-		// update latest block to block with args changed
-		if (arg && arg.parent is Block) {
-			var b:Block = Block(arg.parent);
-			updateLatest(b, true);
-
-			// see if a hint can be issued based on the current latest block
-			var latestHint:Hints = new Hints(latestBlock);
-			addChild(latestHint);
-			latestHint.checkHint();
-		}
 		if (arg && arg.isEditable && (arg.parent == this)) {
 			arg.startEditing();
 			return true;
@@ -1257,57 +1075,5 @@ public class Block extends Sprite {
 	protected static function indent(s:String):String {
 		return s.replace(/^/gm, "    ");
 	}
-
-	// Allison Sawyer
-	public function getBlockId():String {
-		return this.id;
-	}
-
-	public function getLatestBlock():Block {
-		return latestBlock;
-	}
-
-	public function getLatestList():Array {
-		return latestBlockList;
-	}
-
-	// update latest block manipulated by user (for hinting purposes)
-	public function updateLatest(newLatest:Block, inScriptsPane = false, deleting = false):Block {
-		latestBlock = newLatest;
-		if (deleting) return latestBlock; // if deleting, don't add anything to latestBlockList
-		if (inScriptsPane) { // delete previous occurrence from list before adding to end
-			var idx:int = latestBlockList.indexOf(newLatest);
-			latestBlockList.splice(idx, 1);
-		}
-		if (newLatest && latestBlockList.indexOf(newLatest) < 0) {
-			latestBlockList.push(newLatest);
-		} else if (newLatest == null) {
-			latestBlockList = [];
-		}
-		printLatest();
-		return latestBlock;
-	}
-
-	public function printLatest() {
-		if (latestBlock) {
-			trace("LATEST BLOCK: " + latestBlock.op);
-		} else trace("LATEST BLOCK: null");
-		var blocksToPrint:Array = [];
-		for each (var block:Block in latestBlockList) {
-			blocksToPrint.push(block.op);
-		}
-		trace("BLOCK LIST:    " + String(blocksToPrint));
-		trace("LEN:           " + String(blocksToPrint.length));
-	}
-
-	// issue hint by shaking block
-	/*
-	public function hintSelect(opStr:String):void {
-		var pb:PaletteBuilder = Scratch.app.paletteBuilder;
-		var blockToShake:Block = pb.getBlockByOp(opStr);
-		var blockHint:Hints = new Hints();
-		blockHint.initShake(blockToShake);
-	}
-	*/
 
 }}

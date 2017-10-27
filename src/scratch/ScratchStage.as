@@ -805,11 +805,6 @@ public class ScratchStage extends ScratchObj {
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
-
-		trace("scratchstage.handledrop called=====================================");
-
-
-
 		if ((obj is ScratchSprite) || (obj is Watcher) || (obj is ListWatcher)) {
 			if (scaleX != 1) {
 				obj.scaleX = obj.scaleY = obj.scaleX / scaleX; // revert to original scale
@@ -861,17 +856,9 @@ public class ScratchStage extends ScratchObj {
 		json.writeKeyValue('penLayerMD5', penLayerMD5);
 		json.writeKeyValue('penLayerID', penLayerID);
 		json.writeKeyValue('tempoBPM', tempoBPM);
-		json.writeKeyValue('videoAlpha', videoAlpha);		
-		json.writeKeyValue('sagePalettes', Scratch.app.scriptsPart.getSagePalettes());
-		json.writeKeyValue('sageBlocks', Scratch.app.getPaletteBuilder().getSageIncludedBlocks());
-		json.writeKeyValue('parsonsBlocks', Scratch.app.getPaletteBuilder().getParsonsIncludedBlocks());
 		json.writeKeyValue('videoAlpha', videoAlpha);
 		json.writeKeyValue('children', children);
 		json.writeKeyValue('info', info);
-		json.writeKeyValue('pointConfig', Specs.pointDict);
-		json.writeKeyValue('question', Scratch.app.getPaletteBuilder().getQuestion());
-		json.writeKeyValue('hint', Scratch.app.getPaletteBuilder().getHint());
-		json.writeKeyValue('comments', Scratch.app.getPaletteBuilder().comments);
 	}
 
 	public override function readJSON(jsonObj:Object):void {
@@ -882,13 +869,6 @@ public class ScratchStage extends ScratchObj {
 		penLayerMD5 = jsonObj.penLayerMD5;
 		tempoBPM = jsonObj.tempoBPM;
 		if (jsonObj.videoAlpha) videoAlpha = jsonObj.videoAlpha;
-		Specs.pointDict = jsonObj.pointConfig;
-		Scratch.app.scriptsPart.setSagePalettes(jsonObj.sagePalettes);
-		Scratch.app.getPaletteBuilder().setSageIncludedBlocks(util.JSON.objToDict(jsonObj.sageBlocks));
-		Scratch.app.getPaletteBuilder().setParsonsIncludedBlocks(jsonObj.parsonsBlocks);
-		Scratch.app.getPaletteBuilder().setQuestion(jsonObj.question);
-		Scratch.app.getPaletteBuilder().setHint(jsonObj.hint);
-		Scratch.app.getPaletteBuilder().comments=jsonObj.comments;
 		children = jsonObj.children;
 		info = jsonObj.info;
 

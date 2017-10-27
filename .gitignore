@@ -18,5 +18,4 @@ bin-debug/
 bin-release/
 html-template/
 libs/RenderIn3D.swf
-*.swf
 local.properties

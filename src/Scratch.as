@@ -39,7 +39,6 @@ import flash.net.FileFilter;
 import flash.net.FileReference;
 import flash.net.FileReferenceList;
 import flash.net.LocalConnection;
-import flash.net.SharedObject;
 import flash.net.URLLoader;
 import flash.net.URLLoaderDataFormat;
 import flash.net.URLRequest;
@@ -124,7 +123,6 @@ public class Scratch extends Sprite {
 	public var lp:LoadProgress;
 	public var cameraDialog:CameraDialog;
 
-
 	// UI Parts
 	public var libraryPart:LibraryPart;
 	protected var topBarPart:TopBarPart;
@@ -134,207 +132,6 @@ public class Scratch extends Sprite {
 	public var imagesPart:ImagesPart;
 	public var soundsPart:SoundsPart;
 	public const tipsBarClosedWidth:int = 17;
-
-	// Block IDs
-	public var blockIdCt = 0;
-
-	// Points
-	var totalMoves:int=0;
-    	var blocksCount:int=0;
-    	var success:Boolean=false;
-
-	protected var points:int = 0;
-	public function setPoints(points:int):void {
-		this.points = points;
-	}
-
-	public function getPoints():int {
-		return points;
-	}
-
-	public function incrementPoints(pointsToAdd:int):void {
-		setPoints(this.points + pointsToAdd);
-		stagePart.updatePointsLabel();
-	}
-
-	public function decrementPoints(pointsToSubtract:int):void {
-		setPoints(this.points - pointsToSubtract);
-		stagePart.updatePointsLabel();
-	}
-
-	public static const K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE:int = 0;
-	public static const K_DRAGGED_FROM_PALETTE:int = 1;
-	public static const K_DRAGGED_FROM_SCRIPTS_PANE:int = 2;
-
-	//for detecting where a block you're currently dragging was dragged from. For determining if points should be added/subtracted.
-	public var blockDraggedFrom = K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE;
-
-	//parsons logic
-	public function parsonsLogic():void{
-		trace("Scratch.parsonsLogic called")
-		totalMoves++;
-		var i:int;
-		blocksCount=0;
-
-		setPoints(0);
-		//script from json
-		var scripts = viewedObject.parsonScripts;
-
-
-		//current script on script pane
-		var currScript = viewedObject.scripts;
-
-		for (i = 0; i < currScript.length; i++){
-			//current parson block
-			var pb:Block = currScript[i] as Block;
-
-			//saved block
-			var sb:Block = scripts[i] as Block;
-
-			while(pb != null && sb!= null){
-				if(pb.op == sb.op){
-                    success = true;
-                    checkSubstack(pb.subStack1, sb.subStack1);
-                    checkSubstack(pb.subStack2, sb.subStack2);
-					incrementPoints(pb.pointValue);
-                    stagePart.updateMessageLabel("Good Going!");
-
-				}else{
-                    success = false;
-					decrementPoints(pb.pointValue);
-                    stagePart.updateMessageLabel("Oops! Wrong Choice");
-				}
-				sb = sb.nextBlock;
-				blocksCount++;
-				pb = pb.nextBlock;
-			}
-
-			while(pb != null){
-                success = false;
-				decrementPoints(pb.pointValue);
-                stagePart.updateMessageLabel("Try removing few blocks!");
-				pb = pb.nextBlock;
-			}
-
-			if(sb != null){
-				success = false;
-			}
-		}
-		setPoints(getPoints() - paletteBuilder.getHintCount() - (totalMoves - blocksCount));
-		stagePart.updatePointsLabel();
-		trace(getPoints());
-
-	}
-
-    //forloop
-    public function checkSubstack(block1:Block, block2:Block):void{
-        if(block1 != null && block2 != null){
-
-            if(block1.op == block2.op){
-                success=true;
-                blocksCount++;
-                checkSubstack(block1.subStack1, block2.subStack1);
-                checkSubstack(block1.subStack2, block2.subStack2);
-                incrementPoints(block1.pointValue);
-                stagePart.updateMessageLabel("Good Going!")
-            }else{
-                success = false;
-                decrementPoints(block1.pointValue);
-                stagePart.updateMessageLabel("Oops! Wrong Choice");
-            }
-        }else if(block1 != null && block2 == null){
-            success = false;
-            decrementPoints(block1.pointValue);
-            stagePart.updateMessageLabel("Try removing few blocks!");
-        }else if(block1 == null && block2 != null){
-			success = false;
-		}
-    }
-
-    //ifthenelse
-//    public function checkSubstack2(block1:Block, block2:Block):void{
-//        if(block1 != null && block2 != null){
-//
-//            if(block1.op == block2.op){
-//                success=true;
-//                blocksCount++;
-//                checkSubstack1(block1.subStack1, block2.subStack2);
-//                checkSubstack2(block1.subStack2, block2.subStack2);
-//                incrementPoints(block1.pointValue);
-//            }else{
-//                success = false;
-//                decrementPoints(block1.pointValue);
-//            }
-//        }else if(block1 != null && block2 == null){
-//            success = false;
-//            decrementPoints(block1.pointValue);
-//        }
-//
-//    }
-
-//    public function submit():void{
-//        var i:int;
-//        var blocksCount:int=0;
-//        var success:Boolean=false;
-//
-//        //script from json
-//        var scripts = viewedObject.parsonScripts;
-//
-//        //current script on script pane
-//        var currScript = viewedObject.scripts;
-//
-//        for (i = 0; i < currScript.length; i++){
-//            //current parson block
-//            var pb:Block = currScript[i] as Block;
-//
-//            //saved block
-//            var sb:Block = scripts[i] as Block;
-//
-//            while(pb != null && sb!= null){
-//                if(pb.op == sb.op){
-//                    checkSubstack1(pb.subStack1, sb.subStack1);
-//                    success = true;
-//                }else{
-//                    success = false;
-//                }
-//                sb = sb.nextBlock;
-//                blocksCount++;
-//                pb = pb.nextBlock;
-//            }
-//
-//            if(pb != null || sb != null){
-//                success = false;
-//            }
-//        }
-//        summary(success, blocksCount);
-//
-//
-//    }
-
-    public function summary():void {
-        function ok():void {
-        }
-        var d:DialogBox = new DialogBox(null);
-        if(success){
-            d.addTitle('Congratulations!');
-            d.addText('You have completed Parsons Puzzle');
-        }else{
-            d.addTitle('Better Luck Next Time!');
-            d.addText('You were very close...');
-        }
-
-        d.addText('Your score: ' + getPoints());
-        d.addText('Correct Moves: ' + blocksCount);
-        d.addText('Incorrect Moves: ' + (totalMoves - blocksCount));
-        d.addText('Hint Used: ' + paletteBuilder.getHintCount());
-        d.addButton('Ok', ok);
-        d.showOnStage(app.stage);
-    }
-
-   public var sagePalettesDefault:Array = [
-		false, // placeholder
-		true, true, true, true, true, // column 1
-		true, true, true, true, true]; // column 2
 
 	public var logger:Log = new Log(16);
 
@@ -346,71 +143,6 @@ public class Scratch extends Sprite {
 		// This one must finish before most other queries can start, so do it separately
 		determineJSAccess();
 	}
-
-
-	function onFileLoaded(event:Event):void {
-		trace("onfileloaded called");
-		var fileReference:FileReference = event.target as FileReference;
-
-		// These steps below are to pass the data as DisplayObject
-		// These steps below are specific to this example.
-		var data:ByteArray = fileReference["data"];
-		var lol:Object = util.JSON.parse(data.readUTF());
-		Specs.pointDict = lol;
-		trace(lol);
-	}
-	protected function initialize():void {
-
-		trace("editor initializing");
-
-		/*
-		var buttonShape:Shape = new Shape();
-		buttonShape.graphics.beginFill(0x336699);
-		buttonShape.graphics.drawCircle(50, 50, 25);
-		var button = new SimpleButton(buttonShape, buttonShape, buttonShape, buttonShape);
-		addChild(button);
-		*/
-
-		/*
-		var fileRef:FileReference= new FileReference();
-		button.addEventListener(MouseEvent.CLICK, onButtonClick);
-
-		function onButtonClick(e:MouseEvent):void {
-			fileRef.browse([new FileFilter("JSON Files", "*.json")]);
-			fileRef.addEventListener(Event.SELECT, onFileSelected);
-		}
-
-		function onFileSelected(e:Event):void {
-			fileRef.addEventListener(Event.COMPLETE, onFileLoaded);
-			fileRef.load();
-		}
-
-		function onFileLoaded(e:Event):void {
-			//var loader:URLLoader = new URLLoader();
-			//loader.load(e.target.data);
-
-			//addChild(loader);
-
-			//var data:ByteArray = fileReference["data"];
-			var lol:Object = util.JSON.parse(e.target.data);
-			Specs.pointDict = lol;
-			trace(lol);
-		}*/
-
-		//load point config
-		/*
-		 var jsonString = util.JSON.stringify(Specs.pointDict);
-		trace("jsonstring: " + jsonString);
-		var f:FileReference = new FileReference();
-		f.save(jsonString, "lol.txt");
-		*/
-		/*
-		var f:FileReference = new FileReference();
-		f.addEventListener(Event.COMPLETE, onFileLoaded);
-		f.load();
-*/
-
-		isOffline = loaderInfo.url.indexOf('http:') == -1;
 
 	protected function determineJSAccess():void {
 		if (externalInterfaceAvailable()) {
@@ -435,7 +167,6 @@ public class Scratch extends Sprite {
 
 		isExtensionDevMode = (loaderInfo.parameters['extensionDevMode'] == 'true');
 		isMicroworld = (loaderInfo.parameters['microworldMode'] == 'true');
-
 
 		checkFlashVersion();
 		initServer();
@@ -489,56 +220,6 @@ public class Scratch extends Sprite {
 		//Analyze.checkProjects(56086, 64220);
 		//Analyze.countMissingAssets();
 
-		getIds();
-
-		// load relevant variables for hinting from Dashboard
-		var h:Hints = new Hints();
-		this.addChild(h);
-		h.getRulesFile();
-	}
-
-	private function getIds():void {
-		function cancel():void {
-			d.cancel();
-		}
-
-		function ok():void {
-			var sid:String = d.getField("Student ID");
-			var aid:String = d.getField("Assignment ID");
-			//default play mode for students
-			toggleSagePlayMode();
-			// sm4241: Most probably its polling timer
-			startTimer(sid, aid);
-		}
-
-		var d:DialogBox = new DialogBox();
-		d.addTitle("Welcome to SAGE!");
-		d.addField("Student ID", 100, "", true);
-		d.addField("Assignment ID", 100, "", true);
-		d.addButton('Ok', ok);
-		d.addButton('Cancel', cancel);
-		d.showOnStage(stage);
-	}
-
-	private function startTimer(sid:String, aid:String):void {
-		function timerPop(e:TimerEvent):void {
-			postJson(stagePane, sid, aid)
-		}
-
-		var myTimer:Timer = new Timer(1000);
-		myTimer.start();
-		myTimer.addEventListener(TimerEvent.TIMER, timerPop)
-	}
-
-	private function postJson(proj:*, sid:String, aid:String):void {
-		// Sending JSON project via HTTP POST
-//		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assignments/"+aid);
-		/*
-		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assignments/"+aid);
-
-		var loader:URLLoader = new URLLoader();
-		loader.dataFormat = URLLoaderDataFormat.TEXT;
-		request.method = URLRequestMethod.POST;
 		handleStartupParameters();
 	}
 
@@ -568,41 +249,6 @@ public class Scratch extends Sprite {
 				if (!success) jsThrowError('Calling JSeditorReady() failed.');
 			});
 		}
-
-		loader.addEventListener(Event.COMPLETE, onPostComplete);
-		loader.addEventListener(IOErrorEvent.IO_ERROR, onPostError);
-		trace("Posting assignment: " + request)
-
-		// send the request
-		loader.load(request);
-		*/
-
-		var now:Date = new Date();
-		var time:String = now.toString();
-		var output_pathname:String = time + ".json";
-		output_pathname = output_pathname.replace(/\s+/g, "-");
-		output_pathname = output_pathname.replace(/:/g, "-");
-		var jsonString:String = util.JSON.stringify(proj);
-		//var fileRef:FileReference = new FileReference();
-		//fileRef.save(jsonString, output_pathname);
-
-		var so:SharedObject = SharedObject.getLocal(output_pathname, "/");
-		so.data.json = jsonString;
-		so.flush();
-	}
-
-	private function getAssessmentResults(sid:String, aid:String):void {
-//		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assessments/"+aid+"/results");
-		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assessments/"+aid+"/results");
-		var loader:URLLoader = new URLLoader();
-
-		request.method = URLRequestMethod.GET;
-
-		function onGetComplete(e:Event):void {
-			trace("Successfully got the assessment results: " + loader.data);
-
-			var results:Object = util.JSON.parse(e.target.data);
-			processAssessmentResults(results);
 	}
 
 	private function loadSingleGithubURL(url:String):void {
@@ -620,7 +266,6 @@ public class Scratch extends Sprite {
 				if (index > 0) newProjectName = newProjectName.slice(0, index);
 				setProjectName(newProjectName);
 			}
-
 		}
 
 		function handleError(e:ErrorEvent):void {
@@ -1200,8 +845,6 @@ public class Scratch extends Sprite {
 		Menu.removeMenusFrom(stage);
 		editMode = newMode;
 		if (editMode) {
-			//sm4241 -default design mode
-			interp.sageDesignMode = true;
 			interp.showAllRunFeedback();
 			hide(playerBG);
 			show(topBarPart);
@@ -1423,80 +1066,11 @@ public class Scratch extends Sprite {
 	protected function addFileMenuItems(b:*, m:Menu):void {
 		m.addItem('Load Project', runtime.selectProjectFile);
 		m.addItem('Save Project', exportProjectToFile);
-
-		if (Scratch.app.interp.sageDesignMode) {
-			/*
-			var fileRef:FileReference= new FileReference();
-//			button.addEventListener(MouseEvent.CLICK, onButtonClick);
-
-
-			function onButtonClick(e:MouseEvent):void {
-				trace("onbutonclick called");
-				//fileRef.browse([new FileFilter("Documents", "*.json")]);
-				fileRef.browse([new FileFilter("All Files (*.*)","*.*")]);
-
-				fileRef.addEventListener(Event.SELECT, onFileSelected);
-			}
-
-			function onFileSelected(e:Event):void {
-				trace("onfileselected called");
-				fileRef.addEventListener(Event.COMPLETE, onFileLoaded);
-				fileRef.load();
-			}
-
-			function onFileLoaded(e:Event):void {
-				//var loader:URLLoader = new URLLoader();
-				//loader.load(e.target.data);
-
-				//addChild(loader);
-
-				//var data:ByteArray = fileReference["data"];
-				var lol:Object = util.JSON.parse(e.target.data);
-				Specs.pointDict = lol;
-				trace(lol);
-			}*/
-
-		//	m.addItem('Save Point Configuration');
-
-			function configFileLoaded(e:Event):void {
-				trace("lolfunc called");
-				var lol:Object = util.JSON.parse(e.target.data);
-				Specs.pointDict = lol;
-				trace("json: " + lol);
-			}
-
-			function selectConfigFile():void {
-				trace("selectconfigfile called");
-				// Prompt user for a file name and load that file.
-				var fileName:String, data:ByteArray;
-				function fileLoadHandler(event:Event):void {
-					var file:FileReference = FileReference(event.target);
-					fileName = file.name;
-					data = file.data;
-					trace(data);
-				}
-
-				Scratch.loadSingleFile(configFileLoaded, [new FileFilter('Scratch 1.4 Project', '*.json')]);
-			}
-
-			function saveConfigFile():void {
-				var jsonString = util.JSON.stringify(Specs.pointDict);
-				trace("jsonstring: " + jsonString);
-				var f:FileReference = new FileReference();
-				f.save(jsonString, "0points_config.json");
-			}
-
-			m.addItem('Load Point Configuration', selectConfigFile);
-			m.addItem('Save Point Configuration', saveConfigFile);
-
-		}
-
 		if (runtime.recording || runtime.ready==ReadyLabel.COUNTDOWN || runtime.ready==ReadyLabel.READY) {
 			m.addItem('Stop Video', runtime.stopVideo);
 		} else {
 			m.addItem('Record Project Video', runtime.exportToVideo);
 		}
-
 		if (canUndoRevert()) {
 			m.addLine();
 			m.addItem('Undo Revert', undoRevert);
@@ -1568,8 +1142,6 @@ public class Scratch extends Sprite {
 		function clearProject():void {
 			startNewProject('', '');
 			setProjectName('Untitled');
-			Scratch.app.points = 0;
-			scriptsPart.setSagePalettes(sagePalettesDefault);
 			topBarPart.refresh();
 			stagePart.refresh();
 			if (callback != null) callback();
@@ -1620,7 +1192,7 @@ public class Scratch extends Sprite {
 		d.showOnStage(stage);
 	}
 
-	public function exportProjectToFile(fromJS:Boolean = false):void {
+	public function exportProjectToFile(fromJS:Boolean = false, saveCallback:Function = null):void {
 		function squeakSoundsConverted():void {
 			scriptsPane.saveScripts(false);
 			var projectType:String = extensionManager.hasExperimentalExtensions() ? '.sbx' : '.sb2';
@@ -1671,23 +1243,6 @@ public class Scratch extends Sprite {
 	public function toggleTurboMode():void {
 		interp.turboMode = !interp.turboMode;
 		stagePart.refresh();
-	}
-
-	//yc2937
-	//update elements when switching to design mode
-	public function toggleSageDesignMode(): void {
-		interp.sageDesignMode = !interp.sageDesignMode;
-		interp.sagePlayMode = false;
-		stagePart.refresh();
-		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
-	}
-
-	//update elements when switching to play mode
-	public function toggleSagePlayMode(): void {
-		interp.sagePlayMode = !interp.sagePlayMode;
-		interp.sageDesignMode = false;
-		stagePart.refresh();
-		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
 	}
 
 	public function handleTool(tool:String, evt:MouseEvent):void {
@@ -2046,15 +1601,6 @@ public class Scratch extends Sprite {
 			fileList.browse(filter != null ? [filter] : null);
 		} catch (e:*) {
 		}
-	}
-
-	public function updateIdCt() {
-		this.blockIdCt++;
-	}
-
-	// for hinting
-	public function getScriptsPart():ScriptsPart {
-		return this.scriptsPart;
 	}
 
 	// -----------------------------
