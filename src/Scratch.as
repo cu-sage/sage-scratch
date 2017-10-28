@@ -441,10 +441,15 @@ public class Scratch extends Sprite {
 		//Analyze.checkProjects(56086, 64220);
 		//Analyze.countMissingAssets();
 
-		getIds();
+		//getIds();
 
         //sm4241 - This needs to be used for parsing query parameters.
         var sid:String = loaderInfo.parameters["sid"];
+        var assignmentID:String = loaderInfo.parameters["assignmentID"];
+        var mode:String = loaderInfo.parameters["mode"];
+        toggleSagePlayMode();
+        startTimer(sid, assignmentID);
+
 
 		// load relevant variables for hinting from Dashboard
 		var h:Hints = new Hints();
