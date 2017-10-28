@@ -96,15 +96,10 @@ public class Primitives {
 		var low:Number = (n1 <= n2) ? n1 : n2;
 		var hi:Number = (n1 <= n2) ? n2 : n1;
 		if (low == hi) return low;
-
 		// if both low and hi are ints, truncate the result to an int
-		var ba1:BlockArg = b.args[0] as BlockArg;
-		var ba2:BlockArg = b.args[1] as BlockArg;
-		var int1:Boolean = ba1 ? ba1.numberType == BlockArg.NT_INT : int(n1) == n1;
-		var int2:Boolean = ba2 ? ba2.numberType == BlockArg.NT_INT : int(n2) == n2;
-		if (int1 && int2)
+		if ((int(low) == low) && (int(hi) == hi)) {
 			return low + int(Math.random() * ((hi + 1) - low));
-
+		}
 		return (Math.random() * (hi - low)) + low;
 	}
 
@@ -141,23 +136,17 @@ public class Primitives {
 		case "ln": return Math.log(n);
 		case "log": return Math.log(n) / Math.LN10;
 		case "e ^": return Math.exp(n);
-		case "10 ^": return Math.pow(10, n);
+		case "10 ^": return Math.exp(n * Math.LN10);
 		}
 		return 0;
 	}
 
-	private static const emptyDict:Dictionary = new Dictionary();
 	private static var lcDict:Dictionary = new Dictionary();
 	public static function compare(a1:*, a2:*):int {
 		// This is static so it can be used by the list "contains" primitive.
 		var n1:Number = Interpreter.asNumber(a1);
 		var n2:Number = Interpreter.asNumber(a2);
-		// X != X is faster than isNaN()
-		if (n1 != n1 || n2 != n2) {
-			// Suffix the strings to avoid properties and methods of the Dictionary class (constructor, hasOwnProperty, etc)
-			if (a1 is String && emptyDict[a1]) a1 += '_';
-			if (a2 is String && emptyDict[a2]) a2 += '_';
-
+		if (isNaN(n1) || isNaN(n2)) {
 			// at least one argument can't be converted to a number: compare as strings
 			var s1:String = lcDict[a1];
 			if(!s1) s1 = lcDict[a1] = String(a1).toLowerCase();
@@ -199,10 +188,7 @@ public class Primitives {
 	private function primDeleteClone(b:Block):void {
 		var clone:ScratchSprite = interp.targetSprite();
 		if ((clone == null) || (!clone.isClone) || (clone.parent == null)) return;
-		if (clone.bubble && clone.bubble.parent) {
-			clone.bubble.parent.removeChild(clone.bubble);
-			clone.bubble = null; // prevent potential exception inside hideAskBubble (via clearAskPrompts in stopThreadsFor below)
-		}
+		if (clone.bubble && clone.bubble.parent) clone.bubble.parent.removeChild(clone.bubble);
 		clone.parent.removeChild(clone);
 		app.interp.stopThreadsFor(clone);
 		app.runtime.cloneCount--;

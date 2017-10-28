@@ -131,20 +131,15 @@ public class LooksPrims {
 		return app.stagePane.currentCostume().costumeName;
 	}
 
-	private function startScene(s:*, waitFlag:Boolean):void {
-		if (typeof(s) == 'number') {
-			s = backdropNameAt(s - 1);
-		} else if ('next backdrop' == s) {
-			s = backdropNameAt(app.stagePane.currentCostumeIndex + 1);
-		} else if ('previous backdrop' == s) {
-			s = backdropNameAt(app.stagePane.currentCostumeIndex - 1);
-		} else {
-			var i:int = app.stagePane.indexOfCostumeNamed(s);
-			if (i >= 0) {
-				s = backdropNameAt(i);
-			} else {
-				var n:Number = Interpreter.asNumber(s);
-				if (!isNaN(n)) s = backdropNameAt(n - 1);
+	private function startScene(s:String, waitFlag:Boolean):void {
+		if ('next backdrop' == s) s = backdropNameAt(app.stagePane.currentCostumeIndex + 1);
+		else if ('previous backdrop' == s) s = backdropNameAt(app.stagePane.currentCostumeIndex - 1);
+		else {
+			var n:Number = Interpreter.asNumber(s);
+			if (!isNaN(n)) {
+				n = (Math.round(n) - 1) % app.stagePane.costumes.length;
+				if (n < 0) n += app.stagePane.costumes.length;
+				s = app.stagePane.costumes[n].costumeName;
 			}
 		}
 		interp.startScene(s, waitFlag);
@@ -212,7 +207,6 @@ public class LooksPrims {
 	private function primClearEffects(b:Block):void {
 		var s:ScratchObj = interp.targetObj();
 		s.clearFilters();
-		s.applyFilters();
 		if (s.visible || s == Scratch.app.stagePane) interp.redraw();
 	}
 

@@ -95,7 +95,7 @@ public class ResizeableFrame extends Sprite implements DragClient {
 		// outline
 		g = outline.graphics;
 		g.clear();
-		g.lineStyle(borderWidth, borderColor, 1, true);
+		g.lineStyle(borderWidth, borderColor);
 		g.drawRoundRect(0, 0, w, h, cornerRadius, cornerRadius);
 
 		if (resizer) {

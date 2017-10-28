@@ -117,7 +117,6 @@ public class TranslatableStrings {
 		addAll(ProjectIO.strings());
 		// Get the strings from the Scratch app instance so that the offline version can add strings
 		addAll(Scratch.app.strings());
-		addAll(ScriptsPane.strings());
 		addAll(SoundEditor.strings());
 		addAll(SoundsPart.strings());
 		addAll(SpriteInfoPart.strings());
@@ -133,11 +132,11 @@ public class TranslatableStrings {
 		export('uiStrings');
 	}
 
-	public static function addAll(list:Array, removeParens:Boolean = false):void {
+	public static function addAll(list:Array, removeParens:Boolean = true):void {
 		for each (var s:String in list) add(s, removeParens);
 	}
 
-	public static function add(s:String, removeParens:Boolean = false):void {
+	public static function add(s:String, removeParens:Boolean = true):void {
 		if (removeParens) s = removeParentheticals(s);
 		s = removeWhitespace(s);
 		if ((s.length < 2) || (exclude.indexOf(s) > -1)) return;

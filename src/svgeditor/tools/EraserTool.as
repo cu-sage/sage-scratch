@@ -51,7 +51,8 @@ package svgeditor.tools
 	{
 		private var eraserShape:Shape;
 		private var lastPos:Point;
-		private var eraserWidth:Number;
+		private var origStrokeWidth:Number;
+		private var strokeWidth:Number;
 		private var erased:Boolean;
 		public function EraserTool(ed:ImageEdit) {
 			super(ed);
@@ -65,11 +66,11 @@ package svgeditor.tools
 
 		public function updateIcon():void {
 			var sp:DrawProperties = editor.getShapeProps();
-			if(eraserWidth != sp.eraserWidth) {
+			if(strokeWidth != sp.strokeWidth) {
 				var bm:Bitmap = Resources.createBmp('eraserOff');
 				var s:Shape = new Shape();
 				s.graphics.lineStyle(1);
-				s.graphics.drawCircle(0, 0, sp.eraserWidth * 0.65);
+				s.graphics.drawCircle(0, 0, sp.strokeWidth * 0.65);
 				var curBM:BitmapData = new BitmapData(32, 32, true, 0);
 				var m:Matrix = new Matrix();
 				m.translate(16, 18);
@@ -77,33 +78,35 @@ package svgeditor.tools
 				m.translate(-cursorHotSpot.x, -cursorHotSpot.y);
 				curBM.draw(bm, m);
 				editor.setCurrentCursor('eraserOff', curBM, new Point(16, 18), false);
-				eraserWidth = sp.eraserWidth;
+				strokeWidth = sp.strokeWidth;
 			}
 		}
 
 		override protected function init():void {
 			super.init();
 			editor.getWorkArea().addEventListener(MouseEvent.MOUSE_DOWN, mouseDown, false, 0, true);
-			STAGE.addChild(eraserShape);
+			stage.addChild(eraserShape);
 			updateIcon();
+			origStrokeWidth = editor.getShapeProps().strokeWidth;
 		}
 
 		override protected function shutdown():void {
 			editor.getWorkArea().removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
+			editor.getShapeProps().strokeWidth = origStrokeWidth;
 			super.shutdown();
-			STAGE.removeChild(eraserShape);
+			stage.removeChild(eraserShape);
 		}
 
 		private function mouseDown(e:MouseEvent):void {
 			editor.getWorkArea().addEventListener(MouseEvent.MOUSE_MOVE, erase, false, 0, true);
-			STAGE.addEventListener(MouseEvent.MOUSE_UP, mouseUp, false, 0, true);
-			eraserWidth = editor.getShapeProps().eraserWidth;
+			editor.stage.addEventListener(MouseEvent.MOUSE_UP, mouseUp, false, 0, true);
+			strokeWidth = editor.getShapeProps().strokeWidth;
 			erase();
 		}
 
 		private function mouseUp(e:MouseEvent):void {
 			editor.getWorkArea().removeEventListener(MouseEvent.MOUSE_MOVE, erase);
-			STAGE.removeEventListener(MouseEvent.MOUSE_UP, mouseUp);
+			editor.stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUp);
 			erase();
 			lastPos = null;
 			dispatchEvent(new Event(Event.CHANGE));
@@ -162,18 +165,18 @@ package svgeditor.tools
 
 		private function updateEraserShape():void {
 			var g:Graphics = eraserShape.graphics;
-			//var w:Number = eraserWidth * editor.getContentLayer().
+			//var w:Number = strokeWidth * editor.getContentLayer().
 			g.clear();
 			var p:Point = new Point(eraserShape.mouseX, eraserShape.mouseY);
 			if(lastPos) {
-				g.lineStyle(eraserWidth, 0xFF0000, 1, false, LineScaleMode.NORMAL, CapsStyle.ROUND);
+				g.lineStyle(strokeWidth, 0xFF0000, 1, false, LineScaleMode.NORMAL, CapsStyle.ROUND);
 				g.moveTo(lastPos.x, lastPos.y);
 				//var p:Point = obj.globalToLocal(lastPos).subtract(new Point(obj.mouseX, obj.mouseY));
 				g.lineTo(p.x, p.y);
 			} else {
 				g.lineStyle(0, 0, 0);
 				g.beginFill(0xFF0000);
-				g.drawCircle(p.x, p.y, eraserWidth * 0.65);
+				g.drawCircle(p.x, p.y, strokeWidth * 0.65);
 				g.endFill();
 				g.moveTo(p.x, p.y);
 			}

@@ -24,9 +24,9 @@ package scratch {
 public class TalkBubble extends Sprite {
 
 	public var pointsLeft:Boolean;
-	public var style:String; // 'say' or 'ask' or 'result'
 
 	private var type:String; // 'say' or 'think'
+	private var style:String; // 'say' or 'ask' or 'result'
 	private var shape:Shape;
 	private var text:TextField;
 	private var source:Object;
@@ -93,7 +93,7 @@ public class TalkBubble extends Sprite {
 		var g:Graphics = shape.graphics;
 		g.clear();
 		g.beginFill(0xFFFFFF);
-		g.lineStyle(lineWidth, outlineColor, 1, true);
+		g.lineStyle(lineWidth, outlineColor);
 		if (type == 'think') drawThink(w, h);
 		else drawTalk(w, h);
 	}

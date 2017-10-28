@@ -36,9 +36,8 @@ import uiwidgets.*;
 
 public class StagePart extends UIPart {
 
-	private const readoutTextColor:int = Scratch.app.isExtensionDevMode ? CSS.white : CSS.textColor;
-	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, readoutTextColor, true);
-	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 10, readoutTextColor);
+	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor, true);
+	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 10, CSS.textColor);
 
 	private const topBarHeightNormal:int = 39;
 	private const topBarHeightSmallPlayerMode:int = 46;
@@ -50,16 +49,12 @@ public class StagePart extends UIPart {
 	protected var projectInfo:TextField;
 	private var versionInfo:TextField;
 	private var turboIndicator:TextField;
+	private var sageDesignIndicator:TextField;
+	private var sagePlayIndicator:TextField;
 	private var runButton:IconButton;
 	private var stopButton:IconButton;
 	private var fullscreenButton:IconButton;
 	private var stageSizeButton:Sprite;
-	
-	//video recording tools
-	private var stopRecordingButton:IconButton;
-	private var recordingIndicator:Shape;
-	private var videoProgressBar:Shape;
-	private var recordingTime:TextField;
 
 	private var playButton:Sprite; // YouTube-like play button in center of screen; used by Kiosk version
 	private var userNameWarning:Sprite; // Container for privacy warning message for projects that use username block
@@ -82,25 +77,31 @@ public class StagePart extends UIPart {
 		addChild(outline);
 		addTitleAndInfo();
 		addRunStopButtons();
-		addRecordingTools();
 		addTurboIndicator();
+		addSageDesignIndicator();
+		addSagePlayIndicator();
 		addFullScreenButton();
 		addXYReadouts();
 		addStageSizeButton();
 		fixLayout();
 		addEventListener(MouseEvent.MOUSE_WHEEL, mouseWheel);
 	}
-	
+
 	public static function strings():Array {
 		return [
 			'by', 'shared', 'unshared', 'Turbo Mode',
-			'This project can detect who is using it, through the “username” block. To hide your identity, sign out before using the project.',
+			'This project can detect who is using it, through the â€œusernameâ€� block. To hide your identity, sign out before using the project.',
+			'SAGE Design Mode', 'SAGE Play Mode'
 		];
 	}
 
 	public function updateTranslation():void {
 		turboIndicator.text = Translator.map('Turbo Mode');
 		turboIndicator.x = w - turboIndicator.width - 73;
+		sageDesignIndicator.text = Translator.map('SAGE Design Mode');
+		sageDesignIndicator.x = w - sageDesignIndicator.width - 203;
+		sagePlayIndicator.text = Translator.map('SAGE Play Mode');
+		sagePlayIndicator.x = w - sagePlayIndicator.width - 203;
 		updateProjectInfo();
 	}
 
@@ -137,21 +138,20 @@ public class StagePart extends UIPart {
 	public function setProjectName(s:String):void { projectTitle.setContents(s) }
 	public function isInPresentationMode():Boolean { return fullscreenButton.visible && fullscreenButton.isOn() }
 
-	public function presentationModeWasChanged(isPresentationMode:Boolean):void {
-		fullscreenButton.setOn(isPresentationMode);
+	public function exitPresentationMode():void {
+		fullscreenButton.setOn(false);
 		drawOutline();
 		refresh();
 	}
 
 	public function refresh():void {
-		if ((app.runtime.ready==ReadyLabel.COUNTDOWN || app.runtime.ready==ReadyLabel.READY) && !stopRecordingButton.isDisabled()) {
-			resetTime();
-		}
 		readouts.visible = app.editMode;
 		projectTitle.visible = app.editMode;
 		projectInfo.visible = app.editMode;
 		stageSizeButton.visible = app.editMode;
 		turboIndicator.visible = app.interp.turboMode;
+		sageDesignIndicator.visible = app.interp.sageDesignMode;
+		sagePlayIndicator.visible = app.interp.sagePlayMode;
 		fullscreenButton.visible = !app.isSmallPlayer;
 		pointsLabel.visible = !app.interp.sageDesignMode;
 		messageLabel.visible = !app.interp.sageDesignMode;
@@ -162,6 +162,7 @@ public class StagePart extends UIPart {
 		}
 		if (userNameWarning) userNameWarning.visible = app.usesUserNameBlock;
 		updateProjectInfo();
+		app.scriptsPart.updatePalette();
 	}
 
 	// -----------------------------
@@ -220,118 +221,13 @@ public class StagePart extends UIPart {
 		var top:int = h + 1;
 		xReadout.y = yReadout.y = top;
 		xLabel.y = yLabel.y = top - 2;
-		
-		//recording tools
-		stopRecordingButton.x=2;
-		stopRecordingButton.y=top+2;
-		recordingIndicator.x=8+stopRecordingButton.width;
-		recordingIndicator.y=top+3;
-		recordingTime.x = recordingIndicator.x+recordingIndicator.width+6;
-		recordingTime.y=top;
-		videoProgressBar.x = recordingTime.x+42;
-		videoProgressBar.y=top+3;
 
 		stageSizeButton.x = w - 4;
 		stageSizeButton.y = h + 2;
 
 		if (playButton) playButton.scaleX = playButton.scaleY = app.stagePane.scaleX;
 	}
-	
-	private var lastTime:int=0;
-	
-	private function addRecordingTools():void {
-		stopRecordingButton = new IconButton(app.stopVideo, 'stopVideo');
-		addChild(stopRecordingButton);
-		
-		videoProgressBar = new Shape();
-		var slotColor:int = CSS.overColor;
-		var slotColor2:int = 0xBBBDBF;
-		var slotRadius:int = 10;
-		var g:Graphics = videoProgressBar.graphics;
-		g.clear();
-		g.beginGradientFill(GradientType.LINEAR, [slotColor, CSS.borderColor], [1, 1], [0, 0]);
-		g.drawRoundRect(0, 0, 300, 10, slotRadius,slotRadius);
-		g.beginGradientFill(GradientType.LINEAR, [slotColor, slotColor2], [1, 1], [0, 0]);
-		g.drawRoundRect(0, .5, 300, 9,9,9);
-		g.endFill();
-		addChild(videoProgressBar);
-		
-		const versionFormat:TextFormat = new TextFormat(CSS.font, 11, CSS.textColor);
-		addChild(recordingTime = makeLabel(" 0 secs",versionFormat));
-		
-		recordingIndicator = new Shape();
-		var k:Graphics = recordingIndicator.graphics;
-		k.clear();
-		k.beginFill(0xFF0000);
-		k.drawRoundRect(0, 0, 10, 10, slotRadius, slotRadius);
-		k.endFill();
-		addChild(recordingIndicator);
-	}
-	
-	private function resetTime():void {
-		updateRecordingTools(0);
-		
-		removeChild(stopRecordingButton);
-		
-		stopRecordingButton = new IconButton(app.stopVideo, 'stopVideo');
-		addChild(stopRecordingButton);
-		
-		fixLayout();
-	}
-	
-	public function removeRecordingTools():void {
-		stopRecordingButton.visible=false;
-		videoProgressBar.visible=false;
-		recordingTime.visible=false;
-		recordingIndicator.visible=false;
-	}
-	
-	public function updateRecordingTools(time:Number = -1.0):void {
-		if (time<0) {
-			time = Number(lastTime);
-		}
-		var slotColor:int = CSS.overColor;
-		var slotColor2:int = CSS.tabColor;
-		var g:Graphics = videoProgressBar.graphics;
-		var slotRadius:int = 10;
-		g.clear();
-		var barWidth:int = 300;
-		if (app.stageIsContracted) {
-			barWidth = 64;
-		}
-		var m:Matrix = new Matrix();
-		m.createGradientBox(barWidth, 10, 0, int(time/60.0*barWidth), 0);
-		g.beginGradientFill(GradientType.LINEAR, [slotColor, CSS.borderColor], [1, 1], [0, 0]);
-		g.drawRoundRect(0, 0, barWidth, 10, slotRadius,slotRadius);
-		if (time==0) {
-			g.beginGradientFill(GradientType.LINEAR, [slotColor, slotColor2], [1, 1], [0, 0]);
-		}
-		else {
-			g.beginGradientFill(GradientType.LINEAR, [slotColor, slotColor2], [1, 1], [0, 0],m);
-		}
-		g.drawRoundRect(0, .5, barWidth, 9,9,9);
-		g.endFill();
-		
-		if (lastTime!=int(time)) {
-			var timeString:String = "";
-			if (int(time)<10) {
-				timeString+=" ";
-			}
-			timeString += int(time).toString()+" secs";
-			removeChild(recordingTime);
-			const versionFormat:TextFormat = new TextFormat(CSS.font, 11, CSS.textColor);
-			addChild(recordingTime = makeLabel(timeString,versionFormat));
-			lastTime = int(time);
-		}
-		if (time!=0) {
-			fixLayout();
-			refresh();
-			if (int(time)%2==0) {
-				recordingIndicator.visible=false;
-			}
-		}
-	}
-	
+
 	private function addTitleAndInfo():void {
 		var fmt:TextFormat = app.isOffline ? new TextFormat(CSS.font, 16, CSS.textColor) : CSS.projectTitleFormat;
 		var fmt2:TextFormat = app.isOffline ? new TextFormat(CSS.font, 12, CSS.textColor) : CSS.normalTextFormat;
@@ -492,7 +388,7 @@ public class StagePart extends UIPart {
 
 	private function addFullScreenButton():void {
 		function toggleFullscreen(b:IconButton):void {
-			app.presentationModeWasChanged(b.isOn());
+			app.setPresentationMode(b.isOn());
 			drawOutline();
 		}
 		fullscreenButton = new IconButton(toggleFullscreen, 'fullscreen');
@@ -567,10 +463,8 @@ public class StagePart extends UIPart {
 	}
 
 	private function stopEvent(e:Event):void {
-		if (e) {
-			e.stopImmediatePropagation();
-			e.preventDefault();
-		}
+		e.stopImmediatePropagation();
+		e.preventDefault();
 	}
 
 	public function addUserNameWarning():void {
@@ -583,7 +477,7 @@ public class StagePart extends UIPart {
 		userNameWarning.alpha = 0.9;
 
 		const versionFormat:TextFormat = new TextFormat(CSS.font, 16, 0x000000);
-		var userNameWarningText:TextField = makeLabel(Translator.map('This project can detect who is using it, through the “username” block. To hide your identity, sign out before using the project.'), versionFormat, 15, 45);
+		var userNameWarningText:TextField = makeLabel(Translator.map('This project can detect who is using it, through the â€œusernameâ€� block. To hide your identity, sign out before using the project.'), versionFormat, 15, 45);
 		userNameWarningText.width = userNameWarning.width - 10;
 		userNameWarningText.multiline = true;
 		userNameWarningText.wordWrap = true;

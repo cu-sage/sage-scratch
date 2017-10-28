@@ -26,8 +26,10 @@
 
 package ui {
 	import flash.display.*;
+	import flash.utils.Dictionary;
 	import translation.Translator;
 	import scratch.PaletteBuilder;
+	import uiwidgets.*;
 
 public class PaletteSelector extends Sprite {
 
@@ -43,6 +45,7 @@ public class PaletteSelector extends Sprite {
 	public var sageBlockIncludes:Dictionary;
 
 	public var selectedCategory:int = 0;
+	
 	private var app:Scratch;
 	private var paletteItems:Array;
 
@@ -53,12 +56,25 @@ public class PaletteSelector extends Sprite {
 		this.paletteItems = initCategories();
 	}
 
-	public static function strings():Array {
-		return categories.concat([
-			'when Stage clicked'
-		]);
+	public static function strings():Array { return categories }
+	
+	public function updateTranslation():void { 
+		initCategories();
+		updateCategorySelection(); 
 	}
-	public function updateTranslation():void { initCategories() }
+	
+	// update palette selected if entering play mode on unSageSelected palette 
+	private function updateCategorySelection():void {
+		if(app.interp.sagePlayMode && !sageCategories[selectedCategory])
+		{
+			for(var i:int=1; i<sageCategories.length; ++i)
+				if(sageCategories[i])
+				{
+					select(i);
+					break;
+				}
+		}
+	}
 
 	public function select(id:int, shiftKey:Boolean = false):void {
 		for (var i:int = 0; i < numChildren; i++) {
@@ -113,7 +129,7 @@ public class PaletteSelector extends Sprite {
 				y = startY;
 			}
 			var entry:Array = Specs.entryForCategory(categories[i]);
-			var item:PaletteSelectorItem = new PaletteSelectorItem(entry[0], Translator.map(entry[1]), entry[2]);
+			var item:PaletteSelectorItem = new PaletteSelectorItem(entry[0], Translator.map(entry[1]), entry[2], app.interp.sageDesignMode, app.interp.sagePlayMode, sageCategories[entry[0]]);
 			itemH = item.height;
 			item.x = x;
 			item.y = y;

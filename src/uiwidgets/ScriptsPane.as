@@ -65,13 +65,6 @@ public class ScriptsPane extends ScrollFrameContents {
 		addFeedbackShape();
 	}
 
-	public static function strings():Array {
-		return [
-			'add comment',
-			'clean up'
-		];
-	}
-
 	private function createTexture():void {
 		const alpha:int = 0x90 << 24;
 		const bgColor:int = alpha | 0xD7D7D7;
@@ -152,12 +145,11 @@ public class ScriptsPane extends ScrollFrameContents {
 	}
 
 	public function updateFeedbackFor(b:Block):void {
-
-		function updateHeight(): void {
-			var h:int = BlockShape.EmptySubstackH;
-			if (nearestTarget != null) {
-				var t:* = nearestTarget[1];
-				var o:Block = null;
+		nearestTarget = nearestTargetForBlockIn(b, possibleTargets);
+		if (b.base.canHaveSubstack1() && !b.subStack1) {
+			var o:Block = null;
+			if (nearestTarget) {
+				t = nearestTarget[1];
 				switch (nearestTarget[2]) {
 					case INSERT_NORMAL:
 						o = t.nextBlock;
@@ -172,17 +164,17 @@ public class ScriptsPane extends ScrollFrameContents {
 						o = t.subStack2;
 						break;
 				}
-				if (o) {
-					h = o.height;
-					if (!o.bottomBlock().isTerminal) h -= BlockShape.NotchDepth;
-				}
+			}
+			var h:int = BlockShape.EmptySubstackH;
+			if (o) {
+				h = o.height;
+				if (!o.bottomBlock().isTerminal) h -= BlockShape.NotchDepth;
 			}
 			b.previewSubstack1Height(h);
 		}
-
-		function updateFeedbackShape() : void {
-			var t:* = nearestTarget[1];
+		if (nearestTarget != null) {
 			var localP:Point = globalToLocal(nearestTarget[0]);
+			var t:* = nearestTarget[1];
 			feedbackShape.x = localP.x;
 			feedbackShape.y = localP.y;
 			feedbackShape.visible = true;
@@ -195,24 +187,9 @@ public class ScriptsPane extends ScrollFrameContents {
 				var isInsertion:Boolean = (insertionType != INSERT_ABOVE) && (insertionType != INSERT_WRAP);
 				feedbackShape.copyFeedbackShapeFrom(b, false, isInsertion, wrapH);
 			}
-		}
-
-		if (mouseX + x >= 0) {
-			nearestTarget = nearestTargetForBlockIn(b, possibleTargets);
-			if (nearestTarget != null) {
-				updateFeedbackShape();
-			} else {
-				hideFeedbackShape();
-			}
-			if (b.base.canHaveSubstack1() && !b.subStack1) {
-				updateHeight();
-			}
-		}
-		else {
-			nearestTarget = null;
+		} else {
 			hideFeedbackShape();
 		}
-
 		fixCommentLayout();
 	}
 
@@ -374,14 +351,14 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 	private function dropCompatible(droppedBlock:Block, target:DisplayObject):Boolean {
 		const menusThatAcceptReporters:Array = [
 			'broadcast', 'costume', 'backdrop', 'scene', 'sound',
-			'spriteOnly', 'spriteOrMouse', 'location', 'spriteOrStage', 'touching'];
+			'spriteOnly', 'spriteOrMouse', 'spriteOrStage', 'touching'];
 		if (!droppedBlock.isReporter) return true; // dropping a command block
 		if (target is Block) {
 			if (Block(target).isEmbeddedInProcHat()) return false;
 			if (Block(target).isEmbeddedParameter()) return false;
 		}
 		var dropType:String = droppedBlock.type;
-		var targetType:String = target is Block ? Block(target.parent).argType(target).slice(1) : BlockArg(target).type;
+		var targetType:String = (target is Block) ? Block(target).type : BlockArg(target).type;
 		if (targetType == 'm') {
 			if (Block(target.parent).type == 'h') return false;
 			return menusThatAcceptReporters.indexOf(BlockArg(target).menuName) > -1;
@@ -518,7 +495,6 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		addChild(c);
 		saveScripts();
 		updateSize();
-		c.startEditText();
 	}
 
 	public function fixCommentLayout():void {
