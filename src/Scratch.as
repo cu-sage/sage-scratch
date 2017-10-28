@@ -443,6 +443,9 @@ public class Scratch extends Sprite {
 
 		getIds();
 
+        //sm4241 - This needs to be used for parsing query parameters.
+        var sid:String = loaderInfo.parameters["sid"];
+
 		// load relevant variables for hinting from Dashboard
 		var h:Hints = new Hints();
 		this.addChild(h);
