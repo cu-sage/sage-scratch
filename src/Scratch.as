@@ -32,6 +32,7 @@ import flash.errors.IllegalOperationError;
 import flash.events.*;
 import flash.geom.Point;
 import flash.geom.Rectangle;
+import flash.net.FileFilter;
 import flash.net.FileReference;
 import flash.net.FileReferenceList;
 import flash.net.LocalConnection;
@@ -1368,15 +1369,6 @@ public class Scratch extends Sprite {
 		stagePart.refresh();
 		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
 	}
-	
-	public function toggleSagePlayMode(): void {
-		interp.sagePlayMode = !interp.sagePlayMode;
-		interp.sageDesignMode = false;
-		stagePart.refresh();
-		viewedObject.updateScriptsAfterTranslation(); // resest ScriptsPane
-	}
-
-	public function handleTool(tool:String, evt:MouseEvent):void { }
 
 	public function handleTool(tool:String, evt:MouseEvent):void { }
 

@@ -939,14 +939,6 @@ public class Block extends Sprite {
 			Scratch.app.showTip(op);
 		}
 	}
-	
-	public function sageInclude():void {
-		Scratch.app.paletteBuilder.updateBlock(this.spec, true);
-	}
-	
-	public function sageExclude():void {
-		Scratch.app.paletteBuilder.updateBlock(this.spec, false);
-	}
 
 	public function sageInclude():void {
 		Scratch.app.paletteBuilder.updateBlock(this.spec, true);

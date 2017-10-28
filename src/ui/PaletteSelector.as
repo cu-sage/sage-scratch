@@ -44,13 +44,6 @@ public class PaletteSelector extends Sprite {
 		
 	public var sageBlockIncludes:Dictionary;
 
-	public var sageCategories:Array = [
-		false, // placeholder
-		true, true, true, true, true, // column 1
-		true, true, true, true, true]; // column 2
-		
-	public var sageBlockIncludes:Dictionary;
-
 	public var selectedCategory:int = 0;
 	
 	private var app:Scratch;

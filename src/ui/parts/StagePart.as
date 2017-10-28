@@ -295,26 +295,6 @@ public class StagePart extends UIPart {
 		turboIndicator.visible = false;
 		addChild(turboIndicator);
 	}
-	
-	private function addSageDesignIndicator():void {
-		sageDesignIndicator = new TextField();
-		sageDesignIndicator.defaultTextFormat = new TextFormat(CSS.font, 11, CSS.buttonLabelOverColor, true);
-		sageDesignIndicator.autoSize = TextFieldAutoSize.LEFT;
-		sageDesignIndicator.selectable = false;
-		sageDesignIndicator.text = Translator.map('SAGE Design Mode');
-		sageDesignIndicator.visible = false;
-		addChild(sageDesignIndicator);	
-	}
-	
-	private function addSagePlayIndicator():void {
-		sagePlayIndicator = new TextField();
-		sagePlayIndicator.defaultTextFormat = new TextFormat(CSS.font, 11, CSS.buttonLabelOverColor, true);
-		sagePlayIndicator.autoSize = TextFieldAutoSize.LEFT;
-		sagePlayIndicator.selectable = false;
-		sagePlayIndicator.text = Translator.map('SAGE Play Mode');
-		sagePlayIndicator.visible = false;
-		addChild(sagePlayIndicator);	
-	}
 
 	private function addSageDesignIndicator():void {
 		sageDesignIndicator = new TextField();

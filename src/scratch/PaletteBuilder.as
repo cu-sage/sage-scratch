@@ -161,37 +161,6 @@ public class PaletteBuilder {
 			}
 		}
 	}
-	
-	public function getSageIncludedBlocks():Dictionary {
-		return sageIncludedBlocks;
-	}
-	
-	public function setSageIncludedBlocks(included:Dictionary):void {
-		sageIncludedBlocks = included;
-	}
-	
-	public function resetSageIncludedBlocks():void {
-		initSageIncludedBlocks();
-	}
-	
-	public function updateBlocks():void {
-		showBlocksForCategory(currentCategory, false);
-		app.getViewedObject().updateScriptsAfterTranslation(); // resest ScriptsPane
-	}
-	
-	public function updateBlock(spec:String, included:Boolean):void {
-		if (spec == 'when Stage clicked') spec = 'whenClicked'; // special case
-		sageIncludedBlocks[spec] = included;
-		updateBlocks();
-	}
-	
-	public function paletteIncluded(category:int):Boolean {
-		return app.scriptsPart.getSagePalettes()[category];
-	}
-	
-	public function blockIncluded(block:Block):Boolean {
-		return (blockLabelCategoryIncluded(block.spec, getBlockCategory(block.spec)) || block.type =="r");
-	}
 
 	public function getQuestion():String {
 		return question;
@@ -220,32 +189,6 @@ public class PaletteBuilder {
 
 	public function getHintCount():int {
 		return hintCounter;
-	}
-
-	public function getBlockCategory(label:String):int {
-		if (label == 'when Stage clicked') label = 'whenClicked'; // special case
-
-		var category:int = -1;
-		for each (var spec:Array in Specs.commands) {
-			if ((spec.length > 3) && (spec[0] == label))
-			{
-				category = spec[2];
-				if(category > 100)
-					category -= 100;
-				return category;
-			}
-		}
-		return category; // invalid state, category should be found
-	}
-	
-	public function blockLabelIncluded(label:String):Boolean {
-		return blockLabelCategoryIncluded(label, getBlockCategory(label));
-	}
-	
-	public function blockLabelCategoryIncluded(label:String, category:int):Boolean {
-		if(category > 100)
-			category -= 100;
-		return app.scriptsPart.getSagePalettes()[category] && sageIncludedBlocks[label];
 	}
 
 	public function showBlocksForCategory(selectedCategory:int, scrollToOrigin:Boolean, shiftKey:Boolean = false):void {
