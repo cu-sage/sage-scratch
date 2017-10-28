@@ -122,6 +122,7 @@ public class BlockIO {
 		if (cmd[0] == Specs.CALL) {
 			//b = new Block(cmd[1], '', Specs.procedureColor, Specs.CALL);
 			b = new Block(cmd[1], '', getModeBlockColor(cmd[1], Specs.procedureColor), Specs.CALL, null, false, blockId);
+
 			cmd.splice(0, 1);
 		} else {
 			var spec:Array = specForCmd(cmd, undefinedBlockType);
@@ -132,6 +133,7 @@ public class BlockIO {
 			b = new Block(label, spec[1], color, spec[3]);
 			//b = new Block(label, spec[1], getModeBlockColor(label, Specs.blockColor(spec[2])), spec[3]);
 		}
+
 		var args:Array = argsForCmd(cmd, b.rightToLeft);
 		var substacks:Array = substacksForCmd(cmd);
 		var hadSpriteRef:Boolean;

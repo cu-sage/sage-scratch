@@ -504,6 +504,7 @@ public class BlockMenus implements DragClient {
 			}
 			if(!(!app.getPaletteBuilder().blockIncluded(block) && app.interp.sagePlayMode)) {
 				m.addItem('delete', block.deleteStack());
+
 				m.addLine();
 				m.addItem('add comment', block.addComment);
 			}

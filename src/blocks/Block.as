@@ -31,33 +31,35 @@
 // sequence from a specification string (e.g. "%n + %n") and type (e.g. reporter).
 
 package blocks {
-import extensions.ExtensionManager;
+	import extensions.ExtensionManager;
 
-import flash.display.*;
+	import flash.display.*;
 	import flash.events.*;
 	import flash.filters.GlowFilter;
 	import flash.geom.*;
 	import flash.net.URLLoader;
-import flash.net.URLRequest;
-import flash.text.*;
+
+	import flash.net.URLRequest;
+	import flash.text.*;
 	import assets.Resources;
 
-import flash.utils.Dictionary;
+	import flash.utils.Dictionary;
 
-import flash.utils.Timer;
+	import flash.utils.Timer;
 
-import org.osmf.events.TimeEvent;
+	import org.osmf.events.TimeEvent;
 
-import translation.Translator;
+	import translation.Translator;
 
-import ui.Hints;
-import ui.PaletteSelector;
-import ui.PaletteSelectorItem;
+	import ui.Hints;
+	import ui.PaletteSelector;
+	import ui.PaletteSelectorItem;
 
-import util.*;
+	import util.*;
 	import uiwidgets.*;
 	import scratch.*;
-import mx.utils.UIDUtil;
+	import mx.utils.UIDUtil;
+
 
 public class Block extends Sprite {
 
@@ -107,6 +109,8 @@ public class Block extends Sprite {
 	private var labelsAndArgs:Array = [];
 	private var argTypes:Array = [];
 	private var elseLabel:TextField;
+	
+	//private var isIncluded:Boolean;
 
 	//private var isIncluded:Boolean;
 
@@ -256,7 +260,6 @@ public class Block extends Sprite {
 			argTypes.reverse();
 			if (defaultArgs) defaultArgs.reverse();
 		}
-
 
 		trace("from pointdict: " + Specs.pointDict[spec]);
 		var pointVal:int = Specs.pointDict[spec];
@@ -410,6 +413,7 @@ public class Block extends Sprite {
 	}
 
 	// call f on all blocks
+
 	public function allBlocksDo(f:Function):void {
 		f(this);
 		for each (var arg:* in args) {
@@ -640,7 +644,7 @@ public class Block extends Sprite {
 	public function duplicate(forClone:Boolean, forStage:Boolean = false):Block {
 		// called only on blocks dragged from palette (not those that are duplicated)
 		var newSpec:String = spec;
-		if (op == 'whenClicked') newSpec = forStage ? 'when Stage clicked' : 'when this sprite clicked';
+		if (op == 'whenClicked') newSpec = forStage ? 'when Stage clicked' : 'when this sprite clicked';				
 		var dup:Block = new Block(newSpec, type, (int)(forClone ? -1 : base.color), op);
 		dup.isRequester = isRequester;
 		dup.forcedRequester = forcedRequester;
@@ -935,6 +939,14 @@ public class Block extends Sprite {
 			Scratch.app.showTip(op);
 		}
 	}
+	
+	public function sageInclude():void {
+		Scratch.app.paletteBuilder.updateBlock(this.spec, true);
+	}
+	
+	public function sageExclude():void {
+		Scratch.app.paletteBuilder.updateBlock(this.spec, false);
+	}
 
 	public function sageInclude():void {
 		Scratch.app.paletteBuilder.updateBlock(this.spec, true);
@@ -1041,6 +1053,7 @@ public class Block extends Sprite {
 			else {
 				return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
 			}
+
 		}
 		return this;
 	}

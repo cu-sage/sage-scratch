@@ -33,9 +33,11 @@ package scratch {
 	import blocks.*;
 	import extensions.*;
 
+
 import org.apache.flex.collections.ArrayList;
 
 import ui.media.MediaLibrary;
+
 	import ui.ProcedureSpecEditor;
 	import ui.parts.UIPart;
 	import uiwidgets.*;
@@ -47,6 +49,7 @@ public class PaletteBuilder {
 
 	protected var app:Scratch;
 	protected var nextY:int;
+
 	public var comments:String;
 	private var currentCategory:int;
 
@@ -57,6 +60,7 @@ public class PaletteBuilder {
 
 	// store all blocks for use in hinting
 	private var paletteBlocks:Array = new Array();
+
 
 	public function PaletteBuilder(app:Scratch) {
 		this.app = app;
@@ -70,6 +74,62 @@ public class PaletteBuilder {
 			'Make a Block', 'Make a List', 'Make a Variable',
 			'New List', 'List name', 'New Variable', 'Variable name',
 			'New Block', 'Add an Extension'];
+	}
+	
+	public function getSageIncludedBlocks():Dictionary {
+		return sageIncludedBlocks;
+	}
+	
+	public function setSageIncludedBlocks(included:Dictionary):void {
+		sageIncludedBlocks = included;
+	}
+	
+	public function resetSageIncludedBlocks():void {
+		initSageIncludedBlocks();
+	}
+	
+	public function updateBlocks():void {
+		showBlocksForCategory(currentCategory, false);
+		app.getViewedObject().updateScriptsAfterTranslation(); // resest ScriptsPane
+	}
+	
+	public function updateBlock(spec:String, included:Boolean):void {
+		if (spec == 'when Stage clicked') spec = 'whenClicked'; // special case
+		sageIncludedBlocks[spec] = included;
+		updateBlocks();
+	}
+	
+	public function paletteIncluded(category:int):Boolean {
+		return app.scriptsPart.getSagePalettes()[category];
+	}
+	
+	public function blockIncluded(block:Block):Boolean {
+		return blockLabelCategoryIncluded(block.spec, getBlockCategory(block.spec));
+	}
+	
+	public function getBlockCategory(label:String):int {
+		if (label == 'when Stage clicked') label = 'whenClicked'; // special case
+		var category:int = -1;
+		for each (var spec:Array in Specs.commands) {
+			if ((spec.length > 3) && (spec[0] == label))
+			{
+				category = spec[2];
+				if(category > 100)
+					category -= 100;
+				return category;
+			}
+		}
+		return category; // invalid state, category should be found
+	}
+	
+	public function blockLabelIncluded(label:String):Boolean {
+		return blockLabelCategoryIncluded(label, getBlockCategory(label));
+	}
+	
+	public function blockLabelCategoryIncluded(label:String, category:int):Boolean {
+		if(category > 100)
+			category -= 100;
+		return app.scriptsPart.getSagePalettes()[category] && sageIncludedBlocks[label];
 	}
 
 	//sm4241 - creating dictionary of blocks included in parsons palette
@@ -264,7 +324,6 @@ public class PaletteBuilder {
 					addParsonsCheckbox(block);
 				}
 				addItem(block, true);
-
 				cmdCount++;
 			} else {
 				if ((spec.length == 1) && (cmdCount > 0)) nextY += 10 * spec[0].length; // add some space
@@ -369,7 +428,6 @@ public class PaletteBuilder {
 		updateCheckboxes();
 
 	}
-
 
 	protected function addExtensionButtons():void {
 	}
@@ -782,6 +840,7 @@ public class PaletteBuilder {
 		app.palette.addChild(line);
 	}
 
+
 	/* Functions for hinting */
 
 	public function getCurrentCategory() {
@@ -794,4 +853,5 @@ public class PaletteBuilder {
 		}
 		return null; // no block found with given value of 'op'
 	}
+
 }}

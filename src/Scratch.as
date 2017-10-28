@@ -32,7 +32,6 @@ import flash.errors.IllegalOperationError;
 import flash.events.*;
 import flash.geom.Point;
 import flash.geom.Rectangle;
-import flash.net.FileFilter;
 import flash.net.FileReference;
 import flash.net.FileReferenceList;
 import flash.net.LocalConnection;
@@ -120,6 +119,7 @@ public class Scratch extends Sprite {
 	public var imagesPart:ImagesPart;
 	public var soundsPart:SoundsPart;
 	public const tipsBarClosedWidth:int = 17;
+
 
 
 	// Block IDs
@@ -318,7 +318,7 @@ public class Scratch extends Sprite {
         d.showOnStage(app.stage);
     }
 
-   public var sagePalettesDefault:Array = [
+	public var sagePalettesDefault:Array = [
 		false, // placeholder
 		true, true, true, true, true, // column 1
 		true, true, true, true, true]; // column 2
@@ -331,6 +331,7 @@ public class Scratch extends Sprite {
 		determineJSAccess();
 	}
 
+
 	function onFileLoaded(event:Event):void {
 		trace("onfileloaded called");
 		var fileReference:FileReference = event.target as FileReference;
@@ -342,6 +343,7 @@ public class Scratch extends Sprite {
 		Specs.pointDict = lol;
 		trace(lol);
 	}
+
 	protected function initialize():void {
 
 		trace("editor initializing");
@@ -481,9 +483,11 @@ public class Scratch extends Sprite {
 
 	private function postJson(proj:*, sid:String, aid:String):void {
 		// Sending JSON project via HTTP POST
+
 //		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assignments/"+aid);
 		/*
 		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assignments/"+aid);
+
 
 		var loader:URLLoader = new URLLoader();
 		loader.dataFormat = URLLoaderDataFormat.TEXT;
@@ -507,6 +511,7 @@ public class Scratch extends Sprite {
 
 		// send the request
 		loader.load(request);
+
 		*/
 
 		var now:Date = new Date();
@@ -1301,6 +1306,7 @@ public class Scratch extends Sprite {
 		d.showOnStage(stage);
 	}
 
+
 	public function exportProjectToFile(fromJS:Boolean = false):void {
 		function squeakSoundsConverted():void {
 			scriptsPane.saveScripts(false);
@@ -1347,6 +1353,7 @@ public class Scratch extends Sprite {
 
 	//yc2937
 	//update elements when switching to design mode
+
 	public function toggleSageDesignMode(): void {
 		interp.sageDesignMode = !interp.sageDesignMode;
 		interp.sagePlayMode = false;
@@ -1361,6 +1368,15 @@ public class Scratch extends Sprite {
 		stagePart.refresh();
 		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
 	}
+	
+	public function toggleSagePlayMode(): void {
+		interp.sagePlayMode = !interp.sagePlayMode;
+		interp.sageDesignMode = false;
+		stagePart.refresh();
+		viewedObject.updateScriptsAfterTranslation(); // resest ScriptsPane
+	}
+
+	public function handleTool(tool:String, evt:MouseEvent):void { }
 
 	public function handleTool(tool:String, evt:MouseEvent):void { }
 
@@ -1678,6 +1694,7 @@ public class Scratch extends Sprite {
 			// Ignore the exception that happens when you call browse() with the file browser open
 			fileList.browse(filters);
 		} catch(e:*) {}
+
 	}
 
 	public function updateIdCt() {

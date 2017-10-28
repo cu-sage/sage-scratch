@@ -44,6 +44,13 @@ public class PaletteSelector extends Sprite {
 		
 	public var sageBlockIncludes:Dictionary;
 
+	public var sageCategories:Array = [
+		false, // placeholder
+		true, true, true, true, true, // column 1
+		true, true, true, true, true]; // column 2
+		
+	public var sageBlockIncludes:Dictionary;
+
 	public var selectedCategory:int = 0;
 	
 	private var app:Scratch;
@@ -104,6 +111,7 @@ public class PaletteSelector extends Sprite {
 			app.getViewedObject().updateScriptsAfterTranslation(); // resest ScriptsPane
 		}
 	}
+
 	//sm4241 - changing numberOfRows -> 6 (categories table)
 	private function initCategories():Array {
 		const numberOfRows:int = 6; //initially was 5
@@ -149,6 +157,8 @@ public class PaletteSelector extends Sprite {
 		g.beginFill(0xFFFF00, 0); // invisible (alpha = 0) rectangle used to set size
 		g.drawRect(0, 0, w, h);
 	}
+	
+	
 
 	// return PaletteItems for use in hinting
 	public function getPaletteItems() {

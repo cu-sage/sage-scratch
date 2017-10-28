@@ -31,6 +31,7 @@ package ui {
 	import uiwidgets.*;
 	import scratch.ScratchObj;
 	import scratch.ScratchComment;
+	
 
 import flash.events.Event;
 

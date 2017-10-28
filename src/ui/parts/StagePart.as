@@ -25,6 +25,7 @@
 // since it is referred from many places.
 
 package ui.parts {
+
 import flash.display.*;
 import flash.events.*;
 import flash.text.*;
@@ -153,9 +154,11 @@ public class StagePart extends UIPart {
 		sageDesignIndicator.visible = app.interp.sageDesignMode;
 		sagePlayIndicator.visible = app.interp.sagePlayMode;
 		fullscreenButton.visible = !app.isSmallPlayer;
+
 		pointsLabel.visible = !app.interp.sageDesignMode;
 		messageLabel.visible = !app.interp.sageDesignMode;
 		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
+
 		if (app.editMode) {
 			fullscreenButton.setOn(false);
 			drawStageSizeButton();
@@ -196,6 +199,11 @@ public class StagePart extends UIPart {
 
 		turboIndicator.x = w - turboIndicator.width - 73;
 		turboIndicator.y = app.isSmallPlayer ? 5 : (app.editMode ? 22 : 12);
+		
+		sageDesignIndicator.x = w - sageDesignIndicator.width - 203;
+		sageDesignIndicator.y = app.isSmallPlayer ? 5 : (app.editMode ? 22 : 12);
+		sagePlayIndicator.x = w - sagePlayIndicator.width - 203;
+		sagePlayIndicator.y = app.isSmallPlayer ? 5 : (app.editMode ? 22 : 12);
 
 		sageDesignIndicator.x = w - sageDesignIndicator.width - 203;
 		sageDesignIndicator.y = app.isSmallPlayer ? 5 : (app.editMode ? 22 : 12);
@@ -286,6 +294,26 @@ public class StagePart extends UIPart {
 		turboIndicator.text = Translator.map('Turbo Mode');
 		turboIndicator.visible = false;
 		addChild(turboIndicator);
+	}
+	
+	private function addSageDesignIndicator():void {
+		sageDesignIndicator = new TextField();
+		sageDesignIndicator.defaultTextFormat = new TextFormat(CSS.font, 11, CSS.buttonLabelOverColor, true);
+		sageDesignIndicator.autoSize = TextFieldAutoSize.LEFT;
+		sageDesignIndicator.selectable = false;
+		sageDesignIndicator.text = Translator.map('SAGE Design Mode');
+		sageDesignIndicator.visible = false;
+		addChild(sageDesignIndicator);	
+	}
+	
+	private function addSagePlayIndicator():void {
+		sagePlayIndicator = new TextField();
+		sagePlayIndicator.defaultTextFormat = new TextFormat(CSS.font, 11, CSS.buttonLabelOverColor, true);
+		sagePlayIndicator.autoSize = TextFieldAutoSize.LEFT;
+		sagePlayIndicator.selectable = false;
+		sagePlayIndicator.text = Translator.map('SAGE Play Mode');
+		sagePlayIndicator.visible = false;
+		addChild(sagePlayIndicator);	
 	}
 
 	private function addSageDesignIndicator():void {
