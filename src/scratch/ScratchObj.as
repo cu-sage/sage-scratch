@@ -612,7 +612,9 @@ public class ScratchObj extends Sprite {
 			variables[i] = Scratch.app.runtime.makeVariable(varObj);
 		}
 		lists = jsonObj.lists || [];
-        scripts = jsonObj.scripts || [];
+        if(!Scratch.app.interp.sagePlayMode){
+            scripts = jsonObj.scripts || [];
+        }
 		parsonScripts = JSON.clone(jsonObj.scripts) || [];
 		scriptComments = jsonObj.scriptComments || [];
 		sounds = jsonObj.sounds || [];
