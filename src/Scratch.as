@@ -454,7 +454,8 @@ public class Scratch extends Sprite {
 		// load relevant variables for hinting from Dashboard
 		var h:Hints = new Hints();
 		this.addChild(h);
-		h.getRulesFile();
+		// TODO: need to fix launch errors and uncomment
+		//h.getRulesFile();
 	}
 
 	private function getIds():void {
