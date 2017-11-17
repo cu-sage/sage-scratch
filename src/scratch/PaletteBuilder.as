@@ -351,7 +351,7 @@ public class PaletteBuilder {
 
 		//	addItem(new Button(Translator.map('Submit'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
 			if(app.interp.sageDesignMode) { // we call the save project function
-				addItem(new Button(Translator.map('Submit'), app.exportProjectToFile, false, ''));
+				addItem(new Button(Translator.map('Submit'), app.getCutoffScores, false, ''));
 			}
 			else // we call submission for Parsons function
 			{

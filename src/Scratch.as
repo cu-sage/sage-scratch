@@ -130,6 +130,9 @@ public class Scratch extends Sprite {
 	var totalMoves:int=0;
     var blocksCount:int=0;
     var success:Boolean=false;
+	public var maxScore:int;
+	public var cutoff1:int;
+	public var cutoff2:int;
 
 	protected var points:int = 0;
 	public function setPoints(points:int):void {
@@ -149,6 +152,32 @@ public class Scratch extends Sprite {
 		setPoints(this.points - pointsToSubtract);
 		stagePart.updatePointsLabel();
 	}
+
+    public function submitProject():void {
+        var currScript = viewedObject.scripts;
+        var i:int;
+        for (i = 0; i < currScript.length; i++) {
+            var b:Block = currScript[i] as Block;
+            maxScore += b.pointValue;
+        }
+        exportProjectToFile();
+    }
+
+    public function getCutoffScores():void {
+        function ok():void {
+            cutoff1 = d.getField("Cut-off 1");
+            cutoff2 = d.getField("Cut-off 2");
+            submitProject();
+        }
+
+        var d:DialogBox = new DialogBox(null);
+        d.addTitle('Cut-off Scores');
+        d.addField('Cut-off 1', 50, cutoff1);
+        d.addField('Cut-off 2', 50, cutoff2);
+        d.addButton('Ok', ok);
+        d.addButton('Cancel',null);
+        d.showOnStage(app.stage);
+    }
 
 	public static const K_NOT_DRAGGED_FROM_PALETTE_OR_SCRIPTS_PANE:int = 0;
 	public static const K_DRAGGED_FROM_PALETTE:int = 1;
