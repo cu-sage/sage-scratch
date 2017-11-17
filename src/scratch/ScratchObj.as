@@ -43,8 +43,9 @@ import scratch.ScratchSprite;
 import translation.Translator;
 
 	import util.*;
+import util.JSON;
 
-	import watchers.*;
+import watchers.*;
 
 public class ScratchObj extends Sprite {
 
@@ -53,6 +54,7 @@ public class ScratchObj extends Sprite {
 	public static const STAGEW:int = 480;
 	public static const STAGEH:int = 360;
 
+    public var app:Scratch;
 	public var objName:String = 'no name';
 	public var isStage:Boolean = false;
 	public var variables:Array = [];
@@ -610,9 +612,10 @@ public class ScratchObj extends Sprite {
 			variables[i] = Scratch.app.runtime.makeVariable(varObj);
 		}
 		lists = jsonObj.lists || [];
-		//sm4241 - to prevent scripts being displayed on script pane during play mode
-		scripts = jsonObj.scripts || [];
-		//parsonScripts = jsonObj.scripts || [];
+        if(!Scratch.app.interp.sagePlayMode){
+            scripts = jsonObj.scripts || [];
+        }
+		parsonScripts = JSON.clone(jsonObj.scripts) || [];
 		scriptComments = jsonObj.scriptComments || [];
 		sounds = jsonObj.sounds || [];
 		costumes = jsonObj.costumes || [];
@@ -642,40 +645,42 @@ public class ScratchObj extends Sprite {
 		}
 
 		// scripts
-		for (i = 0; i < scripts.length; i++) {
-			// entries are of the form: [x y stack]
-			var entry:Array = scripts[i];
-			var blockIds:Array = [];
-			for each (var e:Array in entry[2]) {
-				if (UIDUtil.isUID(e[0])) blockIds.push(e[0]);
-			}
-			var blocksOnly:Array = entry[2];
-			for each (var e:Array in blocksOnly) {
-				if (UIDUtil.isUID(e[0])) e.shift();
-			}
-			var b:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
-			b.x = entry[0];
-			b.y = entry[1];
-			scripts[i] = b;
-		}
+        scripts = scriptHelper(scripts);
+//		for (i = 0; i < scripts.length; i++) {
+//			// entries are of the form: [x y stack]
+//			var entry:Array = scripts[i];
+//			var blockIds:Array = [];
+//			for each (var e:Array in entry[2]) {
+//				if (UIDUtil.isUID(e[0])) blockIds.push(e[0]);
+//			}
+//			var blocksOnly:Array = entry[2];
+//			for each (var e:Array in blocksOnly) {
+//				if (UIDUtil.isUID(e[0])) e.shift();
+//			}
+//			var b:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
+//			b.x = entry[0];
+//			b.y = entry[1];
+//			scripts[i] = b;
+//		}
 
 		// parsonScripts
-		for (i = 0; i < parsonScripts.length; i++) {
-			// entries are of the form: [x y stack]
-			var entry:Array = parsonScripts[i];
-			var blockIds:Array = [];
-			for each (var e:Array in entry[2]) {
-				if (UIDUtil.isUID(e[0])) blockIds.push(e[0]);
-			}
-			var blocksOnly:Array = entry[2];
-			for each (var e:Array in blocksOnly) {
-				if (UIDUtil.isUID(e[0])) e.shift();
-			}
-			var b:Block = BlockIO.arrayToStack(blocksOnly, blockIds);
-			b.x = entry[0];
-			b.y = entry[1];
-			parsonScripts[i] = b;
-		}
+        parsonScripts = scriptHelper(parsonScripts);
+//		for (i = 0; i < parsonScripts.length; i++) {
+//			// entries are of the form: [x y stack]
+//			var entryp:Array = parsonScripts[i];
+//			var blockIdsp:Array = [];
+//			for each (var ep:Array in entryp[2]) {
+//				if (UIDUtil.isUID(ep[0])) blockIdsp.push(e[0]);
+//			}
+//			var blocksOnlyp:Array = entryp[2];
+//			for each (var ep:Array in blocksOnlyp) {
+//				if (UIDUtil.isUID(ep[0])) ep.shift();
+//			}
+//			var bp:Block = BlockIO.arrayToStack(blocksOnlyp, blockIdsp);
+//			bp.x = entryp[0];
+//			bp.y = entryp[1];
+//			parsonScripts[i] = bp;
+//		}
 
 		// script comments
 		for (i = 0; i < scriptComments.length; i++) {
@@ -695,6 +700,27 @@ public class ScratchObj extends Sprite {
 			costumes[i] = new ScratchCostume('json temp', null);
 			costumes[i].readJSON(jsonObj);
 		}
+	}
+
+	private function scriptHelper(scripts:Array):Array{
+		var i:int;
+        for (i = 0; i < scripts.length; i++) {
+            // entries are of the form: [x y stack]
+            var entry:Array = scripts[i];
+            var blockIds:Array = [];
+            for each (var e:Array in entry[2]) {
+                if (UIDUtil.isUID(e[0])) blockIds.push(e[0]);
+            }
+            var blocksOnly:Array = entry[2];
+            for each (var e:Array in blocksOnly) {
+                if (UIDUtil.isUID(e[0])) e.shift();
+            }
+            var b:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
+            b.x = entry[0];
+            b.y = entry[1];
+            scripts[i] = b;
+        }
+		return scripts;
 	}
 
 	public function getSummary():String {
