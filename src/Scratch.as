@@ -447,6 +447,8 @@ public class Scratch extends Sprite {
         var sid:String = loaderInfo.parameters["sid"];
         var assignmentID:String = loaderInfo.parameters["assignmentID"];
         var mode:String = loaderInfo.parameters["mode"];
+		//more parameters can be added as and when required
+		
         toggleSagePlayMode();
         startTimer(sid, assignmentID);
 
