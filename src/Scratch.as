@@ -477,7 +477,7 @@ public class Scratch extends Sprite {
         var assignmentID:String = loaderInfo.parameters["assignmentID"];
         var mode:String = loaderInfo.parameters["mode"];
 		//more parameters can be added as and when required
-		
+
         toggleSagePlayMode();
         startTimer(sid, assignmentID);
 
@@ -571,7 +571,7 @@ public class Scratch extends Sprite {
 
 	private function getAssessmentResults(sid:String, aid:String):void {
 //		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assessments/"+aid+"/results");
-		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assessments/"+aid+"/results");
+		var request:URLRequest = new URLRequest("http://localhost:8081/games/students/"+sid+"/assessments/"+aid+"/results");
 		var loader:URLLoader = new URLLoader();
 
 		request.method = URLRequestMethod.GET;
@@ -649,7 +649,7 @@ public class Scratch extends Sprite {
 	public function reopenTips():void {}
 	public function tipsWidth():int { return 0; }
 	public function getViewedObject():ScratchObj { return viewedObject; }
-	public function getStage():StagePart { return stagePart; } 
+	public function getStage():StagePart { return stagePart; }
 
 	protected function startInEditMode():Boolean {
 		return true;
