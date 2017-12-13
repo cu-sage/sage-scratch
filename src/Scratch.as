@@ -133,6 +133,10 @@ public class Scratch extends Sprite {
 	public var maxScore:int;
 	public var cutoff1:int;
 	public var cutoff2:int;
+    public var selfExplanation:String;
+
+	//can be changed to array of messages if required in future
+    public var submitMsg:String;
 
 	protected var points:int = 0;
 	public function setPoints(points:int):void {
@@ -158,15 +162,30 @@ public class Scratch extends Sprite {
         var i:int;
         for (i = 0; i < currScript.length; i++) {
             var b:Block = currScript[i] as Block;
-            maxScore += b.pointValue;
+			while(b != null){
+                addScore(b.subStack1);
+                addScore(b.subStack2);
+                maxScore += b.pointValue;
+                b = b.nextBlock;
+			}
         }
         exportProjectToFile();
     }
 
+    public function addScore(b:Block):void{
+        if(b != null){
+            addScore(b.subStack1);
+            addScore(b.subStack2);
+			maxScore += b.pointValue;
+		}
+    }
+
     public function getCutoffScores():void {
+        //scriptsPane.saveScripts();
         function ok():void {
             cutoff1 = d.getField("Cut-off 1");
             cutoff2 = d.getField("Cut-off 2");
+            submitMsg = d.getField("Submit Message");
             submitProject();
         }
 
@@ -174,6 +193,7 @@ public class Scratch extends Sprite {
         d.addTitle('Cut-off Scores');
         d.addField('Cut-off 1', 50, cutoff1);
         d.addField('Cut-off 2', 50, cutoff2);
+		d.addField('Submit Message', 200, submitMsg);
         d.addButton('Ok', ok);
         d.addButton('Cancel',null);
         d.showOnStage(app.stage);
@@ -334,7 +354,7 @@ public class Scratch extends Sprite {
         var d:DialogBox = new DialogBox(null);
         if(success){
             d.addTitle('Congratulations!');
-            d.addText('You have completed Parsons Puzzle');
+            d.addText(submitMsg);
         }else{
             d.addTitle('Better Luck Next Time!');
             d.addText('You were very close...');
@@ -345,6 +365,21 @@ public class Scratch extends Sprite {
         d.addText('Incorrect Moves: ' + (totalMoves - blocksCount));
         d.addText('Hint Used: ' + paletteBuilder.getHintCount());
         d.addButton('Ok', ok);
+        d.showOnStage(app.stage);
+    }
+
+    public function getSelfExplanation():void {
+        function ok():void {
+            selfExplanation = d.getField("Enter Explanation");
+			summary();
+        }
+
+        var d:DialogBox = new DialogBox(null);
+        d.addTitle('Self-Explanation');
+//		d.addTextArea('Enter Explanation', 300, 200, comments);
+        d.addField('Enter Explanation', 500, selfExplanation);
+        d.addButton('Ok', ok);
+        d.addButton('Cancel',null);
         d.showOnStage(app.stage);
     }
 
@@ -473,13 +508,18 @@ public class Scratch extends Sprite {
 		//getIds();
 
         //sm4241 - This needs to be used for parsing query parameters.
-        var sid:String = loaderInfo.parameters["sid"];
-        var assignmentID:String = loaderInfo.parameters["assignmentID"];
-        var mode:String = loaderInfo.parameters["mode"];
+//        var url:String = ExternalInterface.call("window.location.href.toString");
+//		var queryParams:URLVariables = new URLVariables(url);
+
+        var queryParams:Object = this.root.loaderInfo.parameters;
+		var sid:String = LoaderInfo(this.root.loaderInfo).parameters.sid;
+        var assignmentID:String = LoaderInfo(this.root.loaderInfo).parameters.assignmentID;
+        var mode:String = LoaderInfo(this.root.loaderInfo).parameters.mode;
 		//more parameters can be added as and when required
-		
+
+		//showIds(queryParams.toString(), sid, assignmentID, mode);
         toggleSagePlayMode();
-        startTimer(sid, assignmentID);
+        //startTimer(sid, assignmentID);
 
 
 		// load relevant variables for hinting from Dashboard
@@ -487,6 +527,15 @@ public class Scratch extends Sprite {
 		this.addChild(h);
 		// TODO: need to fix launch errors and uncomment
 		//h.getRulesFile();
+	}
+
+	private function showIds(queryParams:String, sid:String, assignmentID:String, mode:String):void{
+        var d:DialogBox = new DialogBox();
+		d.addText(queryParams);
+		d.addText(sid);
+		d.addText(assignmentID);
+		d.addText(mode);
+		d.showOnStage(stage);
 	}
 
 	private function getIds():void {
@@ -526,9 +575,10 @@ public class Scratch extends Sprite {
 		// Sending JSON project via HTTP POST
 
 //		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assignments/"+aid);
-		/*
-		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assignments/"+aid);
 
+//		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assignments/"+aid);
+
+		var request:URLRequest = new URLRequest("http://localhost:8081/games/student/"+sid+"/game/"+aid+"/objective/58d845736e4ddb3ce20ed1b3")
 
 		var loader:URLLoader = new URLLoader();
 		loader.dataFormat = URLLoaderDataFormat.TEXT;
@@ -553,7 +603,7 @@ public class Scratch extends Sprite {
 		// send the request
 		loader.load(request);
 
-		*/
+
 
 		var now:Date = new Date();
 		var time:String = now.toString();
@@ -571,7 +621,8 @@ public class Scratch extends Sprite {
 
 	private function getAssessmentResults(sid:String, aid:String):void {
 //		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assessments/"+aid+"/results");
-		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assessments/"+aid+"/results");
+//		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assessments/"+aid+"/results");
+        var request:URLRequest = new URLRequest("http://localhost:8081/assess/game/"+aid+"/objective/58d845736e4ddb3ce20ed1b3");
 		var loader:URLLoader = new URLLoader();
 
 		request.method = URLRequestMethod.GET;

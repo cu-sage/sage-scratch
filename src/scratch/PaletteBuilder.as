@@ -50,7 +50,7 @@ public class PaletteBuilder {
 	protected var app:Scratch;
 	protected var nextY:int;
 
-	public var comments:String;
+	//public var comments:String;
 	private var currentCategory:int;
 
 	private var parsonsBlock:ArrayList= new ArrayList();
@@ -151,11 +151,11 @@ public class PaletteBuilder {
 	}
 
 	public function setParsonsIncludedBlocks(parsons:Array):void {
-		if (parsons != null) {
+        if (parsons != null) {
+            parsonsBlock = new ArrayList();
 			if (parsons.length > 0) {
 				for (var i = 0; i < parsons.length; i++) {
 					var newBlock:Block = new Block(parsons[i]['spec'], parsons[i]['type'], parsons[i]['color'], parsons[i]['cmd']);
-
 					parsonsBlock.addItem(newBlock);
 				}
 			}
@@ -355,8 +355,8 @@ public class PaletteBuilder {
 			}
 			else // we call submission for Parsons function
 			{
-				addItem(new Button(Translator.map('Comments'), getComments, false, ''));
-				addItem(new Button(Translator.map('Submit'), app.summary, false, ''));
+				//addItem(new Button(Translator.map('Comments'), getComments, false, ''));
+				addItem(new Button(Translator.map('Submit'), app.getSelfExplanation, false, ''));
 			}
 			nextY += 5;
 
@@ -464,20 +464,19 @@ public class PaletteBuilder {
 		d.showOnStage(app.stage);
 	}
 	//sm4241
-	private function getComments():void {
-		function ok():void {
-			comments = d.getField("Enter Comments");
-
-
-		}
-
-		var d:DialogBox = new DialogBox(null);
-		d.addTitle('Comments/Suggestions');
-		d.addField('Enter Comments', 350, comments);
-		d.addButton('Ok', ok);
-		d.addButton('Cancel',null);
-		d.showOnStage(app.stage);
-	}
+//	private function getComments():void {
+//		function ok():void {
+//			comments = d.getField("Enter Explanation");
+//		}
+//
+//		var d:DialogBox = new DialogBox(null);
+//		d.addTitle('Self-Explanation');
+////		d.addTextArea('Enter Explanation', 300, 200, comments);
+//		d.addField('Enter Explanation', 500, comments);
+//		d.addButton('Ok', ok);
+//		d.addButton('Cancel',null);
+//		d.showOnStage(app.stage);
+//	}
 
 	//sm4241
 	private function showQuestion():void {
