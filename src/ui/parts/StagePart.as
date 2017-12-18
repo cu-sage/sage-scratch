@@ -40,7 +40,7 @@ public class StagePart extends UIPart {
 	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor, true);
 	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 10, CSS.textColor);
 
-	private const topBarHeightNormal:int = 39;
+	private const topBarHeightNormal:int = 60;
 	private const topBarHeightSmallPlayerMode:int = 46;
 
 	private var topBarHeight:int = topBarHeightNormal;
@@ -71,6 +71,9 @@ public class StagePart extends UIPart {
 	//points
 	private var pointsLabel:TextField;
 	private var messageLabel:TextField;
+    private var maxScoreLabel:TextField;
+    private var cutoff1Label:TextField;
+    private var cutoff2Label:TextField;
 
 	public function StagePart(app:Scratch) {
 		this.app = app;
@@ -157,6 +160,9 @@ public class StagePart extends UIPart {
 
 		pointsLabel.visible = !app.interp.sageDesignMode;
 		messageLabel.visible = !app.interp.sageDesignMode;
+        maxScoreLabel.visible = !app.interp.sageDesignMode;
+        cutoff1Label.visible = !app.interp.sageDesignMode;
+        cutoff2Label.visible = !app.interp.sageDesignMode;
 		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
 
 		if (app.editMode) {
@@ -187,8 +193,10 @@ public class StagePart extends UIPart {
 	protected function fixLayout():void {
 		if (app.stagePane) app.stagePane.y = topBarHeight;
 
-		projectTitle.x = 50;
-		projectTitle.y = app.isOffline ? 8 : 2;
+		projectTitle.x = 180;
+//        projectTitle.x = w - projectTitle.width - 203;
+//		projectTitle.y = app.isOffline ? 8 : 2;
+        projectTitle.y = app.isOffline ? 38 : 2;
 		projectInfo.x = projectTitle.x + 3;
 		projectInfo.y = projectTitle.y + 18;
 
@@ -239,6 +247,7 @@ public class StagePart extends UIPart {
 	private function addTitleAndInfo():void {
 		var fmt:TextFormat = app.isOffline ? new TextFormat(CSS.font, 16, CSS.textColor) : CSS.projectTitleFormat;
 		var fmt2:TextFormat = app.isOffline ? new TextFormat(CSS.font, 12, CSS.textColor) : CSS.normalTextFormat;
+        //var fmt2:TextFormat = app.isOffline ? new TextFormat(CSS.font, 10, CSS.textColor) : CSS.normalTextFormat;
 		projectTitle = getProjectTitle(fmt);
 		addChild(projectTitle);
 
@@ -249,9 +258,14 @@ public class StagePart extends UIPart {
 
 		pointsLabel = getPointsLabel(fmt);
 		messageLabel= getMessageLabel(fmt2);
+		maxScoreLabel = getScoreLabel(fmt2, "Max Score: ", Scratch.app.maxScore, 60, 4);
+        cutoff1Label = getScoreLabel(fmt2, "Cut-Off 1: ", Scratch.app.cutoff1, 60, 24);
+        cutoff2Label = getScoreLabel(fmt2, "Cut-Off 2: ", Scratch.app.cutoff2, 60, 44);
 		addChild(pointsLabel);
 		addChild(messageLabel);
-
+        addChild(maxScoreLabel);
+        addChild(cutoff1Label);
+        addChild(cutoff2Label);
 	}
 
 	private function getPointsLabel(fmt):TextField {
@@ -268,6 +282,18 @@ public class StagePart extends UIPart {
 		return label
 	}
 
+    private function getScoreLabel(fmt:TextFormat, str:String, score:int, x:int, y:int):TextField {
+        var label = makeLabel(str + score.toString(), fmt);
+        label.x = x;
+        label.y = y;
+        return label
+    }
+
+    public function updateScoreLabel():void {
+        maxScoreLabel.text = "Max Score: " + Scratch.app.maxScore.toString();
+        cutoff1Label.text = "Cut-Off 1: " + Scratch.app.cutoff1.toString();
+        cutoff2Label.text = "Cut-Off 2: " + Scratch.app.cutoff2.toString();
+    }
 
 
 	public function updatePointsLabel():void {

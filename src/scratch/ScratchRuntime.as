@@ -390,6 +390,7 @@ public class ScratchRuntime {
 		app.loadInProgress = true;
 		installProjectFromData(data);
 		app.setProjectName(fileName);
+		app.getStage().updateScoreLabel();
 		app.updatePalette(true);
 		app.getPaletteBuilder().updateBlocks();
 	}
