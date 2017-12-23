@@ -258,10 +258,10 @@ public class StagePart extends UIPart {
 
 		pointsLabel = getPointsLabel(fmt);
 		messageLabel= getMessageLabel(fmt2);
-		maxScoreLabel = getScoreLabel(fmt2, "Max Score: ", Scratch.app.maxScore, 60, 4);
-        cutoff1Label = getScoreLabel(fmt2, "Cut-Off 1: ", Scratch.app.cutoff1, 60, 24);
-        cutoff2Label = getScoreLabel(fmt2, "Cut-Off 2: ", Scratch.app.cutoff2, 60, 44);
-		addChild(pointsLabel);
+		maxScoreLabel = getScoreLabel(fmt2, "Proficient: ", Scratch.app.maxScore, 60, 4);
+        cutoff2Label = getScoreLabel(fmt2, "Developing: ", Scratch.app.cutoff2, 60, 24);
+        cutoff1Label = getScoreLabel(fmt2, "Basic: ", Scratch.app.cutoff1, 60, 44);
+        addChild(pointsLabel);
 		addChild(messageLabel);
         addChild(maxScoreLabel);
         addChild(cutoff1Label);
@@ -290,9 +290,9 @@ public class StagePart extends UIPart {
     }
 
     public function updateScoreLabel():void {
-        maxScoreLabel.text = "Max Score: " + Scratch.app.maxScore.toString();
-        cutoff1Label.text = "Cut-Off 1: " + Scratch.app.cutoff1.toString();
-        cutoff2Label.text = "Cut-Off 2: " + Scratch.app.cutoff2.toString();
+        maxScoreLabel.text = "Proficient: " + Scratch.app.maxScore.toString();
+        cutoff2Label.text = "Developing: " + Scratch.app.cutoff2.toString();
+		cutoff1Label.text = "Basic: " + Scratch.app.cutoff1.toString();
     }
 
 

@@ -131,7 +131,7 @@ public class Scratch extends Sprite {
     var blocksCount:int=0;
     var success:Boolean=false;
 	public var maxScore:int;
-	public var cutoff1:int;
+    public var cutoff1:int;
 	public var cutoff2:int;
     public var selfExplanation:String;
 
@@ -183,17 +183,17 @@ public class Scratch extends Sprite {
     public function getCutoffScores():void {
         //scriptsPane.saveScripts();
         function ok():void {
-            cutoff1 = d.getField("Cut-off 1");
-            cutoff2 = d.getField("Cut-off 2");
+            cutoff1 = d.getField("Basic");
+            cutoff2 = d.getField("Developing");
             submitMsg = d.getField("Submit Message");
             submitProject();
         }
 
         var d:DialogBox = new DialogBox(null);
-        d.addTitle('Cut-off Scores');
-        d.addField('Cut-off 1', 50, cutoff1);
-        d.addField('Cut-off 2', 50, cutoff2);
-		d.addField('Submit Message', 200, submitMsg);
+        d.addTitle('Scores');
+        d.addField('Developing', 50, cutoff2);
+        d.addField('Basic', 50, cutoff1);
+        d.addField('Submit Message', 200, submitMsg);
         d.addButton('Ok', ok);
         d.addButton('Cancel',null);
         d.showOnStage(app.stage);
@@ -518,7 +518,7 @@ public class Scratch extends Sprite {
 		//more parameters can be added as and when required
 
 
-		//showIds(queryParams.toString(), sid, assignmentID, mode);
+		showIds(queryParams.toString(), sid, assignmentID, mode);
         toggleSagePlayMode();
         //startTimer(sid, assignmentID);
 
