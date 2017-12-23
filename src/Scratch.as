@@ -520,7 +520,7 @@ public class Scratch extends Sprite {
 
 		showIds(queryParams.toString(), sid, assignmentID, mode);
         toggleSagePlayMode();
-        //startTimer(sid, assignmentID);
+        startTimer(sid, assignmentID);
 
 
 		// load relevant variables for hinting from Dashboard
