@@ -91,6 +91,7 @@ public class Scratch extends Sprite {
 	public var loadInProgress:Boolean;
 	public var debugOps:Boolean = false;
 	public var debugOpCmd:String = '';
+	public var behaviorType:int = 0;
 
 	protected var autostart:Boolean;
 	private var viewedObject:ScratchObj;
@@ -457,6 +458,26 @@ public class Scratch extends Sprite {
 		function ok():void {
 			var sid:String = d.getField("Student ID");
 			var aid:String = d.getField("Assignment ID");
+			behaviorType = d.getField("Category");
+
+            if (behaviorType == 1) {
+                //extreme mover
+                Hints.categoryTimer = new Timer(3000);
+                Hints.blockTimer = new Timer(3000);
+            } else if (behaviorType == 2) {
+                //mover
+                Hints.categoryTimer = new Timer(15000);
+                Hints.blockTimer = new Timer(15000);
+            } else if (behaviorType == 3) {
+                //stopper
+                Hints.categoryTimer = new Timer(4000);
+                Hints.blockTimer = new Timer(4000);
+            } else if (behaviorType == 4) {
+                //tinkerer
+                Hints.categoryTimer = new Timer(5000);
+                Hints.blockTimer = new Timer(10000);
+            }
+
 			//default play mode for students
 			toggleSagePlayMode();
 			// sm4241: Most probably its polling timer
@@ -467,6 +488,7 @@ public class Scratch extends Sprite {
 		d.addTitle("Welcome to SAGE!");
 		d.addField("Student ID", 100, "", true);
 		d.addField("Assignment ID", 100, "", true);
+		d.addField("Category", 100, "", true);
 		d.addButton('Ok', ok);
 		d.addButton('Cancel', cancel);
 		d.showOnStage(stage);
