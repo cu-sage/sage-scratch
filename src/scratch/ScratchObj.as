@@ -590,6 +590,7 @@ public class ScratchObj extends Sprite {
 		for each (var b:Block in scripts) {
 			allScripts.push([b.x, b.y, BlockIO.stackToArray(b)]);
 		}
+
 		var allComments:Array = [];
 		for each (var c:ScratchComment in scriptComments) {
 			allComments.push(c.toArray());
@@ -615,7 +616,7 @@ public class ScratchObj extends Sprite {
         if(!Scratch.app.interp.sagePlayMode){
             scripts = jsonObj.scripts || [];
         }
-		parsonScripts = JSON.clone(jsonObj.scripts) || [];
+		parsonScripts = util.JSON.clone(jsonObj.scripts) || [];
 		scriptComments = jsonObj.scriptComments || [];
 		sounds = jsonObj.sounds || [];
 		costumes = jsonObj.costumes || [];
