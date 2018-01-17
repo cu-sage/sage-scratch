@@ -628,7 +628,7 @@ public class Scratch extends Sprite {
 
 //		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assessments/"+aid+"/results");
 //        var request:URLRequest = new URLRequest("http://dev.cu-sage.org:8081/assess/game/"+aid+"/objective/58d845736e4ddb3ce20ed1b3");
-		var request:URLRequest = new URLRequest("http://dev-cu-sage.org:8081/assess/game/"+aid+"/objective/"+oid);
+		var request:URLRequest = new URLRequest("http://dev.cu-sage.org:8081/assess/game/"+aid+"/objective/"+oid);
 		
 		var loader:URLLoader = new URLLoader();
 
