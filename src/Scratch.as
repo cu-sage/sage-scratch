@@ -520,9 +520,13 @@ public class Scratch extends Sprite {
 
 
 		showIds(queryParams.toString(), sid, assignmentID, objectiveID, mode);
-        toggleSagePlayMode();
-        startTimer(sid, assignmentID, objectiveID);
-
+		if (mode == "PLAY") {
+        		toggleSagePlayMode();
+			startTimer(sid, assignmentID, objectiveID);
+		}
+		else {
+			toggleSageDesignMode();
+		}
 
 		// load relevant variables for hinting from Dashboard
 		var h:Hints = new Hints();
@@ -534,7 +538,7 @@ public class Scratch extends Sprite {
 	private function showIds(queryParams:String, sid:String, assignmentID:String, objectiveID:String, mode:String):void{
         var d:DialogBox = new DialogBox();
 		d.addText(queryParams);
-		d.addText(sid);
+		d.addText(sid)
 		d.addText(assignmentID);
 		d.addText(objectiveID);
 		d.addText(mode);
