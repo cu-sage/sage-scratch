@@ -519,7 +519,7 @@ public class Scratch extends Sprite {
 		//more parameters can be added as and when required
 
 
-		showIds(queryParams.toString(), sid, assignmentID, objectiveID, mode);
+		//showIds(queryParams.toString(), sid, assignmentID, objectiveID, mode);
         toggleSagePlayMode();
         startTimer(sid, assignmentID, objectiveID);
 
