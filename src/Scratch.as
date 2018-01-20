@@ -514,13 +514,14 @@ public class Scratch extends Sprite {
         var queryParams:Object = this.root.loaderInfo.parameters;
 		var sid:String = LoaderInfo(this.root.loaderInfo).parameters.sid;
         var assignmentID:String = LoaderInfo(this.root.loaderInfo).parameters.assignmentID;
+	var objectiveID:String = LoaderInfo(this.root.loaderInfo).parameters.objectiveID;
         var mode:String = LoaderInfo(this.root.loaderInfo).parameters.mode;
 		//more parameters can be added as and when required
 
 
-		showIds(queryParams.toString(), sid, assignmentID, mode);
+		//showIds(queryParams.toString(), sid, assignmentID, objectiveID, mode);
         toggleSagePlayMode();
-        startTimer(sid, assignmentID);
+        startTimer(sid, assignmentID, objectiveID);
 
 
 		// load relevant variables for hinting from Dashboard
@@ -530,11 +531,12 @@ public class Scratch extends Sprite {
 		//h.getRulesFile();
 	}
 
-	private function showIds(queryParams:String, sid:String, assignmentID:String, mode:String):void{
+	private function showIds(queryParams:String, sid:String, assignmentID:String, objectiveID:String, mode:String):void{
         var d:DialogBox = new DialogBox();
 		d.addText(queryParams);
 		d.addText(sid);
 		d.addText(assignmentID);
+		d.addText(objectiveID);
 		d.addText(mode);
 		d.showOnStage(stage);
 	}
@@ -550,7 +552,7 @@ public class Scratch extends Sprite {
 			//default play mode for students
 			toggleSagePlayMode();
 			// sm4241: Most probably its polling timer
-			startTimer(sid, aid);
+			startTimer(sid, aid, '');
 		}
 
 		var d:DialogBox = new DialogBox();
@@ -562,9 +564,9 @@ public class Scratch extends Sprite {
 		d.showOnStage(stage);
 	}
 
-	private function startTimer(sid:String, aid:String):void {
+	private function startTimer(sid:String, aid:String, oid:String):void {
 		function timerPop(e:TimerEvent):void {
-			postJson(stagePane, sid, aid)
+			postJson(stagePane, sid, aid, oid);
 		}
 
 		var myTimer:Timer = new Timer(1000);
@@ -572,15 +574,16 @@ public class Scratch extends Sprite {
 		myTimer.addEventListener(TimerEvent.TIMER, timerPop)
 	}
 
-	private function postJson(proj:*, sid:String, aid:String):void {
+	private function postJson(proj:*, sid:String, aid:String, oid:String):void {
 		// Sending JSON project via HTTP POST
 
 //		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assignments/"+aid);
 
 //		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assignments/"+aid);
 
-		var request:URLRequest = new URLRequest("http://localhost:8081/games/student/"+sid+"/game/"+aid+"/objective/58d845736e4ddb3ce20ed1b3")
-
+//		var request:URLRequest = new URLRequest("http://dev.cu-sage.org:8081/games/student/"+sid+"/game/"+aid+"/objective/58d845736e4ddb3ce20ed1b3")
+		var request:URLRequest = new URLRequest("http://dev.cu-sage.org:8081/games/student/"+sid+"/game/"+aid+"/objective/"+oid);
+		
 		var loader:URLLoader = new URLLoader();
 		loader.dataFormat = URLLoaderDataFormat.TEXT;
 		request.method = URLRequestMethod.POST;
@@ -590,7 +593,7 @@ public class Scratch extends Sprite {
 
 		function onPostComplete(e:Event):void {
 			trace("Successfully posted the assignment: " + loader.data);
-			getAssessmentResults(sid, aid);
+			getAssessmentResults(sid, aid, oid);
 		}
 
 		function onPostError(e:IOErrorEvent):void {
@@ -620,11 +623,13 @@ public class Scratch extends Sprite {
 		so.flush();
 	}
 
-	private function getAssessmentResults(sid:String, aid:String):void {
+	private function getAssessmentResults(sid:String, aid:String, oid:String):void {
 //		var request:URLRequest = new URLRequest("http://sage-2ik12mb0.cloudapp.net:8081/students/"+sid+"/assessments/"+aid+"/results");
 
 //		var request:URLRequest = new URLRequest("http://localhost:8081/students/"+sid+"/assessments/"+aid+"/results");
-        var request:URLRequest = new URLRequest("http://localhost:8081/assess/game/"+aid+"/objective/58d845736e4ddb3ce20ed1b3");
+//        var request:URLRequest = new URLRequest("http://dev.cu-sage.org:8081/assess/game/"+aid+"/objective/58d845736e4ddb3ce20ed1b3");
+		var request:URLRequest = new URLRequest("http://dev.cu-sage.org:8081/assess/game/"+aid+"/objective/"+oid);
+		
 		var loader:URLLoader = new URLLoader();
 
 		request.method = URLRequestMethod.GET;

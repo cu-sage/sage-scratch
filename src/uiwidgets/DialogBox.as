@@ -112,11 +112,13 @@ public class DialogBox extends Sprite {
 	}
 
 	public function addText(text:String):void {
-		for each (var s:String in text.split('\n')) {
-			var line:TextField = makeLabel(Translator.map(s));
-			addChild(line);
-			textLines.push(line);
-		}
+		if(text!=null) {
+            for each (var s:String in text.split('\n')) {
+                var line:TextField = makeLabel(Translator.map(s));
+                addChild(line);
+                textLines.push(line);
+            }
+        }
 	}
 
 	public function addWidget(o:DisplayObject):void {

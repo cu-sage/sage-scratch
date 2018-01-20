@@ -875,7 +875,7 @@ public class Block extends Sprite {
 
 	private function makePointLabel(pointValue:Number):Sprite {
 		var pLoad:Loader = new Loader();
-		pLoad.load(new URLRequest("star.png"))
+		pLoad.load(new URLRequest("http://dev.cu-sage.org/public/images/star.png"))
 
 		var background = new Sprite();
 		var text = makeLabel(pointValue.toString());
