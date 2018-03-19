@@ -26,7 +26,12 @@ package ui.parts {
 	import flash.display.*;
 	import flash.text.*;
 	import flash.utils.getTimer;
-	import scratch.*;
+
+import flashx.textLayout.debug.assert;
+
+import mx.effects.Zoom;
+
+import scratch.*;
 	import ui.*;
 	import uiwidgets.*;
 	import util.*;
@@ -37,8 +42,8 @@ public class ScriptsPart extends UIPart {
 	private var selector:PaletteSelector;
 	private var spriteWatermark:Bitmap;
 	private var paletteFrame:ScrollFrame;
-	private var scriptsFrame:ScrollFrame;
-	private var zoomWidget:ZoomWidget;
+	private var scriptsFrames:Array = [];
+    private var zoomWidgets:Array = [];
 
 	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor, true);
 	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor);
@@ -66,16 +71,29 @@ public class ScriptsPart extends UIPart {
 		paletteFrame.setContents(palette);
 		addChild(paletteFrame);
 
-		var scriptsPane:ScriptsPane = new ScriptsPane(app);
-		scriptsFrame = new ScrollFrame();
-		scriptsFrame.setContents(scriptsPane);
-		addChild(scriptsFrame);
+		appendScriptsPane();
+        appendScriptsPane();
+        appendScriptsPane();
 
-		app.palette = palette;
-		app.scriptsPane = scriptsPane;
+        app.palette = palette;
 
-		addChild(zoomWidget = new ZoomWidget(scriptsPane));
 	}
+
+	public function appendScriptsPane() {
+        var scriptsPane:ScriptsPane = new ScriptsPane(app);
+		var scrollFrame = new ScrollFrame();
+		scrollFrame.setContents(scriptsPane);
+		addChild(scrollFrame);
+		scriptsFrames.push(scrollFrame);
+
+		var zoomWidget: ZoomWidget = new ZoomWidget(scriptsPane);
+        addChild(zoomWidget);
+		zoomWidgets.push(zoomWidget);
+
+//		if (app.scriptsPane == null) {
+            app.scriptsPane = scriptsPane; // TODO: (Gavi) set other script panes
+//        }
+    }
 
 	public function resetCategory():void { selector.select(Specs.motionCategory) }
 
@@ -144,25 +162,38 @@ public class ScriptsPart extends UIPart {
 	private function fixlayout():void {
 		selector.x = 1;
 		selector.y = 5;
+
 		paletteFrame.x = selector.x;
 		paletteFrame.y = selector.y + selector.height + 2;
 		paletteFrame.setWidthHeight(selector.width + 1, h - paletteFrame.y - 2); // 5
-		scriptsFrame.x = selector.x + selector.width + 2;
-		scriptsFrame.y = selector.y + 1;
-		scriptsFrame.setWidthHeight(w - scriptsFrame.x - 5, h - scriptsFrame.y - 5);
+
+        var margin:int = 5;
+        var startX:int = selector.x + selector.width + 2;
+		var startY:int = selector.y;
+		var height:int = (h - startY - margin*2) / scriptsFrames.length;
+		var width:int = w - startX - margin;
+
+		for (var i:int = 0; i < scriptsFrames.length; i++) {
+			scriptsFrames[i].x = startX;
+			scriptsFrames[i].y = startY + (height * i) + margin;
+            scriptsFrames[i].setWidthHeight(width, height);
+        }
+
 		spriteWatermark.x = w - 60;
-		spriteWatermark.y = scriptsFrame.y + 10;
+		spriteWatermark.y = scriptsFrames[0].y + 10;
+
 		xyDisplay.x = spriteWatermark.x + 1;
 		xyDisplay.y = spriteWatermark.y + 43;
-		zoomWidget.x = w - zoomWidget.width - 15;
-		zoomWidget.y = h - zoomWidget.height - 15;
+
+        for (var i:int = 0; i < zoomWidgets.length; i++) {
+            zoomWidgets[i].x = scriptsFrames[i].x + scriptsFrames[i].width - zoomWidgets[i].width - 15;
+            zoomWidgets[i].y = scriptsFrames[i].y + scriptsFrames[i].height - zoomWidgets[i].height - 15;
+        }
 	}
 
 	private function redraw():void {
 		var paletteW:int = paletteFrame.visibleW();
 		var paletteH:int = paletteFrame.visibleH();
-		var scriptsW:int = scriptsFrame.visibleW();
-		var scriptsH:int = scriptsFrame.visibleH();
 
 		var g:Graphics = shape.graphics;
 		g.clear();
@@ -180,8 +211,16 @@ public class ScriptsPart extends UIPart {
 		hLine(g, paletteFrame.x + 8, lineY + 1, paletteW - 20);
 
 		g.lineStyle(1, darkerBorder, 1, true);
-		g.drawRect(scriptsFrame.x - 1, scriptsFrame.y - 1, scriptsW + 1, scriptsH + 1);
-	}
+
+		for (var i:int = 0; i < scriptsFrames.length; i++) {
+            g.drawRect(
+				scriptsFrames[i].x - 1,
+				scriptsFrames[i].y - 1,
+				scriptsFrames[i].visibleW() + 1,
+				scriptsFrames[0].visibleH() + 1
+			);
+        }
+    }
 
 	private function hLine(g:Graphics, x:int, y:int, w:int):void {
 		g.moveTo(x, y);
