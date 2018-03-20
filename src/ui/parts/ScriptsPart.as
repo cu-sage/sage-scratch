@@ -42,8 +42,13 @@ public class ScriptsPart extends UIPart {
 	private var selector:PaletteSelector;
 	private var spriteWatermark:Bitmap;
 	private var paletteFrame:ScrollFrame;
+
 	private var scriptsFrames:Array = [];
     private var zoomWidgets:Array = [];
+	private var newContainerButton:Button;
+	private var closeContainerButtons:Array = [];
+	private var upButtons:Array = [];
+    private var downButtons:Array = [];
 
 	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor, true);
 	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor);
@@ -55,6 +60,7 @@ public class ScriptsPart extends UIPart {
 	private var yReadout:TextField;
 	private var lastX:int = -10000000; // impossible value to force initial update
 	private var lastY:int = -10000000; // impossible value to force initial update
+	private var firstScriptFrameChildIndex:int = -1;	// child index of first script pane
 
 	public function ScriptsPart(app:Scratch) {
 		this.app = app;
@@ -72,28 +78,122 @@ public class ScriptsPart extends UIPart {
 		addChild(paletteFrame);
 
 		appendScriptsPane();
-        appendScriptsPane();
-        appendScriptsPane();
+
+        newContainerButton = new Button("New Container", function ():void {
+			appendScriptsPane();
+			setWidthHeight(w, h);
+        });
+        addChild(newContainerButton);
 
         app.palette = palette;
-
 	}
 
-	public function appendScriptsPane() {
+	// Add a new scripts pane to the ui.
+	public function appendScriptsPane():void {
         var scriptsPane:ScriptsPane = new ScriptsPane(app);
 		var scrollFrame = new ScrollFrame();
 		scrollFrame.setContents(scriptsPane);
 		addChild(scrollFrame);
 		scriptsFrames.push(scrollFrame);
 
-		var zoomWidget: ZoomWidget = new ZoomWidget(scriptsPane);
+		if (scriptsFrames.length == 1) {
+			firstScriptFrameChildIndex = getChildIndex(scriptsFrames[0])
+		}
+
+		var zoomWidget:ZoomWidget = new ZoomWidget(scriptsPane);
         addChild(zoomWidget);
 		zoomWidgets.push(zoomWidget);
 
-//		if (app.scriptsPane == null) {
-            app.scriptsPane = scriptsPane; // TODO: (Gavi) set other script panes
-//        }
+		// determine how many close buttons to add
+		var numCloseButtons:int = 0;
+		if (scriptsFrames.length == 2) { numCloseButtons = 2; }
+		if (scriptsFrames.length > 2) { numCloseButtons = 1; }
+
+		// close button/s
+		for (var i:int = 0; i < numCloseButtons; i++) {
+			var closeButton:Button = new Button("Close", function ():void {
+                removeScriptsPaneAt(this.tag);
+            });
+
+            closeContainerButtons.push(closeButton);
+            addChild(closeButton);
+        }
+
+		// order buttons
+		if (scriptsFrames.length >= 2) {
+            var upButton:Button = new Button("Up", function ():void {
+                swapScriptPanes(this.tag, this.tag - 1)
+            });
+            var downButton:Button = new Button("Down", function ():void {
+                swapScriptPanes(this.tag, this.tag + 1)
+            });
+            upButtons.push(upButton);
+            downButtons.push(downButton);
+            addChild(upButton);
+            addChild(downButton);
+        }
+
+        updateButtonTags();
+
+        // TODO: (Gavi) set other script panes
+		if (app.scriptsPane == null) {
+            app.scriptsPane = scriptsPane;
+        }
     }
+
+	// remove a scripts pane. Whenever there is 1 pane remaining, remove close and order buttons.
+	public function removeScriptsPaneAt(index:int):void {
+		if (scriptsFrames.length == 2) {
+            removeChild(closeContainerButtons.pop());
+            removeChild(closeContainerButtons.pop());
+        } else {
+            removeChild(closeContainerButtons.removeAt(index));
+		}
+
+		if (scriptsFrames.length == 2 || index == scriptsFrames.length-1) {
+			removeChild(upButtons.pop());
+            removeChild(downButtons.pop());
+		} else if (index == 0) {
+            removeChild(upButtons.removeAt(index));
+            removeChild(downButtons.removeAt(index));
+		} else {
+            removeChild(upButtons.removeAt(index-1));
+            removeChild(downButtons.removeAt(index));
+		}
+
+        removeChild(scriptsFrames.removeAt(index));
+		removeChild(zoomWidgets.removeAt(index));
+
+        updateButtonTags();
+		setWidthHeight(w, h);
+	}
+
+	// swap the position of two scripts panes
+	public function swapScriptPanes(i:int, j:int):void {
+        var temp:Sprite = scriptsFrames[i];
+        scriptsFrames[i] = scriptsFrames[j];
+        scriptsFrames[j] = temp;
+
+		// update z index so that scripts pane is in front of buttons
+		setChildIndex(scriptsFrames[i], firstScriptFrameChildIndex);
+        setChildIndex(scriptsFrames[j], firstScriptFrameChildIndex);
+
+		setWidthHeight(w, h);
+    }
+
+
+	// Set the tags for each button. helps determine which button has been pressed
+	public function updateButtonTags():void {
+        for (var i:int = 0; i < closeContainerButtons.length; i++) {
+            closeContainerButtons[i].tag = i;
+        }
+
+		for (var i:int = 0; i < upButtons.length; i++) {
+            upButtons[i].tag = i+1;
+            downButtons[i].tag = i;
+		}
+	}
+
 
 	public function resetCategory():void { selector.select(Specs.motionCategory) }
 
@@ -185,10 +285,30 @@ public class ScriptsPart extends UIPart {
 		xyDisplay.x = spriteWatermark.x + 1;
 		xyDisplay.y = spriteWatermark.y + 43;
 
+		// zoom widgets
         for (var i:int = 0; i < zoomWidgets.length; i++) {
             zoomWidgets[i].x = scriptsFrames[i].x + scriptsFrames[i].width - zoomWidgets[i].width - 15;
             zoomWidgets[i].y = scriptsFrames[i].y + scriptsFrames[i].height - zoomWidgets[i].height - 15;
         }
+
+		// close buttons
+		for (var i:int = 0; i < closeContainerButtons.length; i++) {
+            closeContainerButtons[i].x = scriptsFrames[i].x + scriptsFrames[i].width - closeContainerButtons[i].width - margin;
+            closeContainerButtons[i].y = scriptsFrames[i].y + margin;
+		}
+
+		for (var i:int = 0; i < upButtons.length; i++) {
+            upButtons[i].x = closeContainerButtons[i].x;
+            upButtons[i].y = closeContainerButtons[i].y + closeContainerButtons[i].height + margin + height;
+
+            downButtons[i].x = closeContainerButtons[i].x;
+            downButtons[i].y = i > 0 ?
+					upButtons[i-1].y + upButtons[i-1].height + margin :
+                    closeContainerButtons[i].y + closeContainerButtons[i].height + margin;
+		}
+
+		newContainerButton.x = w - newContainerButton.width - 3;
+        newContainerButton.y = -newContainerButton.height - 4;
 	}
 
 	private function redraw():void {
