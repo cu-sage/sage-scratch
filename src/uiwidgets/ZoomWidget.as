@@ -22,15 +22,15 @@ package uiwidgets {
 
 public class ZoomWidget extends Sprite {
 
-	private var scriptsPane:ScriptsPane;
+	private var gameRoutes:GameRoutes;
 	private var zoom:int;
 
 	private var smaller:IconButton;
 	private var normal:IconButton;
 	private var bigger:IconButton;
 
-	public function ZoomWidget(scriptsPane:ScriptsPane) {
-		this.scriptsPane = scriptsPane;
+	public function ZoomWidget(gameRoutes:GameRoutes) {
+		this.gameRoutes = gameRoutes ;
 		addChild(smaller = new IconButton(zoomOut, 'zoomOut'));
 		addChild(normal = new IconButton(noZoom, 'noZoom'));
 		addChild(bigger = new IconButton(zoomIn, 'zoomIn'));
@@ -52,7 +52,7 @@ public class ZoomWidget extends Sprite {
 		zoom = Math.max(-3, Math.min(zoom, 3));
 		smaller.setDisabled(zoom < -2, 0.5);
 		bigger.setDisabled(zoom > 2, 0.5);
-		scriptsPane.setScale(scaleFactors[3 + zoom] / 100);
+		gameRoutes.setScale(scaleFactors[3 + zoom] / 100);
 	}
 
 }}

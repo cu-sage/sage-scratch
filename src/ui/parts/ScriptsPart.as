@@ -44,7 +44,7 @@ public class ScriptsPart extends UIPart {
 	private var paletteFrame:ScrollFrame;
 
 	private var scriptsFrames:Array = [];
-    private var zoomWidgets:Array = [];
+    private var zoomWidget:ZoomWidget;
 	private var newContainerButton:Button;
 	private var closeContainerButtons:Array = [];
 	private var upButtons:Array = [];
@@ -77,6 +77,7 @@ public class ScriptsPart extends UIPart {
 		paletteFrame.setContents(palette);
 		addChild(paletteFrame);
 
+		if (app.gameRoutes == null) app.gameRoutes = new GameRoutes();
 		appendScriptsPane();
 
         newContainerButton = new Button("New Container", function ():void {
@@ -91,6 +92,10 @@ public class ScriptsPart extends UIPart {
 	// Add a new scripts pane to the ui.
 	public function appendScriptsPane():void {
         var scriptsPane:ScriptsPane = new ScriptsPane(app);
+		var newScale = app.gameRoutes.getScale();
+		if (newScale != -1) scriptsPane.setScale(newScale);
+		app.gameRoutes.appendToRoute(scriptsPane);
+
 		var scrollFrame = new ScrollFrame();
 		scrollFrame.setContents(scriptsPane);
 		addChild(scrollFrame);
@@ -100,9 +105,8 @@ public class ScriptsPart extends UIPart {
 			firstScriptFrameChildIndex = getChildIndex(scriptsFrames[0])
 		}
 
-		var zoomWidget:ZoomWidget = new ZoomWidget(scriptsPane);
+		if (zoomWidget == null) zoomWidget = new ZoomWidget(app.gameRoutes);
         addChild(zoomWidget);
-		zoomWidgets.push(zoomWidget);
 
 		// determine how many close buttons to add
 		var numCloseButtons:int = 0;
@@ -162,7 +166,7 @@ public class ScriptsPart extends UIPart {
 		}
 
         removeChild(scriptsFrames.removeAt(index));
-		removeChild(zoomWidgets.removeAt(index));
+		app.gameRoutes.removeFromRoute(index);
 
         updateButtonTags();
 		setWidthHeight(w, h);
@@ -170,11 +174,13 @@ public class ScriptsPart extends UIPart {
 
 	// swap the position of two scripts panes
 	public function swapScriptPanes(i:int, j:int):void {
+        app.gameRoutes.swapRoutePanes(i, j);
+
         var temp:Sprite = scriptsFrames[i];
         scriptsFrames[i] = scriptsFrames[j];
         scriptsFrames[j] = temp;
 
-		// update z index so that scripts pane is in front of buttons
+        // update z index so that scripts pane is in front of buttons
 		setChildIndex(scriptsFrames[i], firstScriptFrameChildIndex);
         setChildIndex(scriptsFrames[j], firstScriptFrameChildIndex);
 
@@ -285,12 +291,6 @@ public class ScriptsPart extends UIPart {
 		xyDisplay.x = spriteWatermark.x + 1;
 		xyDisplay.y = spriteWatermark.y + 43;
 
-		// zoom widgets
-        for (var i:int = 0; i < zoomWidgets.length; i++) {
-            zoomWidgets[i].x = scriptsFrames[i].x + scriptsFrames[i].width - zoomWidgets[i].width - 15;
-            zoomWidgets[i].y = scriptsFrames[i].y + scriptsFrames[i].height - zoomWidgets[i].height - 15;
-        }
-
 		// close buttons
 		for (var i:int = 0; i < closeContainerButtons.length; i++) {
             closeContainerButtons[i].x = scriptsFrames[i].x + scriptsFrames[i].width - closeContainerButtons[i].width - margin;
@@ -309,6 +309,10 @@ public class ScriptsPart extends UIPart {
 
 		newContainerButton.x = w - newContainerButton.width - 3;
         newContainerButton.y = -newContainerButton.height - 4;
+
+        // zoom widget
+        zoomWidget.x = newContainerButton.x - zoomWidget.width - 10;
+        zoomWidget.y = -zoomWidget.height - 4;
 	}
 
 	private function redraw():void {

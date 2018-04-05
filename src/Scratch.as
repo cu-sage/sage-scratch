@@ -103,7 +103,8 @@ public class Scratch extends Sprite {
 	public var playerBG:Shape;
 	public var palette:BlockPalette;
 	public var paletteBuilder:PaletteBuilder;
-	public var scriptsPane:ScriptsPane;
+	public var scriptsPane:ScriptsPane; // TODO: remove
+	public var gameRoutes:GameRoutes;
 	public var stagePane:ScratchStage;
 	public var mediaLibrary:MediaLibrary;
 	public var lp:LoadProgress;
