@@ -103,7 +103,6 @@ public class Scratch extends Sprite {
 	public var playerBG:Shape;
 	public var palette:BlockPalette;
 	public var paletteBuilder:PaletteBuilder;
-	public var scriptsPane:ScriptsPane; // TODO: remove
 	public var gameRoutes:GameRoutes;
 	public var stagePane:ScratchStage;
 	public var mediaLibrary:MediaLibrary;
@@ -1003,7 +1002,7 @@ public class Scratch extends Sprite {
 		}
 		if (isShowing(scriptsPart)) {
 			scriptsPart.updatePalette();
-			scriptsPane.viewScriptsFor(obj);
+			gameRoutes.viewScriptsFor(obj); //TODO: (Gavi) not working
 			scriptsPart.updateSpriteWatermark();
 		}
 	}
@@ -1024,7 +1023,7 @@ public class Scratch extends Sprite {
 		} else if (tabName && (tabName.length > 0)) {
 			tabName = 'scripts';
 			scriptsPart.updatePalette();
-			scriptsPane.viewScriptsFor(viewedObject);
+			gameRoutes.viewScriptsFor(viewedObject);
 			scriptsPart.updateSpriteWatermark();
 			show(scriptsPart);
 		}
@@ -1409,7 +1408,7 @@ public class Scratch extends Sprite {
 
 	public function exportProjectToFile(fromJS:Boolean = false):void {
 		function squeakSoundsConverted():void {
-			scriptsPane.saveScripts(false);
+			gameRoutes.saveScripts(false);
 			var defaultName:String = (projectName().length > 0) ? projectName() + '.sb2' : 'project.sb2';
 			var zipData:ByteArray = projIO.encodeProjectAsZipFile(stagePane);
 			var file:FileReference = new FileReference();

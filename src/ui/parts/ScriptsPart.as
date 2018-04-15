@@ -77,11 +77,12 @@ public class ScriptsPart extends UIPart {
 		paletteFrame.setContents(palette);
 		addChild(paletteFrame);
 
-		if (app.gameRoutes == null) app.gameRoutes = new GameRoutes();
-		appendScriptsPane();
+		if (app.gameRoutes == null) app.gameRoutes = new GameRoutes(app);
+
+		appendScriptsPane(createScriptsPane());
 
         newContainerButton = new Button("New Container", function ():void {
-			appendScriptsPane();
+            appendScriptsPane(createScriptsPane());
 			setWidthHeight(w, h);
         });
         addChild(newContainerButton);
@@ -89,12 +90,47 @@ public class ScriptsPart extends UIPart {
         app.palette = palette;
 	}
 
-	// Add a new scripts pane to the ui.
-	public function appendScriptsPane():void {
+	// Clear the ui and redraw with given script panes
+	public function clearAndRedrawWith(scriptPanes:Array):void {
+		clearChildren(scriptsFrames);
+        clearChildren(closeContainerButtons);
+        clearChildren(upButtons);
+        clearChildren(downButtons);
+        closeContainerButtons = [];
+        upButtons = [];
+		downButtons = [];
+        scriptsFrames = [];
+
+		// repopulate ui with given script panes
+		if (scriptPanes == null || scriptPanes.length == 0) {
+            appendScriptsPane(createScriptsPane());
+		} else {
+            for each (var pane:ScriptsPane in scriptPanes) {
+                appendScriptsPane(pane);
+            }
+        }
+
+		setWidthHeight(w, h); // redraw ui
+	}
+
+	// detach children from parent
+	public function clearChildren(children:Array):void {
+		for each (var child:Sprite in children) {
+			removeChild(child);
+			child = null;
+		}
+	}
+
+	// create a new scripts pane and update the game routes variable
+	public function createScriptsPane():ScriptsPane {
         var scriptsPane:ScriptsPane = new ScriptsPane(app);
-		var newScale = app.gameRoutes.getScale();
-		if (newScale != -1) scriptsPane.setScale(newScale);
-		app.gameRoutes.appendToRoute(scriptsPane);
+        app.gameRoutes.appendToRoute(scriptsPane);
+		return scriptsPane;
+	}
+
+	// Add a new scripts pane to the ui.
+	public function appendScriptsPane(scriptsPane:ScriptsPane):void {
+		scriptsPane.setScale(app.gameRoutes.getScale());
 
 		var scrollFrame = new ScrollFrame();
 		scrollFrame.setContents(scriptsPane);
@@ -138,11 +174,6 @@ public class ScriptsPart extends UIPart {
         }
 
         updateButtonTags();
-
-        // TODO: (Gavi) set other script panes
-		if (app.scriptsPane == null) {
-            app.scriptsPane = scriptsPane;
-        }
     }
 
 	// remove a scripts pane. Whenever there is 1 pane remaining, remove close and order buttons.

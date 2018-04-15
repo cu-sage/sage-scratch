@@ -234,8 +234,8 @@ public class SpriteThumbnail extends Sprite {
 			// copy a block/stack to this sprite
 			if (targetObj == app.viewedObj()) return false; // dropped on my own thumbnail; do nothing
 			var copy:Block = Block(obj).duplicate(false, targetObj.isStage);
-			copy.x = app.scriptsPane.padding;
-			copy.y = app.scriptsPane.padding;
+			copy.x = app.gameRoutes.getPadding();
+			copy.y = app.gameRoutes.getPadding();
 			targetObj.scripts.push(copy);
 			return false; // do not consume the original block
 		}
