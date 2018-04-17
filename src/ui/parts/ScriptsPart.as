@@ -79,6 +79,13 @@ public class ScriptsPart extends UIPart {
 
 		if (app.gameRoutes == null) app.gameRoutes = new GameRoutes(app);
 
+		// zoom widget
+		if (zoomWidget == null) {
+			zoomWidget = new ZoomWidget(app.gameRoutes);
+            addChild(zoomWidget);
+        }
+
+
 		appendScriptsPane(createScriptsPane());
 
         newContainerButton = new Button("New Container", function ():void {
@@ -89,6 +96,14 @@ public class ScriptsPart extends UIPart {
 
         app.palette = palette;
 	}
+
+	public function toggleDesignMode(isOn:Boolean):void {
+		newContainerButton.visible = isOn;
+		for each (var b1:Button in upButtons) b1.visible = isOn;
+        for each (var b2:Button in downButtons) b2.visible = isOn;
+        for each (var b3:Button in closeContainerButtons) b3.visible = isOn;
+	}
+
 
 	// Clear the ui and redraw with given script panes
 	public function clearAndRedrawWith(scriptPanes:Array):void {
@@ -111,6 +126,7 @@ public class ScriptsPart extends UIPart {
         }
 
 		setWidthHeight(w, h); // redraw ui
+		toggleDesignMode(app.interp.sageDesignMode);
 	}
 
 	// detach children from parent
@@ -140,9 +156,6 @@ public class ScriptsPart extends UIPart {
 		if (scriptsFrames.length == 1) {
 			firstScriptFrameChildIndex = getChildIndex(scriptsFrames[0])
 		}
-
-		if (zoomWidget == null) zoomWidget = new ZoomWidget(app.gameRoutes);
-        addChild(zoomWidget);
 
 		// determine how many close buttons to add
 		var numCloseButtons:int = 0;
@@ -338,12 +351,12 @@ public class ScriptsPart extends UIPart {
                     closeContainerButtons[i].y + closeContainerButtons[i].height + margin;
 		}
 
-		newContainerButton.x = w - newContainerButton.width - 3;
-        newContainerButton.y = -newContainerButton.height - 4;
+		zoomWidget.x = w - zoomWidget.width - 3;
+        zoomWidget.y = -zoomWidget.height - 4;
 
         // zoom widget
-        zoomWidget.x = newContainerButton.x - zoomWidget.width - 10;
-        zoomWidget.y = -zoomWidget.height - 4;
+        newContainerButton.x = zoomWidget.x - newContainerButton.width - 10;
+        newContainerButton.y = -newContainerButton.height - 4;
 	}
 
 	private function redraw():void {

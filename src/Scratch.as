@@ -1002,7 +1002,7 @@ public class Scratch extends Sprite {
 		}
 		if (isShowing(scriptsPart)) {
 			scriptsPart.updatePalette();
-			gameRoutes.viewScriptsFor(obj); //TODO: (Gavi) not working
+			gameRoutes.viewScriptsFor(obj);
 			scriptsPart.updateSpriteWatermark();
 		}
 	}
@@ -1458,6 +1458,7 @@ public class Scratch extends Sprite {
 		interp.sagePlayMode = false;
 		stagePart.refresh();
 		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
+		scriptsPart.toggleDesignMode(interp.sageDesignMode);
 	}
 
 	//update elements when switching to play mode
@@ -1465,8 +1466,9 @@ public class Scratch extends Sprite {
 		interp.sagePlayMode = !interp.sagePlayMode;
 		interp.sageDesignMode = false;
 		stagePart.refresh();
-		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
-	}
+		viewedObject.updateScriptsAfterTranslation(); // resets
+        scriptsPart.toggleDesignMode(interp.sageDesignMode);
+    }
 
 	public function handleTool(tool:String, evt:MouseEvent):void { }
 

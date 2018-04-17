@@ -439,7 +439,7 @@ public class ScratchRuntime {
 
 	protected function installProject(project:ScratchStage):void {
 		if (app.stagePane != null) stopAll();
-		if (app.gameRoutes) app.gameRoutes.viewScriptsFor(null);	//TODO: (Gavi) not working
+		if (app.gameRoutes) app.gameRoutes.viewScriptsFor(null);
 
 		SCRATCH::allow3d { if(app.isIn3D) app.render3D.setStage(project, project.penLayer); }
 
