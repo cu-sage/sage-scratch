@@ -29,11 +29,17 @@ package uiwidgets {
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import blocks.*;
-	import scratch.*;
-	import flash.geom.Rectangle;
 
-import ui.Hints;
-import ui.media.MediaInfo;
+	import flash.text.TextField;
+
+	import mx.controls.Label;
+
+	import scratch.*;
+		import flash.geom.Rectangle;
+
+	import ui.Hints;
+	import ui.media.MediaInfo;
+	import mx.utils.UIDUtil;
 
 public class ScriptsPane extends ScrollFrameContents {
 
@@ -56,9 +62,12 @@ public class ScriptsPane extends ScrollFrameContents {
 	private var nearestTarget:Array = [];
 	private var feedbackShape:BlockShape;
 	public var hints:Hints = new Hints();
+	public var uuid:String;
+	public var numBlocks = 0;
 
 	public function ScriptsPane(app:Scratch) {
-		this.app = app;
+        uuid = UIDUtil.createUID();
+        this.app = app;
 		addChild(commentLines = new Shape());
 		hExtra = vExtra = 40;
 		createTexture();
@@ -83,6 +92,20 @@ public class ScriptsPane extends ScrollFrameContents {
 		texture.setPixel(2, 11, c1);
 	}
 
+	// Count the number of blocks in this script pane
+	public function countBlocks():void {
+        numBlocks = 0;
+        for (var i:int = 0; i < numChildren; i++) {
+            var o:* = getChildAt(i);
+            if (o is Block) {
+                o.allBlocksDo(function (b:Block):void {
+                    numBlocks++;
+                });
+			}
+        }
+        app.scriptsPart.updateBlockCounts();	// update ui
+    }
+
 	public function viewScriptsFor(obj:ScratchObj):void {
 		// View the blocks for the given object.
 		saveScripts(false);
@@ -90,6 +113,7 @@ public class ScriptsPane extends ScrollFrameContents {
 			var child:DisplayObject = removeChildAt(0);
 			child.cacheAsBitmap = false;
 		}
+		addChild(commentLines);
 		addChild(commentLines);
 		viewedObj = obj;
 		if (viewedObj != null) {
@@ -102,7 +126,9 @@ public class ScriptsPane extends ScrollFrameContents {
 				c.updateBlockRef(blockList);
 				addChild(c);
 			}
+			countBlocks();
 		}
+
 		fixCommentLayout();
 		updateSize();
 		x = y = 0; // reset scroll offset
@@ -233,6 +259,9 @@ public class ScriptsPane extends ScrollFrameContents {
 		}
 		if (b.op == Specs.PROCEDURE_DEF) app.updatePalette();
 		app.runtime.blockDropped(b);
+
+		// update block counts
+		countBlocks();
 	}
 
 	public function findTargetsFor(b:Block):void {

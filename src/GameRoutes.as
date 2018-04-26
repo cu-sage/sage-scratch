@@ -6,6 +6,7 @@ import blocks.Block;
 import flash.display.DisplayObject;
 import scratch.ScratchComment;
 import scratch.ScratchObj;
+import flash.display.Sprite;
 
 public class GameRoutes {
 
@@ -17,7 +18,8 @@ public class GameRoutes {
         this.app = app;
     }
 
-        public function getPadding():int {
+
+    public function getPadding():int {
         if (routes[viewedObj] == null) return 0;
         return (routes[viewedObj][0] as ScriptsPane).padding;
     }
@@ -30,7 +32,9 @@ public class GameRoutes {
 
     // Append a scripts pane to the active game route
     public function appendToRoute(pane:ScriptsPane):void {
-        if (routes[viewedObj] == null) routes[viewedObj] = [];
+        if (routes[viewedObj] == null) {
+            routes[viewedObj] = [];
+        }
         (routes[viewedObj] as Array).push(pane);
     }
 
@@ -40,7 +44,6 @@ public class GameRoutes {
         (routes[viewedObj] as Array).removeAt(i);
     }
 
-
     // swap the two routes at given indices for the active game route
     public function swapRoutePanes(i:int, j:int):void {
         if (routes[viewedObj] == null) return;
@@ -49,6 +52,7 @@ public class GameRoutes {
         routes[viewedObj][i] = routes[viewedObj][j];
         routes[viewedObj][j] = temp;
     }
+
 
     // add a block to the active game route in the specified container
     public function addBlockToContainer(index:int, sprite:DisplayObject):Boolean {

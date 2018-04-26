@@ -474,10 +474,12 @@ public class GestureHandler {
 
 		if (obj is Block) {
 			var b:Block = Block(obj);
-			b.saveOriginalState();
+            var pane:ScriptsPane = b.getScriptsPane();
+            b.saveOriginalState();
 			if (b.parent is Block) Block(b.parent).removeBlock(b);
 			if (b.parent != null) b.parent.removeChild(b);
 			app.gameRoutes.prepareToDrag(b);
+			if (pane != null) pane.countBlocks();
 		} else if (obj is ScratchComment) {
 			var c:ScratchComment = ScratchComment(obj);
 			if (c.parent != null) c.parent.removeChild(c);
@@ -542,7 +544,9 @@ public class GestureHandler {
 
 		if (!dropHandled(carriedObj, evt)) {
 			if (carriedObj is Block) {
-				Block(carriedObj).restoreOriginalState();
+				var b:Block = Block(carriedObj);
+				b.restoreOriginalState();
+				b.getScriptsPane().countBlocks();
 			} else if (originalParent) { // put carriedObj back where it came from
 				carriedObj.x = originalPosition.x;
 				carriedObj.y = originalPosition.y;
@@ -555,6 +559,7 @@ public class GestureHandler {
 				}
 			}
 		}
+
 		app.gameRoutes.draggingDone();
 		carriedObj = null;
 		originalParent = null;

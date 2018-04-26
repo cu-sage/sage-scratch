@@ -29,6 +29,8 @@ package ui.parts {
 
 import flashx.textLayout.debug.assert;
 
+import mx.controls.Text;
+
 import mx.effects.Zoom;
 
 import scratch.*;
@@ -49,6 +51,7 @@ public class ScriptsPart extends UIPart {
 	private var closeContainerButtons:Array = [];
 	private var upButtons:Array = [];
     private var downButtons:Array = [];
+    private var blockCountLabels:Array = [];
 
 	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor, true);
 	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor);
@@ -97,6 +100,15 @@ public class ScriptsPart extends UIPart {
         app.palette = palette;
 	}
 
+	// Update the UI to reflect the number of blocks within each script pane
+    public function updateBlockCounts():void {
+		for (var i:int = 0; i < scriptsFrames.length; i++) {
+			var scrollFrame:ScrollFrame = scriptsFrames[i] as ScrollFrame;
+			var scriptsPane:ScriptsPane = scrollFrame.contents as ScriptsPane;
+			(blockCountLabels[i] as Button).setLabel(scriptsPane.numBlocks);
+		}
+    }
+
 	public function toggleDesignMode(isOn:Boolean):void {
 		newContainerButton.visible = isOn;
 		for each (var b1:Button in upButtons) b1.visible = isOn;
@@ -111,13 +123,15 @@ public class ScriptsPart extends UIPart {
         clearChildren(closeContainerButtons);
         clearChildren(upButtons);
         clearChildren(downButtons);
+		clearChildren(blockCountLabels);
         closeContainerButtons = [];
         upButtons = [];
 		downButtons = [];
         scriptsFrames = [];
+		blockCountLabels = [];
 
 		// repopulate ui with given script panes
-		if (scriptPanes == null || scriptPanes.length == 0) {
+		if (scriptPanes == null || scriptPanes.length == 0) { // have at least one scripts pane
             appendScriptsPane(createScriptsPane());
 		} else {
             for each (var pane:ScriptsPane in scriptPanes) {
@@ -153,14 +167,12 @@ public class ScriptsPart extends UIPart {
 		addChild(scrollFrame);
 		scriptsFrames.push(scrollFrame);
 
-		if (scriptsFrames.length == 1) {
-			firstScriptFrameChildIndex = getChildIndex(scriptsFrames[0])
-		}
+		if (scriptsFrames.length == 1) firstScriptFrameChildIndex = getChildIndex(scriptsFrames[0]);
 
 		// determine how many close buttons to add
 		var numCloseButtons:int = 0;
-		if (scriptsFrames.length == 2) { numCloseButtons = 2; }
-		if (scriptsFrames.length > 2) { numCloseButtons = 1; }
+		if (scriptsFrames.length == 2) numCloseButtons = 2;
+		if (scriptsFrames.length > 2) numCloseButtons = 1;
 
 		// close button/s
 		for (var i:int = 0; i < numCloseButtons; i++) {
@@ -186,6 +198,15 @@ public class ScriptsPart extends UIPart {
             addChild(downButton);
         }
 
+        // block count label
+//        var tf:TextField = new TextField();
+//        tf.autoSize = TextFieldAutoSize.LEFT;
+//        tf.text = "Hello world";
+        var tf:Button = new Button("Up", null);
+        blockCountLabels.push(tf);
+        addChild(tf);
+
+        updateBlockCounts();
         updateButtonTags();
     }
 
@@ -209,28 +230,33 @@ public class ScriptsPart extends UIPart {
             removeChild(downButtons.removeAt(index));
 		}
 
+		removeChild(blockCountLabels.removeAt(index));
         removeChild(scriptsFrames.removeAt(index));
 		app.gameRoutes.removeFromRoute(index);
 
         updateButtonTags();
-		setWidthHeight(w, h);
+        setWidthHeight(w, h);
 	}
 
 	// swap the position of two scripts panes
 	public function swapScriptPanes(i:int, j:int):void {
         app.gameRoutes.swapRoutePanes(i, j);
-
-        var temp:Sprite = scriptsFrames[i];
-        scriptsFrames[i] = scriptsFrames[j];
-        scriptsFrames[j] = temp;
+		swap(scriptsFrames, i, j);
 
         // update z index so that scripts pane is in front of buttons
 		setChildIndex(scriptsFrames[i], firstScriptFrameChildIndex);
         setChildIndex(scriptsFrames[j], firstScriptFrameChildIndex);
 
+		updateBlockCounts();
 		setWidthHeight(w, h);
     }
 
+	// generic swap function for an array of Sprites
+	private function swap(arr:Array, i:int, j:int):void {
+        var temp:Sprite = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+	}
 
 	// Set the tags for each button. helps determine which button has been pressed
 	public function updateButtonTags():void {
@@ -350,6 +376,14 @@ public class ScriptsPart extends UIPart {
 					upButtons[i-1].y + upButtons[i-1].height + margin :
                     closeContainerButtons[i].y + closeContainerButtons[i].height + margin;
 		}
+
+		// block count labels
+        for (var i:int = 0; i < blockCountLabels.length; i++) {
+			blockCountLabels[i].x = scriptsFrames[i].x + margin;
+			blockCountLabels[i].y = scriptsFrames[i].y + margin;
+//			blockCountLabels[i].width = (blockCountLabels[i] as TextField).textWidth;
+//            blockCountLabels[i].height = (blockCountLabels[i] as TextField).textHeight;
+        }
 
 		zoomWidget.x = w - zoomWidget.width - 3;
         zoomWidget.y = -zoomWidget.height - 4;
