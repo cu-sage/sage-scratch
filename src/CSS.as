@@ -45,6 +45,7 @@ public class CSS {
 	public static const sageDesignRestricted:int = 0x444444;
 	//public static const sagePlayRestricted:int = 0x000000;
 	public static const sagePlayRestricted:int = 0xCCCCCCCCC;
+	public static const errorText:int = 0xf73838;
 
 	// Fonts
 	public static const font:String = Resources.chooseFont(['Arial', 'Verdana', 'DejaVu Sans']);

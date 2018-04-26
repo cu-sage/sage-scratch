@@ -120,17 +120,25 @@ public class GameRoutes {
     }
 
     public function viewScriptsFor(obj:ScratchObj):void {
+        if (routes[viewedObj] == null) return;
+
+        for each (var pane:ScriptsPane in routes[viewedObj]) {
+            pane.saveScripts(false);
+        }
+
         if (obj != null) {
             viewedObj = obj.uuid;
             app.scriptsPart.clearAndRedrawWith(routes[viewedObj]);
         }
 
-        if (routes[viewedObj] == null) return;
-        //TODO: (Gavi) the next block occasionally causes blocks to dissapear when switching between sprites
-        for (var i:int = 0; i < routes[viewedObj].length; i++) {
-            var pane:ScriptsPane = routes[viewedObj][i];
-            pane.viewScriptsFor(obj);
+        for each (var pane:ScriptsPane in routes[viewedObj]) {
+            pane.resetUI();
         }
+
+//        for (var i:int = 0; i < routes[viewedObj].length; i++) {
+//            var pane:ScriptsPane = routes[viewedObj][i];
+//            pane.viewScriptsFor(obj);
+//        }
     }
 
 

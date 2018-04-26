@@ -51,7 +51,7 @@ public class ScriptsPart extends UIPart {
 	private var closeContainerButtons:Array = [];
 	private var upButtons:Array = [];
     private var downButtons:Array = [];
-    private var blockCountLabels:Array = [];
+    private var constraintWidgets:Array = [];
 
 	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor, true);
 	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor);
@@ -100,12 +100,10 @@ public class ScriptsPart extends UIPart {
         app.palette = palette;
 	}
 
-	// Update the UI to reflect the number of blocks within each script pane
-    public function updateBlockCounts():void {
-		for (var i:int = 0; i < scriptsFrames.length; i++) {
-			var scrollFrame:ScrollFrame = scriptsFrames[i] as ScrollFrame;
-			var scriptsPane:ScriptsPane = scrollFrame.contents as ScriptsPane;
-			(blockCountLabels[i] as Button).setLabel(scriptsPane.numBlocks);
+	// Update the constraints widgets
+    public function updateConstraints():void {
+		for each (var widget:ConstraintsWidget in constraintWidgets) {
+			widget.updateConstraints();
 		}
     }
 
@@ -114,6 +112,8 @@ public class ScriptsPart extends UIPart {
 		for each (var b1:Button in upButtons) b1.visible = isOn;
         for each (var b2:Button in downButtons) b2.visible = isOn;
         for each (var b3:Button in closeContainerButtons) b3.visible = isOn;
+		for each (var w:ConstraintsWidget in constraintWidgets) isOn ? w.renderDesignMode() : w.renderPlayMode();
+		updateConstraints();
 	}
 
 
@@ -123,12 +123,12 @@ public class ScriptsPart extends UIPart {
         clearChildren(closeContainerButtons);
         clearChildren(upButtons);
         clearChildren(downButtons);
-		clearChildren(blockCountLabels);
+		clearChildren(constraintWidgets);
         closeContainerButtons = [];
         upButtons = [];
 		downButtons = [];
         scriptsFrames = [];
-		blockCountLabels = [];
+		constraintWidgets = [];
 
 		// repopulate ui with given script panes
 		if (scriptPanes == null || scriptPanes.length == 0) { // have at least one scripts pane
@@ -198,15 +198,12 @@ public class ScriptsPart extends UIPart {
             addChild(downButton);
         }
 
-        // block count label
-//        var tf:TextField = new TextField();
-//        tf.autoSize = TextFieldAutoSize.LEFT;
-//        tf.text = "Hello world";
-        var tf:Button = new Button("Up", null);
-        blockCountLabels.push(tf);
-        addChild(tf);
+        // Constraint widget
+        var cw:ConstraintsWidget = new ConstraintsWidget(scriptsPane, app.interp.sageDesignMode);
+        constraintWidgets.push(cw);
+        addChild(cw);
 
-        updateBlockCounts();
+        updateConstraints();
         updateButtonTags();
     }
 
@@ -230,7 +227,7 @@ public class ScriptsPart extends UIPart {
             removeChild(downButtons.removeAt(index));
 		}
 
-		removeChild(blockCountLabels.removeAt(index));
+		removeChild(constraintWidgets.removeAt(index));
         removeChild(scriptsFrames.removeAt(index));
 		app.gameRoutes.removeFromRoute(index);
 
@@ -242,12 +239,13 @@ public class ScriptsPart extends UIPart {
 	public function swapScriptPanes(i:int, j:int):void {
         app.gameRoutes.swapRoutePanes(i, j);
 		swap(scriptsFrames, i, j);
+        swap(constraintWidgets, i, j);
 
         // update z index so that scripts pane is in front of buttons
 		setChildIndex(scriptsFrames[i], firstScriptFrameChildIndex);
         setChildIndex(scriptsFrames[j], firstScriptFrameChildIndex);
 
-		updateBlockCounts();
+		updateConstraints();
 		setWidthHeight(w, h);
     }
 
@@ -377,12 +375,10 @@ public class ScriptsPart extends UIPart {
                     closeContainerButtons[i].y + closeContainerButtons[i].height + margin;
 		}
 
-		// block count labels
-        for (var i:int = 0; i < blockCountLabels.length; i++) {
-			blockCountLabels[i].x = scriptsFrames[i].x + margin;
-			blockCountLabels[i].y = scriptsFrames[i].y + margin;
-//			blockCountLabels[i].width = (blockCountLabels[i] as TextField).textWidth;
-//            blockCountLabels[i].height = (blockCountLabels[i] as TextField).textHeight;
+		// Constraint widgets
+        for (var i:int = 0; i < constraintWidgets.length; i++) {
+			constraintWidgets[i].x = scriptsFrames[i].x + margin;
+			constraintWidgets[i].y = scriptsFrames[i].y + margin;
         }
 
 		zoomWidget.x = w - zoomWidget.width - 3;

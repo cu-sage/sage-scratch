@@ -63,7 +63,10 @@ public class ScriptsPane extends ScrollFrameContents {
 	private var feedbackShape:BlockShape;
 	public var hints:Hints = new Hints();
 	public var uuid:String;
-	public var numBlocks = 0;
+
+	// constraints
+	public var numBlocks:int = 0;
+	public var maxBlocks:int = 0;
 
 	public function ScriptsPane(app:Scratch) {
         uuid = UIDUtil.createUID();
@@ -92,7 +95,7 @@ public class ScriptsPane extends ScrollFrameContents {
 		texture.setPixel(2, 11, c1);
 	}
 
-	// Count the number of blocks in this script pane
+	// Count the number of blocks in this script pane. return false if numBlocks > maxBlocks
 	public function countBlocks():void {
         numBlocks = 0;
         for (var i:int = 0; i < numChildren; i++) {
@@ -103,7 +106,7 @@ public class ScriptsPane extends ScrollFrameContents {
                 });
 			}
         }
-        app.scriptsPart.updateBlockCounts();	// update ui
+        app.scriptsPart.updateConstraints();	// update constraints ui
     }
 
 	public function viewScriptsFor(obj:ScratchObj):void {
@@ -129,10 +132,15 @@ public class ScriptsPane extends ScrollFrameContents {
 			countBlocks();
 		}
 
-		fixCommentLayout();
-		updateSize();
-		x = y = 0; // reset scroll offset
-		(parent as ScrollFrame).updateScrollbars();
+		resetUI();
+	}
+
+	// reset the ui and scroll frames
+	public function resetUI():void {
+        fixCommentLayout();
+        updateSize();
+        x = y = 0; // reset scroll offset
+        (parent as ScrollFrame).updateScrollbars();
 	}
 
 	public function saveScripts(saveNeeded:Boolean = true):void {
@@ -396,12 +404,23 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		return true;
 	}
 
+	// Check to see if the constraints are still satisfied if block b is added. Returns false if constraints not satisfied
+	private function checkConstraints(b:Block):Boolean {
+        var blocksToAdd:int = 0;
+        b.allBlocksDo(function (b:Block):void { blocksToAdd++; }); // add up sub blocks
+        if (maxBlocks > 0 && blocksToAdd + numBlocks > maxBlocks) return false;
+		return true;
+	}
+
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
-		trace("scriptspane.handledropped called")
-		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
+		trace("scriptspane.handledropped called");
 
+        // check constraints
+		if (obj is Block && !checkConstraints(obj))  return true;
+
+		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
 		var info:MediaInfo = obj as MediaInfo;
 		if (info) {
 			if (!info.scripts) return false;
@@ -461,24 +480,24 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 
 
 
-	private function addStacksFromBackpack(info:MediaInfo, dropP:Point):void {
-		if (!info.scripts) return;
-		var forStage:Boolean = app.viewedObj() && app.viewedObj().isStage;
-		for each (var a:Array in info.scripts) {
-			if (a.length < 1) continue;
-			var blockOrComment:* =
-				(a[0] is Array) ?
-					BlockIO.arrayToStack(a, forStage) :
-					ScratchComment.fromArray(a);
-			blockOrComment.x = dropP.x;
-			blockOrComment.y = dropP.y;
-			addChild(blockOrComment);
-			if (blockOrComment is Block) blockDropped(blockOrComment);
-		}
-		saveScripts();
-		updateSize();
-		fixCommentLayout();
-	}
+    private function addStacksFromBackpack(info:MediaInfo, dropP:Point):void {
+        if (!info.scripts) return;
+        var forStage:Boolean = app.viewedObj() && app.viewedObj().isStage;
+        for each (var a:Array in info.scripts) {
+            if (a.length < 1) continue;
+            var blockOrComment:* =
+                    (a[0] is Array) ?
+                            BlockIO.arrayToStack(a, forStage) :
+                            ScratchComment.fromArray(a);
+            blockOrComment.x = dropP.x;
+            blockOrComment.y = dropP.y;
+            addChild(blockOrComment);
+            if (blockOrComment is Block) blockDropped(blockOrComment);
+        }
+        saveScripts();
+        updateSize();
+        fixCommentLayout();
+    }
 
 	private function blockAtPoint(p:Point):Block {
 		// Return the block at the given point (local) or null.
