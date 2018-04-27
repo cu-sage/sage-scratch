@@ -546,7 +546,8 @@ public class GestureHandler {
 			if (carriedObj is Block) {
 				var b:Block = Block(carriedObj);
 				b.restoreOriginalState();
-				b.getScriptsPane().countBlocks();
+				var pane:ScriptsPane = b.getScriptsPane();
+				if (pane != null) pane.countBlocks();
 			} else if (originalParent) { // put carriedObj back where it came from
 				carriedObj.x = originalPosition.x;
 				carriedObj.y = originalPosition.y;

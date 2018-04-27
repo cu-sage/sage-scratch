@@ -67,6 +67,9 @@ public class ScriptsPane extends ScrollFrameContents {
 	// constraints
 	public var numBlocks:int = 0;
 	public var maxBlocks:int = 0;
+    public var numPoints:int = 0;
+    public var maxPoints:int = 0;
+
 
 	public function ScriptsPane(app:Scratch) {
         uuid = UIDUtil.createUID();
@@ -98,11 +101,13 @@ public class ScriptsPane extends ScrollFrameContents {
 	// Count the number of blocks in this script pane. return false if numBlocks > maxBlocks
 	public function countBlocks():void {
         numBlocks = 0;
+		numPoints = 0;
         for (var i:int = 0; i < numChildren; i++) {
             var o:* = getChildAt(i);
             if (o is Block) {
                 o.allBlocksDo(function (b:Block):void {
                     numBlocks++;
+					numPoints += b.pointValue;
                 });
 			}
         }
@@ -407,8 +412,14 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 	// Check to see if the constraints are still satisfied if block b is added. Returns false if constraints not satisfied
 	private function checkConstraints(b:Block):Boolean {
         var blocksToAdd:int = 0;
-        b.allBlocksDo(function (b:Block):void { blocksToAdd++; }); // add up sub blocks
+		var pointsToAdd:int = 0;
+        // add up sub blocks
+        b.allBlocksDo(function (b:Block):void {
+			blocksToAdd++;
+			pointsToAdd += b.pointValue;
+		});
         if (maxBlocks > 0 && blocksToAdd + numBlocks > maxBlocks) return false;
+        if (maxPoints > 0 && pointsToAdd + numPoints > maxPoints) return false;
 		return true;
 	}
 
