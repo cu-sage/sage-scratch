@@ -114,31 +114,31 @@ public class ScriptsPane extends ScrollFrameContents {
         app.scriptsPart.updateConstraints();	// update constraints ui
     }
 
-	public function viewScriptsFor(obj:ScratchObj):void {
-		// View the blocks for the given object.
-		saveScripts(false);
-		while (numChildren > 0) {
-			var child:DisplayObject = removeChildAt(0);
-			child.cacheAsBitmap = false;
-		}
-		addChild(commentLines);
-		addChild(commentLines);
-		viewedObj = obj;
-		if (viewedObj != null) {
-			var blockList:Array = viewedObj.allBlocks();
-			for each (var b:Block in viewedObj.scripts) {
-				b.cacheAsBitmap = true;
-				addChild(b);
-			}
-			for each (var c:ScratchComment in viewedObj.scriptComments) {
-				c.updateBlockRef(blockList);
-				addChild(c);
-			}
-			countBlocks();
-		}
-
-		resetUI();
-	}
+//	public function viewScriptsFor(obj:ScratchObj):void {
+//		// View the blocks for the given object.
+//		saveScripts(false);
+//		while (numChildren > 0) {
+//			var child:DisplayObject = removeChildAt(0);
+//			child.cacheAsBitmap = false;
+//		}
+//		addChild(commentLines);
+//		addChild(commentLines);
+//		viewedObj = obj;
+//		if (viewedObj != null) {
+//			var blockList:Array = viewedObj.allBlocks();
+//			for each (var b:Block in viewedObj.scripts) {
+//				b.cacheAsBitmap = true;
+//				addChild(b);
+//			}
+//			for each (var c:ScratchComment in viewedObj.scriptComments) {
+//				c.updateBlockRef(blockList);
+//				addChild(c);
+//			}
+//			countBlocks();
+//		}
+//
+//		resetUI();
+//	}
 
 	// reset the ui and scroll frames
 	public function resetUI():void {
@@ -148,23 +148,23 @@ public class ScriptsPane extends ScrollFrameContents {
         (parent as ScrollFrame).updateScrollbars();
 	}
 
-	public function saveScripts(saveNeeded:Boolean = true):void {
-		// Save the blocks in this pane in the viewed objects scripts list.
-		if (viewedObj == null) return;
-		viewedObj.scripts.splice(0); // remove all
-		viewedObj.scriptComments.splice(0); // remove all
-		for (var i:int = 0; i < numChildren; i++) {
-			var o:* = getChildAt(i);
-			if (o is Block) viewedObj.scripts.push(o);
-			if (o is ScratchComment) viewedObj.scriptComments.push(o);
-		}
-		var blockList:Array = viewedObj.allBlocks();
-		for each (var c:ScratchComment in viewedObj.scriptComments) {
-			c.updateBlockID(blockList);
-		}
-		if (saveNeeded) app.setSaveNeeded();
-		fixCommentLayout();
-	}
+//	public function saveScripts(saveNeeded:Boolean = true):void {
+//		// Save the blocks in this pane in the viewed objects scripts list.
+//		if (viewedObj == null) return;
+//		viewedObj.scripts.splice(0); // remove all
+//		viewedObj.scriptComments.splice(0); // remove all
+//		for (var i:int = 0; i < numChildren; i++) {
+//			var o:* = getChildAt(i);
+//			if (o is Block) viewedObj.scripts.push(o);
+//			if (o is ScratchComment) viewedObj.scriptComments.push(o);
+//		}
+//		var blockList:Array = viewedObj.allBlocks();
+//		for each (var c:ScratchComment in viewedObj.scriptComments) {
+//			c.updateBlockID(blockList);
+//		}
+//		if (saveNeeded) app.setSaveNeeded();
+//		fixCommentLayout();
+//	}
 
 	public function prepareToDrag(b:Block):void {
 		findTargetsFor(b);
@@ -480,7 +480,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		if (c) {
 			c.blockRef = blockAtPoint(localP); // link to the block under comment top-left corner, or unlink if none
 		}
-		saveScripts();
+		app.gameRoutes.saveScripts();
 		//sm4241 - parsons logic here
 		app.parsonsLogic();
 		//b.changePointArgToLabel()
@@ -505,7 +505,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
             addChild(blockOrComment);
             if (blockOrComment is Block) blockDropped(blockOrComment);
         }
-        saveScripts();
+        app.gameRoutes.saveScripts();
         updateSize();
         fixCommentLayout();
     }
@@ -552,7 +552,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		c.x = x;
 		c.y = y;
 		addChild(c);
-		saveScripts();
+		app.gameRoutes.saveScripts();
 		updateSize();
 	}
 
@@ -613,7 +613,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 			}
 			nextX += columnWidths[i] + padding;
 		}
-		saveScripts();
+		app.gameRoutes.saveScripts();
 	}
 
 	private function stacksSortedByX():Array {
