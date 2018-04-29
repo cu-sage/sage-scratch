@@ -163,6 +163,7 @@ public class GameRoutes {
 
             if (saveNeeded) app.setSaveNeeded();
 //            fixCommentLayout();
+            pane.countBlocks();
         }
     }
 

@@ -502,6 +502,7 @@ public class Block extends Sprite {
 			b.insertBlockSub2(this);
 			break;
 		}
+		getScriptsPane().countBlocks();
 	}
 
 	public function originalPositionIn(p:DisplayObject):Point {
