@@ -1088,12 +1088,12 @@ public class ScratchRuntime {
 	public function recordForUndelete(obj:*, x:int, y:int, index:int, owner:* = null):void {
 		if (obj is Block) {
 			var block:Block = (obj as Block);
-			var comments:Array = block.attachedCommentsIn(block.getScriptsPane());	//TODO: (Gavi) Needs further testing
+			var comments:Array = block.attachedCommentsIn(block.getScriptsPane());
 			if (comments.length) {
 				for each (var c:ScratchComment in comments) {
 					c.parent.removeChild(c);
 				}
-				block.getScriptsPane().fixCommentLayout();	//TODO: (Gavi) Needs further testing
+				block.getScriptsPane().fixCommentLayout();
 				obj = [obj, comments];
 			}
 		}

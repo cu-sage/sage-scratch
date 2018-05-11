@@ -91,7 +91,7 @@ public class ScriptsPart extends UIPart {
 
 		appendScriptsPane(createScriptsPane());
 
-        newContainerButton = new Button("New Container", function ():void {
+        newContainerButton = new Button("New Workspace", function ():void {
             appendScriptsPane(createScriptsPane());
 			setWidthHeight(w, h);
         });

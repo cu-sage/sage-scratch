@@ -490,7 +490,7 @@ public class Block extends Sprite {
 			y = p.y;
 			break;
 			case ROLE_EMBEDDED:
-			b.replaceArgWithBlock(b.args[originalIndex], this, getScriptsPane()); //TODO: (Gavi) Needs further testing. Could not recreate calling of this function
+			b.replaceArgWithBlock(b.args[originalIndex], this, getScriptsPane());
 			break;
 		case ROLE_NEXT:
 			b.insertBlock(this);

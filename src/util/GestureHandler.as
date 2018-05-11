@@ -139,8 +139,8 @@ public class GestureHandler {
 			scrollTarget.updateScrollbars();
 			var b:Block = carriedObj as Block;
 			if (b) {
-				app.gameRoutes.findTargetsFor(b); //TODO: (Gavi R.) Untested
-				app.gameRoutes.updateFeedbackFor(b); //TODO: (Gavi R.) Untested
+				app.gameRoutes.findTargetsFor(b);
+				app.gameRoutes.updateFeedbackFor(b);
 			}
 		}
 	}

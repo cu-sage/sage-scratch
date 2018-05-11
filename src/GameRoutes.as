@@ -134,11 +134,6 @@ public class GameRoutes {
         for each (var pane:ScriptsPane in routes[viewedObjID]) {
             pane.resetUI();
         }
-
-//        for (var i:int = 0; i < routes[viewedObjID].length; i++) {
-//            var pane:ScriptsPane = routes[viewedObjID][i];
-//            pane.viewScriptsFor(obj);
-//        }
     }
 
     // Save the blocks in each pane to the viewed objects scripts list.

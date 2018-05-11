@@ -80,7 +80,6 @@ public class ScratchObj extends Sprite {
 
 	public var uuid:String;
 
-	// TODO: (Gavi) remove
 	public function ScratchObj() {
         uuid = UIDUtil.createUID()
 	}
