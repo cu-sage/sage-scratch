@@ -531,10 +531,10 @@ public class PaletteBuilder {
 			newHat.defaultArgValues = specEditor.defaultArgValues();
 			newHat.warpProcFlag = specEditor.warpFlag();
 			newHat.setSpec(spec);
-			newHat.x = 10 - app.scriptsPane.x + Math.random() * 100;
-			newHat.y = 10 - app.scriptsPane.y + Math.random() * 100;
-			app.scriptsPane.addChild(newHat);
-			app.scriptsPane.saveScripts();
+			newHat.x = 10 - app.gameRoutes.getXY()[0] + Math.random() * 100;
+			newHat.y = 10 - app.gameRoutes.getXY()[1] + Math.random() * 100;
+			app.gameRoutes.addBlockToContainer(0, newHat);
+			app.gameRoutes.saveScripts();
 			app.runtime.updateCalls();
 			app.updatePalette();
 			app.setSaveNeeded();

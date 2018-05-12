@@ -26,7 +26,14 @@ package ui.parts {
 	import flash.display.*;
 	import flash.text.*;
 	import flash.utils.getTimer;
-	import scratch.*;
+
+import flashx.textLayout.debug.assert;
+
+import mx.controls.Text;
+
+import mx.effects.Zoom;
+
+import scratch.*;
 	import ui.*;
 	import uiwidgets.*;
 	import util.*;
@@ -37,8 +44,14 @@ public class ScriptsPart extends UIPart {
 	private var selector:PaletteSelector;
 	private var spriteWatermark:Bitmap;
 	private var paletteFrame:ScrollFrame;
-	private var scriptsFrame:ScrollFrame;
-	private var zoomWidget:ZoomWidget;
+
+	private var scriptsFrames:Array = [];
+    private var zoomWidget:ZoomWidget;
+	private var newContainerButton:Button;
+	private var closeContainerButtons:Array = [];
+	private var upButtons:Array = [];
+    private var downButtons:Array = [];
+    private var constraintWidgets:Array = [];
 
 	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor, true);
 	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor);
@@ -50,6 +63,7 @@ public class ScriptsPart extends UIPart {
 	private var yReadout:TextField;
 	private var lastX:int = -10000000; // impossible value to force initial update
 	private var lastY:int = -10000000; // impossible value to force initial update
+	private var firstScriptFrameChildIndex:int = -1;	// child index of first script pane
 
 	public function ScriptsPart(app:Scratch) {
 		this.app = app;
@@ -66,16 +80,194 @@ public class ScriptsPart extends UIPart {
 		paletteFrame.setContents(palette);
 		addChild(paletteFrame);
 
-		var scriptsPane:ScriptsPane = new ScriptsPane(app);
-		scriptsFrame = new ScrollFrame();
-		scriptsFrame.setContents(scriptsPane);
-		addChild(scriptsFrame);
+		if (app.gameRoutes == null) app.gameRoutes = new GameRoutes(app);
 
-		app.palette = palette;
-		app.scriptsPane = scriptsPane;
+		// zoom widget
+		if (zoomWidget == null) {
+			zoomWidget = new ZoomWidget(app.gameRoutes);
+            addChild(zoomWidget);
+        }
 
-		addChild(zoomWidget = new ZoomWidget(scriptsPane));
+
+		appendScriptsPane(createScriptsPane());
+
+        newContainerButton = new Button("New Workspace", function ():void {
+            appendScriptsPane(createScriptsPane());
+			setWidthHeight(w, h);
+        });
+        addChild(newContainerButton);
+
+        app.palette = palette;
 	}
+
+	// Update the constraints widgets
+    public function updateConstraints():void {
+		for each (var widget:ConstraintsWidget in constraintWidgets) {
+			widget.updateConstraints();
+		}
+    }
+
+	public function toggleDesignMode(isOn:Boolean):void {
+		newContainerButton.visible = isOn;
+		for each (var b1:Button in upButtons) b1.visible = isOn;
+        for each (var b2:Button in downButtons) b2.visible = isOn;
+        for each (var b3:Button in closeContainerButtons) b3.visible = isOn;
+		for each (var w:ConstraintsWidget in constraintWidgets) isOn ? w.renderDesignMode() : w.renderPlayMode();
+		updateConstraints();
+	}
+
+
+	// Clear the ui and redraw with given script panes
+	public function clearAndRedrawWith(scriptPanes:Array):void {
+		clearChildren(scriptsFrames);
+        clearChildren(closeContainerButtons);
+        clearChildren(upButtons);
+        clearChildren(downButtons);
+		clearChildren(constraintWidgets);
+        closeContainerButtons = [];
+        upButtons = [];
+		downButtons = [];
+        scriptsFrames = [];
+		constraintWidgets = [];
+
+		// repopulate ui with given script panes
+		if (scriptPanes == null || scriptPanes.length == 0) { // have at least one scripts pane
+            appendScriptsPane(createScriptsPane());
+		} else {
+            for each (var pane:ScriptsPane in scriptPanes) {
+                appendScriptsPane(pane);
+            }
+        }
+
+		setWidthHeight(w, h); // redraw ui
+		toggleDesignMode(app.interp.sageDesignMode);
+	}
+
+	// detach children from parent
+	public function clearChildren(children:Array):void {
+		for each (var child:Sprite in children) {
+			removeChild(child);
+			child = null;
+		}
+	}
+
+	// create a new scripts pane and update the game routes variable
+	public function createScriptsPane():ScriptsPane {
+        var scriptsPane:ScriptsPane = new ScriptsPane(app);
+        app.gameRoutes.appendToRoute(scriptsPane);
+		return scriptsPane;
+	}
+
+	// Add a new scripts pane to the ui.
+	public function appendScriptsPane(scriptsPane:ScriptsPane):void {
+		scriptsPane.setScale(app.gameRoutes.getScale());
+
+		var scrollFrame = new ScrollFrame();
+		scrollFrame.setContents(scriptsPane);
+		addChild(scrollFrame);
+		scriptsFrames.push(scrollFrame);
+
+		if (scriptsFrames.length == 1) firstScriptFrameChildIndex = getChildIndex(scriptsFrames[0]);
+
+		// determine how many close buttons to add
+		var numCloseButtons:int = 0;
+		if (scriptsFrames.length == 2) numCloseButtons = 2;
+		if (scriptsFrames.length > 2) numCloseButtons = 1;
+
+		// close button/s
+		for (var i:int = 0; i < numCloseButtons; i++) {
+			var closeButton:Button = new Button("Close", function ():void {
+                removeScriptsPaneAt(this.tag);
+            });
+
+            closeContainerButtons.push(closeButton);
+            addChild(closeButton);
+        }
+
+		// order buttons
+		if (scriptsFrames.length >= 2) {
+            var upButton:Button = new Button("Up", function ():void {
+                swapScriptPanes(this.tag, this.tag - 1)
+            });
+            var downButton:Button = new Button("Down", function ():void {
+                swapScriptPanes(this.tag, this.tag + 1)
+            });
+            upButtons.push(upButton);
+            downButtons.push(downButton);
+            addChild(upButton);
+            addChild(downButton);
+        }
+
+        // Constraint widget
+        var cw:ConstraintsWidget = new ConstraintsWidget(scriptsPane, app.interp.sageDesignMode);
+        constraintWidgets.push(cw);
+        addChild(cw);
+
+        updateConstraints();
+        updateButtonTags();
+    }
+
+	// remove a scripts pane. Whenever there is 1 pane remaining, remove close and order buttons.
+	public function removeScriptsPaneAt(index:int):void {
+		if (scriptsFrames.length == 2) {
+            removeChild(closeContainerButtons.pop());
+            removeChild(closeContainerButtons.pop());
+        } else {
+            removeChild(closeContainerButtons.removeAt(index));
+		}
+
+		if (scriptsFrames.length == 2 || index == scriptsFrames.length-1) {
+			removeChild(upButtons.pop());
+            removeChild(downButtons.pop());
+		} else if (index == 0) {
+            removeChild(upButtons.removeAt(index));
+            removeChild(downButtons.removeAt(index));
+		} else {
+            removeChild(upButtons.removeAt(index-1));
+            removeChild(downButtons.removeAt(index));
+		}
+
+		removeChild(constraintWidgets.removeAt(index));
+        removeChild(scriptsFrames.removeAt(index));
+		app.gameRoutes.removeFromRoute(index);
+
+        updateButtonTags();
+        setWidthHeight(w, h);
+	}
+
+	// swap the position of two scripts panes
+	public function swapScriptPanes(i:int, j:int):void {
+        app.gameRoutes.swapRoutePanes(i, j);
+		swap(scriptsFrames, i, j);
+        swap(constraintWidgets, i, j);
+
+        // update z index so that scripts pane is in front of buttons
+		setChildIndex(scriptsFrames[i], firstScriptFrameChildIndex);
+        setChildIndex(scriptsFrames[j], firstScriptFrameChildIndex);
+
+		updateConstraints();
+		setWidthHeight(w, h);
+    }
+
+	// generic swap function for an array of Sprites
+	private function swap(arr:Array, i:int, j:int):void {
+        var temp:Sprite = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+	}
+
+	// Set the tags for each button. helps determine which button has been pressed
+	public function updateButtonTags():void {
+        for (var i:int = 0; i < closeContainerButtons.length; i++) {
+            closeContainerButtons[i].tag = i;
+        }
+
+		for (var i:int = 0; i < upButtons.length; i++) {
+            upButtons[i].tag = i+1;
+            downButtons[i].tag = i;
+		}
+	}
+
 
 	public function resetCategory():void { selector.select(Specs.motionCategory) }
 
@@ -144,25 +336,62 @@ public class ScriptsPart extends UIPart {
 	private function fixlayout():void {
 		selector.x = 1;
 		selector.y = 5;
+
 		paletteFrame.x = selector.x;
 		paletteFrame.y = selector.y + selector.height + 2;
 		paletteFrame.setWidthHeight(selector.width + 1, h - paletteFrame.y - 2); // 5
-		scriptsFrame.x = selector.x + selector.width + 2;
-		scriptsFrame.y = selector.y + 1;
-		scriptsFrame.setWidthHeight(w - scriptsFrame.x - 5, h - scriptsFrame.y - 5);
+
+        var margin:int = 5;
+        var startX:int = selector.x + selector.width + 2;
+		var startY:int = selector.y;
+		var height:int = (h - startY - margin*2) / scriptsFrames.length;
+		var width:int = w - startX - margin;
+
+		for (var i:int = 0; i < scriptsFrames.length; i++) {
+			scriptsFrames[i].x = startX;
+			scriptsFrames[i].y = startY + (height * i) + margin;
+            scriptsFrames[i].setWidthHeight(width, height);
+        }
+
 		spriteWatermark.x = w - 60;
-		spriteWatermark.y = scriptsFrame.y + 10;
+		spriteWatermark.y = scriptsFrames[0].y + 10;
+
 		xyDisplay.x = spriteWatermark.x + 1;
 		xyDisplay.y = spriteWatermark.y + 43;
-		zoomWidget.x = w - zoomWidget.width - 15;
-		zoomWidget.y = h - zoomWidget.height - 15;
+
+		// close buttons
+		for (var i:int = 0; i < closeContainerButtons.length; i++) {
+            closeContainerButtons[i].x = scriptsFrames[i].x + scriptsFrames[i].width - closeContainerButtons[i].width - margin;
+            closeContainerButtons[i].y = scriptsFrames[i].y + margin;
+		}
+
+		for (var i:int = 0; i < upButtons.length; i++) {
+            upButtons[i].x = closeContainerButtons[i].x;
+            upButtons[i].y = closeContainerButtons[i].y + closeContainerButtons[i].height + margin + height;
+
+            downButtons[i].x = closeContainerButtons[i].x;
+            downButtons[i].y = i > 0 ?
+					upButtons[i-1].y + upButtons[i-1].height + margin :
+                    closeContainerButtons[i].y + closeContainerButtons[i].height + margin;
+		}
+
+		// Constraint widgets
+        for (var i:int = 0; i < constraintWidgets.length; i++) {
+			constraintWidgets[i].x = scriptsFrames[i].x + margin;
+			constraintWidgets[i].y = scriptsFrames[i].y + margin;
+        }
+
+		zoomWidget.x = w - zoomWidget.width - 3;
+        zoomWidget.y = -zoomWidget.height - 4;
+
+        // zoom widget
+        newContainerButton.x = zoomWidget.x - newContainerButton.width - 10;
+        newContainerButton.y = -newContainerButton.height - 4;
 	}
 
 	private function redraw():void {
 		var paletteW:int = paletteFrame.visibleW();
 		var paletteH:int = paletteFrame.visibleH();
-		var scriptsW:int = scriptsFrame.visibleW();
-		var scriptsH:int = scriptsFrame.visibleH();
 
 		var g:Graphics = shape.graphics;
 		g.clear();
@@ -180,8 +409,16 @@ public class ScriptsPart extends UIPart {
 		hLine(g, paletteFrame.x + 8, lineY + 1, paletteW - 20);
 
 		g.lineStyle(1, darkerBorder, 1, true);
-		g.drawRect(scriptsFrame.x - 1, scriptsFrame.y - 1, scriptsW + 1, scriptsH + 1);
-	}
+
+		for (var i:int = 0; i < scriptsFrames.length; i++) {
+            g.drawRect(
+				scriptsFrames[i].x - 1,
+				scriptsFrames[i].y - 1,
+				scriptsFrames[i].visibleW() + 1,
+				scriptsFrames[0].visibleH() + 1
+			);
+        }
+    }
 
 	private function hLine(g:Graphics, x:int, y:int, w:int):void {
 		g.moveTo(x, y);

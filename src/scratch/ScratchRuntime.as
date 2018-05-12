@@ -439,7 +439,7 @@ public class ScratchRuntime {
 
 	protected function installProject(project:ScratchStage):void {
 		if (app.stagePane != null) stopAll();
-		if (app.scriptsPane) app.scriptsPane.viewScriptsFor(null);
+		if (app.gameRoutes) app.gameRoutes.viewScriptsFor(null);
 
 		SCRATCH::allow3d { if(app.isIn3D) app.render3D.setStage(project, project.penLayer); }
 
@@ -1087,12 +1087,13 @@ public class ScratchRuntime {
 
 	public function recordForUndelete(obj:*, x:int, y:int, index:int, owner:* = null):void {
 		if (obj is Block) {
-			var comments:Array = (obj as Block).attachedCommentsIn(app.scriptsPane);
+			var block:Block = (obj as Block);
+			var comments:Array = block.attachedCommentsIn(block.getScriptsPane());
 			if (comments.length) {
 				for each (var c:ScratchComment in comments) {
 					c.parent.removeChild(c);
 				}
-				app.scriptsPane.fixCommentLayout();
+				block.getScriptsPane().fixCommentLayout();
 				obj = [obj, comments];
 			}
 		}
@@ -1125,16 +1126,16 @@ public class ScratchRuntime {
 			app.selectSprite(prevOwner);
 			app.setTab('scripts');
 			var b:DisplayObject = obj is Array ? obj[0] : obj;
-			b.x = app.scriptsPane.padding;
-			b.y = app.scriptsPane.padding;
+			b.x = app.gameRoutes.getPadding();
+			b.y = app.gameRoutes.getPadding();
 			if (b is Block) b.cacheAsBitmap = true;
-			app.scriptsPane.addChild(b);
+			app.gameRoutes.addBlockToContainer(0, b);
 			if (obj is Array) {
 				for each (var c:ScratchComment in obj[1]) {
-					app.scriptsPane.addChild(c);
+                    app.gameRoutes.addBlockToContainer(0, c);
 				}
 			}
-			app.scriptsPane.saveScripts();
+			app.gameRoutes.saveScripts();
 			/*
 			if (b is Block) {
 

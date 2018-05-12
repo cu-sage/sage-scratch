@@ -28,6 +28,8 @@ package uiwidgets {
 
 public class Button extends Sprite {
 
+    public var tag:int;	// id
+
 	private var labelOrIcon:DisplayObject;
 	private var color:* = CSS.titleBarColors;
 	private var minWidth:int = 50;

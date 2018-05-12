@@ -29,11 +29,17 @@ package uiwidgets {
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import blocks.*;
-	import scratch.*;
-	import flash.geom.Rectangle;
 
-import ui.Hints;
-import ui.media.MediaInfo;
+	import flash.text.TextField;
+
+	import mx.controls.Label;
+
+	import scratch.*;
+		import flash.geom.Rectangle;
+
+	import ui.Hints;
+	import ui.media.MediaInfo;
+	import mx.utils.UIDUtil;
 
 public class ScriptsPane extends ScrollFrameContents {
 
@@ -56,9 +62,18 @@ public class ScriptsPane extends ScrollFrameContents {
 	private var nearestTarget:Array = [];
 	private var feedbackShape:BlockShape;
 	public var hints:Hints = new Hints();
+	public var uuid:String;
+
+	// constraints
+	public var numBlocks:int = 0;
+	public var maxBlocks:int = 0;
+    public var numPoints:int = 0;
+    public var maxPoints:int = 0;
+
 
 	public function ScriptsPane(app:Scratch) {
-		this.app = app;
+        uuid = UIDUtil.createUID();
+        this.app = app;
 		addChild(commentLines = new Shape());
 		hExtra = vExtra = 40;
 		createTexture();
@@ -83,49 +98,73 @@ public class ScriptsPane extends ScrollFrameContents {
 		texture.setPixel(2, 11, c1);
 	}
 
-	public function viewScriptsFor(obj:ScratchObj):void {
-		// View the blocks for the given object.
-		saveScripts(false);
-		while (numChildren > 0) {
-			var child:DisplayObject = removeChildAt(0);
-			child.cacheAsBitmap = false;
-		}
-		addChild(commentLines);
-		viewedObj = obj;
-		if (viewedObj != null) {
-			var blockList:Array = viewedObj.allBlocks();
-			for each (var b:Block in viewedObj.scripts) {
-				b.cacheAsBitmap = true;
-				addChild(b);
+	// Count the number of blocks in this script pane. return false if numBlocks > maxBlocks
+	public function countBlocks():void {
+        numBlocks = 0;
+		numPoints = 0;
+        for (var i:int = 0; i < numChildren; i++) {
+            var o:* = getChildAt(i);
+            if (o is Block) {
+                o.allBlocksDo(function (b:Block):void {
+                    numBlocks++;
+					numPoints += b.pointValue;
+                });
 			}
-			for each (var c:ScratchComment in viewedObj.scriptComments) {
-				c.updateBlockRef(blockList);
-				addChild(c);
-			}
-		}
-		fixCommentLayout();
-		updateSize();
-		x = y = 0; // reset scroll offset
-		(parent as ScrollFrame).updateScrollbars();
+        }
+        app.scriptsPart.updateConstraints();	// update constraints ui
+    }
+
+//	public function viewScriptsFor(obj:ScratchObj):void {
+//		// View the blocks for the given object.
+//		saveScripts(false);
+//		while (numChildren > 0) {
+//			var child:DisplayObject = removeChildAt(0);
+//			child.cacheAsBitmap = false;
+//		}
+//		addChild(commentLines);
+//		addChild(commentLines);
+//		viewedObj = obj;
+//		if (viewedObj != null) {
+//			var blockList:Array = viewedObj.allBlocks();
+//			for each (var b:Block in viewedObj.scripts) {
+//				b.cacheAsBitmap = true;
+//				addChild(b);
+//			}
+//			for each (var c:ScratchComment in viewedObj.scriptComments) {
+//				c.updateBlockRef(blockList);
+//				addChild(c);
+//			}
+//			countBlocks();
+//		}
+//
+//		resetUI();
+//	}
+
+	// reset the ui and scroll frames
+	public function resetUI():void {
+        fixCommentLayout();
+        updateSize();
+        x = y = 0; // reset scroll offset
+        (parent as ScrollFrame).updateScrollbars();
 	}
 
-	public function saveScripts(saveNeeded:Boolean = true):void {
-		// Save the blocks in this pane in the viewed objects scripts list.
-		if (viewedObj == null) return;
-		viewedObj.scripts.splice(0); // remove all
-		viewedObj.scriptComments.splice(0); // remove all
-		for (var i:int = 0; i < numChildren; i++) {
-			var o:* = getChildAt(i);
-			if (o is Block) viewedObj.scripts.push(o);
-			if (o is ScratchComment) viewedObj.scriptComments.push(o);
-		}
-		var blockList:Array = viewedObj.allBlocks();
-		for each (var c:ScratchComment in viewedObj.scriptComments) {
-			c.updateBlockID(blockList);
-		}
-		if (saveNeeded) app.setSaveNeeded();
-		fixCommentLayout();
-	}
+//	public function saveScripts(saveNeeded:Boolean = true):void {
+//		// Save the blocks in this pane in the viewed objects scripts list.
+//		if (viewedObj == null) return;
+//		viewedObj.scripts.splice(0); // remove all
+//		viewedObj.scriptComments.splice(0); // remove all
+//		for (var i:int = 0; i < numChildren; i++) {
+//			var o:* = getChildAt(i);
+//			if (o is Block) viewedObj.scripts.push(o);
+//			if (o is ScratchComment) viewedObj.scriptComments.push(o);
+//		}
+//		var blockList:Array = viewedObj.allBlocks();
+//		for each (var c:ScratchComment in viewedObj.scriptComments) {
+//			c.updateBlockID(blockList);
+//		}
+//		if (saveNeeded) app.setSaveNeeded();
+//		fixCommentLayout();
+//	}
 
 	public function prepareToDrag(b:Block):void {
 		findTargetsFor(b);
@@ -233,6 +272,9 @@ public class ScriptsPane extends ScrollFrameContents {
 		}
 		if (b.op == Specs.PROCEDURE_DEF) app.updatePalette();
 		app.runtime.blockDropped(b);
+
+		// update block counts
+		countBlocks();
 	}
 
 	public function findTargetsFor(b:Block):void {
@@ -367,12 +409,29 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		return true;
 	}
 
+	// Check to see if the constraints are still satisfied if block b is added. Returns false if constraints not satisfied
+	private function checkConstraints(b:Block):Boolean {
+        var blocksToAdd:int = 0;
+		var pointsToAdd:int = 0;
+        // add up sub blocks
+        b.allBlocksDo(function (b:Block):void {
+			blocksToAdd++;
+			pointsToAdd += b.pointValue;
+		});
+        if (maxBlocks > 0 && blocksToAdd + numBlocks > maxBlocks) return false;
+        if (maxPoints > 0 && pointsToAdd + numPoints > maxPoints) return false;
+		return true;
+	}
+
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
-		trace("scriptspane.handledropped called")
-		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
+		trace("scriptspane.handledropped called");
 
+        // check constraints
+		if (obj is Block && !checkConstraints(obj))  return true;
+
+		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
 		var info:MediaInfo = obj as MediaInfo;
 		if (info) {
 			if (!info.scripts) return false;
@@ -421,7 +480,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		if (c) {
 			c.blockRef = blockAtPoint(localP); // link to the block under comment top-left corner, or unlink if none
 		}
-		saveScripts();
+		app.gameRoutes.saveScripts();
 		//sm4241 - parsons logic here
 		app.parsonsLogic();
 		//b.changePointArgToLabel()
@@ -432,24 +491,24 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 
 
 
-	private function addStacksFromBackpack(info:MediaInfo, dropP:Point):void {
-		if (!info.scripts) return;
-		var forStage:Boolean = app.viewedObj() && app.viewedObj().isStage;
-		for each (var a:Array in info.scripts) {
-			if (a.length < 1) continue;
-			var blockOrComment:* =
-				(a[0] is Array) ?
-					BlockIO.arrayToStack(a, forStage) :
-					ScratchComment.fromArray(a);
-			blockOrComment.x = dropP.x;
-			blockOrComment.y = dropP.y;
-			addChild(blockOrComment);
-			if (blockOrComment is Block) blockDropped(blockOrComment);
-		}
-		saveScripts();
-		updateSize();
-		fixCommentLayout();
-	}
+    private function addStacksFromBackpack(info:MediaInfo, dropP:Point):void {
+        if (!info.scripts) return;
+        var forStage:Boolean = app.viewedObj() && app.viewedObj().isStage;
+        for each (var a:Array in info.scripts) {
+            if (a.length < 1) continue;
+            var blockOrComment:* =
+                    (a[0] is Array) ?
+                            BlockIO.arrayToStack(a, forStage) :
+                            ScratchComment.fromArray(a);
+            blockOrComment.x = dropP.x;
+            blockOrComment.y = dropP.y;
+            addChild(blockOrComment);
+            if (blockOrComment is Block) blockDropped(blockOrComment);
+        }
+        app.gameRoutes.saveScripts();
+        updateSize();
+        fixCommentLayout();
+    }
 
 	private function blockAtPoint(p:Point):Block {
 		// Return the block at the given point (local) or null.
@@ -493,7 +552,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		c.x = x;
 		c.y = y;
 		addChild(c);
-		saveScripts();
+		app.gameRoutes.saveScripts();
 		updateSize();
 	}
 
@@ -554,7 +613,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 			}
 			nextX += columnWidths[i] + padding;
 		}
-		saveScripts();
+		app.gameRoutes.saveScripts();
 	}
 
 	private function stacksSortedByX():Array {

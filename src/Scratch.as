@@ -103,7 +103,7 @@ public class Scratch extends Sprite {
 	public var playerBG:Shape;
 	public var palette:BlockPalette;
 	public var paletteBuilder:PaletteBuilder;
-	public var scriptsPane:ScriptsPane;
+	public var gameRoutes:GameRoutes;
 	public var stagePane:ScratchStage;
 	public var mediaLibrary:MediaLibrary;
 	public var lp:LoadProgress;
@@ -1002,7 +1002,7 @@ public class Scratch extends Sprite {
 		}
 		if (isShowing(scriptsPart)) {
 			scriptsPart.updatePalette();
-			scriptsPane.viewScriptsFor(obj);
+			gameRoutes.viewScriptsFor(obj);
 			scriptsPart.updateSpriteWatermark();
 		}
 	}
@@ -1023,7 +1023,7 @@ public class Scratch extends Sprite {
 		} else if (tabName && (tabName.length > 0)) {
 			tabName = 'scripts';
 			scriptsPart.updatePalette();
-			scriptsPane.viewScriptsFor(viewedObject);
+			gameRoutes.viewScriptsFor(viewedObject);
 			scriptsPart.updateSpriteWatermark();
 			show(scriptsPart);
 		}
@@ -1408,7 +1408,7 @@ public class Scratch extends Sprite {
 
 	public function exportProjectToFile(fromJS:Boolean = false):void {
 		function squeakSoundsConverted():void {
-			scriptsPane.saveScripts(false);
+			gameRoutes.saveScripts(false);
 			var defaultName:String = (projectName().length > 0) ? projectName() + '.sb2' : 'project.sb2';
 			var zipData:ByteArray = projIO.encodeProjectAsZipFile(stagePane);
 			var file:FileReference = new FileReference();
@@ -1458,6 +1458,7 @@ public class Scratch extends Sprite {
 		interp.sagePlayMode = false;
 		stagePart.refresh();
 		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
+		scriptsPart.toggleDesignMode(interp.sageDesignMode);
 	}
 
 	//update elements when switching to play mode
@@ -1465,8 +1466,9 @@ public class Scratch extends Sprite {
 		interp.sagePlayMode = !interp.sagePlayMode;
 		interp.sageDesignMode = false;
 		stagePart.refresh();
-		viewedObject.updateScriptsAfterTranslation(); // resets ScriptsPane
-	}
+		viewedObject.updateScriptsAfterTranslation(); // resets
+        scriptsPart.toggleDesignMode(interp.sageDesignMode);
+    }
 
 	public function handleTool(tool:String, evt:MouseEvent):void { }
 

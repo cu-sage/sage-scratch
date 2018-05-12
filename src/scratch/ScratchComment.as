@@ -196,7 +196,7 @@ public class ScratchComment extends Sprite {
 	public function deleteComment():void {
 		if (parent) parent.removeChild(this);
 		Scratch.app.runtime.recordForUndelete(this, x, y, 0, Scratch.app.viewedObj());
-		Scratch.app.scriptsPane.saveScripts();
+		Scratch.app.gameRoutes.saveScripts();
 	}
 
 	public function duplicateComment(deltaX:Number, deltaY:Number):void {

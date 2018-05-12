@@ -125,7 +125,7 @@ public class Block extends Sprite {
 	private static var ROLE_SUBSTACK2:int = 5;
 
 	private var originalParent:DisplayObjectContainer, originalRole:int, originalIndex:int, originalPosition:Point;
-
+	private var originalPane:ScriptsPane;
 
 	//points
 	public var pointValue:int;
@@ -376,16 +376,16 @@ public class Block extends Sprite {
 	}
 
 	//block is currently in scripts pane
-	public function isInScriptsPane():Boolean {
+	public function getScriptsPane():ScriptsPane {
 		var o:DisplayObject = parent;
 		while (o) {
 			if ('isScriptsPane' in o) {
 				trace("Block.isinscriptspane true");
-				return true;
+				return (o as ScriptsPane);
 			}
 			o = o.parent;
 		}
-		return false;
+		return null;
 	}
 
 	public function setTerminal(flag:Boolean):void {
@@ -454,6 +454,7 @@ public class Block extends Sprite {
 
 	public function saveOriginalState():void {
 		originalParent = parent;
+		originalPane = getScriptsPane();
 		if (parent) {
 			var b:Block = parent as Block;
 			if (b == null) {
@@ -488,8 +489,8 @@ public class Block extends Sprite {
 			x = p.x;
 			y = p.y;
 			break;
-		case ROLE_EMBEDDED:
-			b.replaceArgWithBlock(b.args[originalIndex], this, Scratch.app.scriptsPane);
+			case ROLE_EMBEDDED:
+			b.replaceArgWithBlock(b.args[originalIndex], this, getScriptsPane());
 			break;
 		case ROLE_NEXT:
 			b.insertBlock(this);
@@ -501,6 +502,7 @@ public class Block extends Sprite {
 			b.insertBlockSub2(this);
 			break;
 		}
+		getScriptsPane().countBlocks();
 	}
 
 	public function originalPositionIn(p:DisplayObject):Point {
@@ -994,7 +996,7 @@ public class Block extends Sprite {
 		y = top.y;
 		if (top != this) x += top.width + 5;
 		app.runtime.recordForUndelete(this, x, y, 0, app.viewedObj());
-		app.scriptsPane.saveScripts();
+		app.gameRoutes.saveScripts();
 		app.parsonsLogic();
 		SCRATCH::allow3d { app.runtime.checkForGraphicEffects(); }
 		app.updatePalette();
@@ -1006,7 +1008,7 @@ public class Block extends Sprite {
 		allBlocksDo(function (b:Block):void {
 			allBlocks.push(b);
 		});
-		var result:Array = []
+		var result:Array = [];
 		if (!scriptsPane) return result;
 		for (var i:int = 0; i < scriptsPane.numChildren; i++) {
 			var c:ScratchComment = scriptsPane.getChildAt(i) as ScratchComment;
@@ -1033,7 +1035,7 @@ public class Block extends Sprite {
 			trace("block.objtograb is in palette true");
 			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_PALETTE;
 		}
-		if (isInScriptsPane()) {
+		if (getScriptsPane() != null) {
 			trace("block.objtograb is inscriptsname true");
 			Scratch.app.blockDraggedFrom = Scratch.K_DRAGGED_FROM_SCRIPTS_PANE;
 		}

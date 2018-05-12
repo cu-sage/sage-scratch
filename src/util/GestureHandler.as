@@ -139,8 +139,8 @@ public class GestureHandler {
 			scrollTarget.updateScrollbars();
 			var b:Block = carriedObj as Block;
 			if (b) {
-				app.scriptsPane.findTargetsFor(b);
-				app.scriptsPane.updateFeedbackFor(b);
+				app.gameRoutes.findTargetsFor(b);
+				app.gameRoutes.updateFeedbackFor(b);
 			}
 		}
 	}
@@ -239,7 +239,7 @@ public class GestureHandler {
 			return;
 		}
 		if ((gesture == "drag") && (carriedObj is Block)) {
-			app.scriptsPane.updateFeedbackFor(Block(carriedObj));
+            app.gameRoutes.updateFeedbackFor(Block(carriedObj));
 		}
 		if ((gesture == "drag") && (carriedObj is ScratchSprite)) {
 			var stageP:Point = app.stagePane.globalToLocal(carriedObj.localToGlobal(new Point(0, 0)));
@@ -320,7 +320,7 @@ public class GestureHandler {
 			return;
 		}
 		if (gesture == "menu") handleMenu(evt);
-		if (app.scriptsPane) app.scriptsPane.draggingDone();
+		if (app.gameRoutes) app.gameRoutes.draggingDone();
 		mouseTarget = null;
 		gesture = "idle";
 		if (objToGrabOnUp != null) {
@@ -407,7 +407,7 @@ public class GestureHandler {
 		grab(mouseTarget, evt);
 		gesture = 'drag';
 		if (carriedObj is Block) {
-			app.scriptsPane.updateFeedbackFor(Block(carriedObj));
+			app.gameRoutes.updateFeedbackFor(Block(carriedObj));
 		}
 	}
 
@@ -474,14 +474,14 @@ public class GestureHandler {
 
 		if (obj is Block) {
 			var b:Block = Block(obj);
-			b.saveOriginalState();
+            b.saveOriginalState();
 			if (b.parent is Block) Block(b.parent).removeBlock(b);
 			if (b.parent != null) b.parent.removeChild(b);
-			app.scriptsPane.prepareToDrag(b);
+			app.gameRoutes.prepareToDrag(b);
 		} else if (obj is ScratchComment) {
 			var c:ScratchComment = ScratchComment(obj);
 			if (c.parent != null) c.parent.removeChild(c);
-			app.scriptsPane.prepareToDragComment(c);
+			app.gameRoutes.prepareToDragComment(c);
 		} else {
 			var inStage:Boolean = (obj.parent == app.stagePane);
 			if (obj.parent != null) {
@@ -542,7 +542,8 @@ public class GestureHandler {
 
 		if (!dropHandled(carriedObj, evt)) {
 			if (carriedObj is Block) {
-				Block(carriedObj).restoreOriginalState();
+				var b:Block = Block(carriedObj);
+				b.restoreOriginalState();
 			} else if (originalParent) { // put carriedObj back where it came from
 				carriedObj.x = originalPosition.x;
 				carriedObj.y = originalPosition.y;
@@ -555,7 +556,8 @@ public class GestureHandler {
 				}
 			}
 		}
-		app.scriptsPane.draggingDone();
+
+		app.gameRoutes.draggingDone();
 		carriedObj = null;
 		originalParent = null;
 		originalPosition = null;
@@ -563,7 +565,7 @@ public class GestureHandler {
 
 	private function addDropShadowTo(o:DisplayObject):void {
 		var f:DropShadowFilter = new DropShadowFilter();
-		var blockScale:Number = (app.scriptsPane) ? app.scriptsPane.scaleX : 1;
+		var blockScale:Number = (app.gameRoutes) ? app.gameRoutes.getScale() : 1;
 		f.distance = 8 * blockScale;
 		f.blurX = f.blurY = 2;
 		f.alpha = 0.4;

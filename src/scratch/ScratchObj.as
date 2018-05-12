@@ -78,6 +78,12 @@ public class ScratchObj extends Sprite {
 	public var varCache:Object = {};
 	public var parsonScripts:Array = [];
 
+	public var uuid:String;
+
+	public function ScratchObj() {
+        uuid = UIDUtil.createUID()
+	}
+
 	public function clearCaches():void {
 		// Clear the list, procedure, and variable caches for this object.
 		listCache = {};
