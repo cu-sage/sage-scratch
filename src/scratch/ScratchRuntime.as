@@ -39,7 +39,9 @@ package scratch {
 	import ui.BlockPalette;
 	import uiwidgets.DialogBox;
 	import util.*;
-	import watchers.*;
+import util.JSON;
+
+import watchers.*;
 
 public class ScratchRuntime {
 
@@ -70,6 +72,8 @@ public class ScratchRuntime {
 	//------------------------------
 
 	public function stepRuntime():void {
+//        Logger.logBrowser("runtime step called");
+//        trace("runtime step called");
 		if (projectToInstall != null && app.isOffline) {
 			installProject(projectToInstall);
 			if (saveAfterInstall) app.setSaveNeeded(true);
@@ -329,8 +333,8 @@ public class ScratchRuntime {
 	//yc2937
 	// Called when a block is dropped in the scripts pane (work area)
 	public function blockDropped(stack:Block):void {
-		trace("scratchruntime.blockdropped called");
-		trace("block dropped: " + stack.spec);
+//		trace("scratchruntime.blockdropped called");
+//		trace("block dropped: " + stack.spec);
 
 
 		// Turn on video the first time a video sensor reporter or hat block is added.
@@ -367,6 +371,7 @@ public class ScratchRuntime {
 	public function selectProjectFile():void {
 		// Prompt user for a file name and load that file.
 		var fileName:String, data:ByteArray;
+		app.setDoSave(true);
 		function fileLoadHandler(event:Event):void {
 			var file:FileReference = FileReference(event.target);
 			fileName = file.name;
@@ -393,6 +398,8 @@ public class ScratchRuntime {
 		app.getStage().updateScoreLabel();
 		app.updatePalette(true);
 		app.getPaletteBuilder().updateBlocks();
+		Logger.logBrowser("installing game done");
+		app.setDoSave(false);
 	}
 
 	public function installProjectFromData(data:ByteArray, saveForRevert:Boolean = true):void {
@@ -400,13 +407,22 @@ public class ScratchRuntime {
 		stopAll();
 		data.position = 0;
 		if (data.length < 8 || data.readUTFBytes(8) != 'ScratchV') {
+            Logger.logAll("first branch")
 			data.position = 0;
 			newProject = new ProjectIO(app).decodeProjectFromZipFile(data);
+			if (app.getMode() == 'PLAY') {
+				trace ("Detect PLAY mode, the scripts would not be loaded");
+				newProject.deleteAllScripts();
+			}
+			// uncomment it to see what is loading in the scratch
+			// trace(util.JSON.stringify(newProject));
 			if (!newProject) {
+				Logger.logAll("project load failed")
 				projectLoadFailed();
 				return;
 			}
 		} else {
+            Logger.logAll("second branch")
 			var info:Object;
 			var objTable:Array;
 			data.position = 0;
@@ -424,16 +440,19 @@ public class ScratchRuntime {
 		if (saveForRevert) app.saveForRevert(data, false);
 		app.extensionManager.clearImportedExtensions();
 		decodeImagesAndInstall(newProject);
+        trace("OPENING FILE app load in progress ? ="+app.loadInProgress);
+        Logger.logBrowser("OPENING FILE app load in progress ? ="+app.loadInProgress);
 	}
 
 	public function projectLoadFailed(ignore:* = null):void {
 		app.removeLoadProgressBox();
-		//DialogBox.notify('Error!', 'Project did not load.', app.stage);
+		DialogBox.notify('Error!', 'Project did not load.', app.stage);
 		app.loadProjectFailed();
 	}
 
 	public function decodeImagesAndInstall(newProject:ScratchStage):void {
-		function imagesDecoded():void { projectToInstall = newProject } // stepRuntime() will finish installation
+		function imagesDecoded():void {projectToInstall = newProject;
+		Logger.logBrowser("decode image done")} // stepRuntime() will finish installation
 		new ProjectIO(app).decodeAllImages(newProject.allObjects(), imagesDecoded);
 	}
 
@@ -465,6 +484,7 @@ public class ScratchRuntime {
 		app.extensionManager.step();
 		app.projectLoaded();
 		SCRATCH::allow3d { checkForGraphicEffects(); }
+		Logger.logBrowser("called in loading game");
 	}
 
 	SCRATCH::allow3d
@@ -1007,12 +1027,11 @@ public class ScratchRuntime {
 					if (varW && varW.isVarWatcherFor(targetObj, varName) && varW.visible) return true;
 				}
 		}
+        var w:Watcher = findReporterWatcher(data);
 		if ('reporter' == data.type) {
-			var w:Watcher = findReporterWatcher(data);
 			return w && w.visible;
 		}
 		if ('parsons' == data.type) {
-			var w:Watcher = findParsonsWatcher(data);
 //			return w && w.visible;
 			if(w != null){
 				return true;

@@ -34,7 +34,7 @@ public class Shaker {
 		sprite = s;
 	}
 
-	public function initShake(cat:int = 0) {
+	public function initShake(cat:int = 0):void{
 		var s:Sprite = this.sprite;
 		shakeTimer = new Timer(150, 10);
 		shakeTimer.addEventListener(TimerEvent.TIMER, shake);
@@ -63,14 +63,14 @@ public class Shaker {
 		this.toShake.y = this.shakerPos.y + 2*dir;
 	}
 
-	public function resetPos(e:Event) {
+	public function resetPos(e:Event):void {
 		this.toShake.x = this.shakerPos.x;
 		this.toShake.y = this.shakerPos.y;
 		shakeTimer.removeEventListener(TimerEvent.TIMER, shake);
 		shakeTimer.removeEventListener(TimerEvent.TIMER_COMPLETE, resetPos);
 	}
 
-	public function changeColor() {
+	public function changeColor():void {
 		afterColorTimer();
 		colorTimer = new Timer(500, 3);
 		colorTimer.start();
@@ -78,7 +78,7 @@ public class Shaker {
 		colorTimer.addEventListener(TimerEvent.TIMER_COMPLETE, endChangeColor);
 	}
 
-	private function afterColorTimer(evt:TimerEvent = null) {
+	private function afterColorTimer(evt:TimerEvent = null):void{
 		this.toShake = this.sprite;
 		var catText:TextField = this.toShake.getChildAt(0) as TextField;
 		if (toggle++ % 2 == 0) {
@@ -95,7 +95,7 @@ public class Shaker {
 		}
 	}
 
-	private function endChangeColor(e:Event = null) {
+	private function endChangeColor(e:Event = null):void{
 		if (colorTimer && colorTimer.hasEventListener(TimerEvent.TIMER))
 			colorTimer.removeEventListener(TimerEvent.TIMER, afterColorTimer);
 		if (colorTimer && colorTimer.hasEventListener(TimerEvent.TIMER_COMPLETE))

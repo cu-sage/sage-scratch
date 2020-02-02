@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "swf",
+      "request": "launch",
+      "name": "Launch SWF"
+    },
+    {
+      "type": "swf",
+      "request": "attach",
+      "name": "Attach SWF"
+    }
+  ]
+}

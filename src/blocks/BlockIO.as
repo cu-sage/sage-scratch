@@ -54,22 +54,59 @@ public class BlockIO {
 		return result;
 	}
 
+	public static function stackToArrayOnlySubstacks(b:Block):Array {
+		// Return an array structure representing this entire stack.
+
+		if (b == null) return null;
+		var result:Array = [];
+		while (b != null) {
+			for each (var block:Block in blockToArrayOnlySubstacks(b)) {
+				result.push(block);
+			}
+			b = b.nextBlock;
+		}
+
+		return result;
+	}
+
+	public static function blockToArrayOnlySubstacks(b:Block):Array{
+
+		var result:Array = [b];
+		if (b.base.canHaveSubstack1()){
+			for each (var block:Block in stackToArrayOnlySubstacks(b.subStack1)) {
+				result.push(block);
+			}
+		}
+		if (b.base.canHaveSubstack2()){
+			for each (var block2:Block in stackToArrayOnlySubstacks(b.subStack2)) {
+				result.push(block2);
+			}
+		}
+
+		return result;
+
+	}
+
 	public static function arrayToStack(cmdList:Array, forStage:Boolean = false, blockIds:Array = null):Block {
 		// Return the stack represented by an array structure.
 		var topBlock:Block, lastBlock:Block;
 		var idx:int = 0;
 		if (blockIds != null && blockIds.length == 0) blockIds = null;
+		trace("length of command ",cmdList.length)
 		for each (var cmd:Array in cmdList) {
 			// for cloned (duplicated) blocks: remove parent blockId(s) from cmd
 			if (blockIds != null) {
 				// first element in cmd is a block ID - must be removed to render image
 				if (cmd[0] == blockIds[idx]) cmd.shift();
 				// blocks are being loaded from saved JSON - must retrieve original block IDs
-				else cmd.unshift(blockIds[idx]);
+				else if(blockIds[idx] !== undefined){
+					cmd.unshift(blockIds[idx]);
+                }
 				idx++;
 			}
 			var b:Block = null;
 			//try { b = arrayToBlock(cmd, '', forStage) } catch (e:*) { b = new Block('undefined') }
+            trace("processing ", cmd, "length ",cmd.length)
 			b = arrayToBlock(cmd, '', forStage);
 			if (topBlock == null) topBlock = b;
 			if (lastBlock != null) lastBlock.insertBlock(b);
@@ -108,12 +145,19 @@ public class BlockIO {
 	private static function arrayToBlock(cmd:Array, undefinedBlockType:String, forStage:Boolean = false):Block {
 		// Make a block from an array of form: <op><arg>*
 		var blockId:String = null;
-		if (UIDUtil.isUID(cmd[0])) blockId = cmd.shift(); // remove block ID from cmd if present
+		if (UIDUtil.isUID(cmd[0])){
+            trace(cmd[0],UIDUtil.isUID(cmd[0]),"shifted")
+            blockId = cmd.shift(); // remove block ID from cmd if present
+		}
 
 		if (cmd[0] == 'getUserName') Scratch.app.usesUserNameBlock = true;
-
+		// convert special block like procedure definition
 		var special:Block = specialCmd(cmd, forStage);
-		if (special) { special.fixArgLayout(); return special }
+		if (special) {
+			special.fixArgLayout();
+			trace("special command processed, ",cmd[0])
+			return special
+		}
 
 		var b:Block;
 		b = convertOldCmd(cmd);
@@ -126,6 +170,7 @@ public class BlockIO {
 			cmd.splice(0, 1);
 		} else {
 			var spec:Array = specForCmd(cmd, undefinedBlockType);
+			trace("spec",spec)
 			var label:String = spec[0];
 			if(forStage && spec[3] == 'whenClicked') label = 'when Stage clicked';
 			//b = new Block(label, spec[1], Specs.blockColor(spec[2]), spec[3]);
@@ -168,6 +213,7 @@ public class BlockIO {
 		// Return the block specification for the given command.
 		var op:String = cmd[0];
 		if (op == '\\\\') op = '%'; // convert old Squeak modulo operator
+		trace(cmd," length",cmd.length,"command op is",op)
 		for each (var entry:Array in Specs.commands) {
 			if (entry[3] == op) return entry;
 		}

@@ -71,6 +71,12 @@ public class Interpreter {
 	public var turboMode:Boolean = false;
 	public var sageDesignMode:Boolean = false;
 	public var sagePlayMode:Boolean = false;
+	public var isStudent:Boolean = true;
+	public var preciseMode:Boolean = true;
+	public var freeMode:Boolean = false;
+    public var studentParsonsMode:Boolean = false;
+	public var isCvg:Boolean = false;
+	public var gameType:String = "";
 
 	private var app:Scratch;
 	private var primTable:Dictionary;		// maps opcodes to functions

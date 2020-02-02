@@ -75,12 +75,16 @@ public class StagePart extends UIPart {
     private var cutoff1Label:TextField;
     private var cutoff2Label:TextField;
 
+	// feedback
+	private var feedbackLabel:TextField;
+
 	public function StagePart(app:Scratch) {
 		this.app = app;
 		outline = new Shape();
 		addChild(outline);
 		addTitleAndInfo();
 		addRunStopButtons();
+		addPlaySolutionButton();
 		addTurboIndicator();
 		addSageDesignIndicator();
 		addSagePlayIndicator();
@@ -150,7 +154,8 @@ public class StagePart extends UIPart {
 
 	public function refresh():void {
 		readouts.visible = app.editMode;
-		projectTitle.visible = app.editMode;
+		// projectTitle.visible = app.editMode;
+		projectTitle.visible = false;
 		projectInfo.visible = app.editMode;
 		stageSizeButton.visible = app.editMode;
 		turboIndicator.visible = app.interp.turboMode;
@@ -158,11 +163,19 @@ public class StagePart extends UIPart {
 		sagePlayIndicator.visible = app.interp.sagePlayMode;
 		fullscreenButton.visible = !app.isSmallPlayer;
 
-		pointsLabel.visible = !app.interp.sageDesignMode;
-		messageLabel.visible = !app.interp.sageDesignMode;
-        maxScoreLabel.visible = !app.interp.sageDesignMode;
-        cutoff1Label.visible = !app.interp.sageDesignMode;
-        cutoff2Label.visible = !app.interp.sageDesignMode;
+		// clear out
+		pointsLabel.visible = false;
+		messageLabel.visible = false;
+		maxScoreLabel.visible = false;
+		cutoff1Label.visible = false;
+		cutoff2Label.visible = false;
+
+//		pointsLabel.visible = !app.interp.sageDesignMode;
+//		messageLabel.visible = !app.interp.sageDesignMode;
+//      maxScoreLabel.visible = !app.interp.sageDesignMode;
+//      cutoff1Label.visible = !app.interp.sageDesignMode;
+//      cutoff2Label.visible = !app.interp.sageDesignMode;
+
 		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
 
 		if (app.editMode) {
@@ -261,29 +274,46 @@ public class StagePart extends UIPart {
 		maxScoreLabel = getScoreLabel(fmt2, "Proficient: ", Scratch.app.maxScore, 60, 4);
         cutoff2Label = getScoreLabel(fmt2, "Developing: ", Scratch.app.cutoff2, 60, 24);
         cutoff1Label = getScoreLabel(fmt2, "Basic: ", Scratch.app.cutoff1, 60, 44);
+		// feedbackLabel = getFeedbackLabel(fmt2);
         addChild(pointsLabel);
 		addChild(messageLabel);
         addChild(maxScoreLabel);
         addChild(cutoff1Label);
         addChild(cutoff2Label);
+		// addChild(feedbackLabel);
 	}
 
-	private function getPointsLabel(fmt):TextField {
-		var label = makeLabel("Points: " + Scratch.app.getPoints().toString(), fmt);
+	private function getPointsLabel(fmt:TextFormat):TextField {
+		var label:TextField = makeLabel("Points: " + Scratch.app.getPoints().toString(), fmt);
 		label.x = 325;
 		label.y = topBarHeight/2 - 11;
 		return label
 	}
 
-	private function getMessageLabel(fmt):TextField {
-		var label = makeLabel("Hey! Let's start solving!", fmt);
+	private function getFeedbackLabel(fmt:TextFormat):TextField {
+		var label:TextField = makeLabel("Feedback" , fmt);
+		label.x = 160;
+		label.y = 42;
+		return label
+	}
+
+	public function updateFeedbackLabel(message:String):void {
+		feedbackLabel.text = message;
+	}
+
+	private function getMessageLabel(fmt:TextFormat):TextField {
+		var label:TextField = makeLabel("Hey! Let's start solving!", fmt);
 		label.x = 170;
 		label.y = 2;
 		return label
 	}
 
+	public function getMessageLabelText():String {
+		return messageLabel.text;
+	}
+
     private function getScoreLabel(fmt:TextFormat, str:String, score:int, x:int, y:int):TextField {
-        var label = makeLabel(str + score.toString(), fmt);
+        var label:TextField = makeLabel(str + score.toString(), fmt);
         label.x = x;
         label.y = y;
         return label
@@ -295,12 +325,18 @@ public class StagePart extends UIPart {
 		cutoff1Label.text = "Basic: " + Scratch.app.cutoff1.toString();
     }
 
-
 	public function updatePointsLabel():void {
 		pointsLabel.text = "Points: " + Scratch.app.getPoints().toString();
 	}
 
 	public function updateMessageLabel(message:String):void {
+        turboIndicator = new TextField();
+		turboIndicator.defaultTextFormat = new TextFormat(CSS.font, 11, CSS.buttonLabelOverColor, true);
+		turboIndicator.autoSize = TextFieldAutoSize.LEFT;
+		turboIndicator.selectable = false;
+		turboIndicator.text = message;
+		turboIndicator.visible = false;
+		addChild(turboIndicator);
 		messageLabel.text = message;
 	}
 
@@ -420,6 +456,13 @@ public class StagePart extends UIPart {
 		addChild(stopButton);
 	}
 
+	private function addPlaySolutionButton():void {
+		function startAll(b:IconButton):void { playButtonPressedSols(b.lastEvent) }
+		var runButton2:IconButton = new IconButton(startAll, 'greenflag');
+		runButton2.actOnMouseUp();
+		addChild(runButton2);
+	}
+
 	private function addFullScreenButton():void {
 		function toggleFullscreen(b:IconButton):void {
 			app.setPresentationMode(b.isOn());
@@ -520,6 +563,25 @@ public class StagePart extends UIPart {
 		playButton.addChild(userNameWarning);
 
 		userNameWarning.visible = false; // Don't show this by default
+	}
+
+	public function playButtonPressedSols(evt:MouseEvent):void {
+		if(app.loadInProgress) {
+			stopEvent(evt);
+			return;
+		}
+
+		// Mute the project if it was started with the control key down
+		SoundMixer.soundTransform = new SoundTransform((evt && evt.ctrlKey ? 0 : 1));
+
+		if (evt && evt.shiftKey) {
+			app.toggleTurboMode();
+			return;
+		}
+
+		stopEvent(evt);
+		//app.runtime.startGreenFlags(firstTime);
+		app.playSolution();
 	}
 
 	public function playButtonPressed(evt:MouseEvent):void {

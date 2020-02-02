@@ -512,7 +512,7 @@ public class BlockMenus implements DragClient {
 		else // SAGE restrict in palette
 		{
 			var category:int = app.getPaletteBuilder().getBlockCategory(block.spec);
-			if(app.interp.sageDesignMode && app.getPaletteBuilder().paletteIncluded(category))
+			if(app.interp.sageDesignMode && app.getPaletteBuilder().paletteIncluded(category) && !app.interp.gameType == "parsons")
 			{
 				if(app.getPaletteBuilder().blockLabelCategoryIncluded(block.spec, category))
 					m.addItem('exclude', block.sageExclude);

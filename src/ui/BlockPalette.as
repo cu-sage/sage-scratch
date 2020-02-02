@@ -28,18 +28,27 @@ package ui {
 
 	import blocks.Block;
 	import interpreter.Interpreter;
-	import uiwidgets.*;
+
+import mx.utils.ObjectUtil;
+
+import uiwidgets.*;
 	import scratch.ScratchObj;
 	import scratch.ScratchComment;
-	
 
 import flash.events.Event;
+
+import uiwidgets.ScriptsPane;
+
+import util.Logger;
 
 
 public class BlockPalette extends ScrollFrameContents {
 
 	public const isBlockPalette:Boolean = true;
-	public var hints:Hints = new Hints();
+	public const hints:Hints = new Hints();
+	private var nextAutoHintTime:Date = null;
+	public var scriptsPane:ScriptsPane;
+
 
 	public function BlockPalette():void {
 		super();
@@ -76,7 +85,7 @@ public class BlockPalette extends ScrollFrameContents {
 		if (b) {
 
 			if (Scratch.app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_SCRIPTS_PANE) {
-				obj.allBlocksDo(function(b:Block):void {
+				b.allBlocksDo(function(b:Block):void {
 					trace ("dragged from scripts pane to palette: " + b.spec);
 
 					//sm4241 - parsons logic
@@ -84,6 +93,23 @@ public class BlockPalette extends ScrollFrameContents {
 					//Scratch.app.decrementPoints(b.pointValue);
 
 					// update block to hint on after deleting removed blocks
+
+					// pz2244
+					// when drag back, reveal blocks in palette
+					//if (app.interp.gameType == "parsons") {
+						for (var i = 0; i < 100; i++) {
+							try {
+								var vb:Block = Scratch.app.palette.getChildAt(i) as Block;
+								trace(vb.spec);
+								if (vb.spec == b.spec && !vb.visible) {
+									trace("We are going to set " + i + " visible");
+									vb.visible = true;
+									break;
+								}
+							} catch (e) {
+							}
+						}
+					// }
 					latestHint(b);
 				});
 			}
@@ -136,4 +162,49 @@ public class BlockPalette extends ScrollFrameContents {
 		}
 	}
 
+    /*
+     * Updates hints with blocks to suggest and the nextAutoHintTime. If nextAutoHintTime is null, stop the
+     * hint timer.
+     * Currently, all given hints will be shown to the user simultaneously either on demand or automatically.
+     * We can modify this to show only a subset of the blocks as hints by providing this subset to the
+     * hints.setHints method.
+     * yli Nov, 2018
+     */
+    public function updateHints(blocksToSuggest:Array, nextAutoHintTime:Date):void {
+
+		// check if there are any updates to hints.
+		if (blocksToSuggest.length === hints.getBlocksToSuggest().length
+				&& ObjectUtil.dateCompare(this.nextAutoHintTime, nextAutoHintTime) === 0)
+		{
+            var sameBlocks:Boolean = true;
+            for each (var block:String in hints.getBlocksToSuggest()) {
+                if (blocksToSuggest.indexOf(block) < 0) {
+                    sameBlocks = false;
+					break;
+				}
+            }
+            // Do nothing if no updates at all.
+			if (sameBlocks) return;
+		}
+		hints.setBlocksToSuggest(blocksToSuggest);
+        this.nextAutoHintTime = nextAutoHintTime;
+		if (this.nextAutoHintTime) {
+            const now:Date = new Date();
+            const delay:Number = this.nextAutoHintTime.valueOf() - now.valueOf();
+            hints.startTimer(delay);
+		}
+		else {
+            hints.stopTimer();
+		}
+    }
+
+
+    /*
+     * Requests on-demand hints. Suggested blocks/categories will start shaking immediately.
+	 * yli Nov, 2018
+ 	 */
+    public function requestHints():void {
+        Logger.logAll("requestHints");
+        hints.showHints();
+    }
 }}

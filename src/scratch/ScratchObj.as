@@ -47,6 +47,8 @@ import util.JSON;
 
 import watchers.*;
 
+
+
 public class ScratchObj extends Sprite {
 
 	[Embed(source='../assets/pop.wav', mimeType='application/octet-stream')] protected static var Pop:Class;
@@ -77,6 +79,9 @@ public class ScratchObj extends Sprite {
 	public var procCache:Object = {};
 	public var varCache:Object = {};
 	public var parsonScripts:Array = [];
+	public var prevScripts:Array = [];
+	public var recentBlock:Block = null;
+	public var fromPalette:Boolean = false;
 
 	public function clearCaches():void {
 		// Clear the list, procedure, and variable caches for this object.
@@ -562,11 +567,12 @@ public class ScratchObj extends Sprite {
 	public function updateScriptsAfterTranslation():void {
 		// Update the scripts of this object after switching languages.
 		var newScripts:Array = [];
+        
 		for each (var b:Block in scripts) {
 			var blocksOnly:Array = BlockIO.stackToArray(b);
 			var blockIds:Array = [];
 			for each (var block:Array in blocksOnly) blockIds.push(block[0]);
-			for each (var block:Array in blocksOnly) block.shift();
+			for each (var block2:Array in blocksOnly) block2.shift();
 			var newStack:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
 			newStack.x = b.x;
 			newStack.y = b.y;
@@ -613,9 +619,11 @@ public class ScratchObj extends Sprite {
 			variables[i] = Scratch.app.runtime.makeVariable(varObj);
 		}
 		lists = jsonObj.lists || [];
-        if(!Scratch.app.interp.sagePlayMode){
-            scripts = jsonObj.scripts || [];
-        }
+//		trace("sage mode : "+Scratch.app.interp.sagePlayMode);
+		// Note this line makes scratch not showing script block in stage when running in play mode
+		//if(!Scratch.app.interp.sagePlayMode){
+			this.scripts = jsonObj.scripts || [];
+		//}
 		parsonScripts = util.JSON.clone(jsonObj.scripts) || [];
 		scriptComments = jsonObj.scriptComments || [];
 		sounds = jsonObj.sounds || [];
@@ -629,6 +637,11 @@ public class ScratchObj extends Sprite {
 		if (n == Number.POSITIVE_INFINITY) return true;
 		if (n == Number.NEGATIVE_INFINITY) return true;
 		return false;
+	}
+
+	public function deleteAllScripts():void {
+		scripts = [];
+		scriptComments = [];
 	}
 
 	public function instantiateFromJSON(newStage:ScratchStage):void {
@@ -647,6 +660,8 @@ public class ScratchObj extends Sprite {
 
 		// scripts
         scripts = scriptHelper(scripts);
+//		Logger.logAll(scripts.toString());
+//        trace(scripts);
 //		for (i = 0; i < scripts.length; i++) {
 //			// entries are of the form: [x y stack]
 //			var entry:Array = scripts[i];
@@ -666,6 +681,8 @@ public class ScratchObj extends Sprite {
 
 		// parsonScripts
         parsonScripts = scriptHelper(parsonScripts);
+//		Logger.logAll("parson script " + parsonScripts.toString());
+//        trace(parsonScripts);
 //		for (i = 0; i < parsonScripts.length; i++) {
 //			// entries are of the form: [x y stack]
 //			var entryp:Array = parsonScripts[i];
@@ -708,15 +725,19 @@ public class ScratchObj extends Sprite {
         for (i = 0; i < scripts.length; i++) {
             // entries are of the form: [x y stack]
             var entry:Array = scripts[i];
-            var blockIds:Array = [];
+//			trace("-------------start---------------")
+//            trace(entry);
+			var blockIds:Array = [];
             for each (var e:Array in entry[2]) {
                 if (UIDUtil.isUID(e[0])) blockIds.push(e[0]);
             }
             var blocksOnly:Array = entry[2];
-            for each (var e:Array in blocksOnly) {
-                if (UIDUtil.isUID(e[0])) e.shift();
+            for each (var e2:Array in blocksOnly) {
+                if (UIDUtil.isUID(e2[0])) e2.shift();
             }
+//			trace(blocksOnly,blockIds,isStage)
             var b:Block = BlockIO.arrayToStack(blocksOnly, isStage, blockIds);
+//            trace("-------------end---------------")
             b.x = entry[0];
             b.y = entry[1];
             scripts[i] = b;

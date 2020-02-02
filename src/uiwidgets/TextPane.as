@@ -20,23 +20,34 @@
 package uiwidgets {
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import flash.text.TextField;
+import flash.events.TextEvent;
+import flash.text.TextField;
 	import flash.text.TextFieldType;
 	import flash.text.TextFormat;
+import flash.utils.Dictionary;
+
+import util.JSON;
 
 public class TextPane extends Sprite {
 
 	private static var scrollbarWidth:int = 10;
 
+	public var typeFunction:Function;
 	public var textField:TextField;
 	public var scrollbar:Scrollbar;
+	public var clientData:*;
 
-	public function TextPane() {
+	public function TextPane(typeFunction:Function = null) {
 		addTextField();
 		scrollbar = new Scrollbar(scrollbarWidth, textField.height, scrollTextField);
 		setWidthHeight(400, 500);
 		addChild(scrollbar);
 		addEventListener(Event.ENTER_FRAME, updateScrollbar);
+		//pz2244
+		if (typeFunction != null) {
+			this.typeFunction = typeFunction;
+			addEventListener(TextEvent.TEXT_INPUT, textInputUpdate);
+		}
 	}
 
 	public function setWidthHeight(w:int, h:int):void {
@@ -72,6 +83,23 @@ public class TextPane extends Sprite {
 		var scroll:Number = textField.scrollV / textField.maxScrollV;
 		var visible:Number = textField.height / textField.textHeight;
 		scrollbar.update(scroll, visible);
+	}
+
+	private function textInputUpdate(evt:TextEvent):void {
+		clientData.num = Number(evt.text);
+		try {
+			trace(clientData.num);
+			trace(clientData.cmd);
+			trace(clientData.type);
+			typeFunction(this);
+		} catch (e) {
+			
+		}
+		
+	}
+
+	public function setNumber(n:Number):void {
+		setText(n.toString());
 	}
 
 	private function addTextField():void {

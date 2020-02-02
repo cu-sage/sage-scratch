@@ -805,6 +805,8 @@ public class ScratchStage extends ScratchObj {
 		json.writeKeyValue('question', Scratch.app.getPaletteBuilder().getQuestion());
 		json.writeKeyValue('hint', Scratch.app.getPaletteBuilder().getHint());
 		//json.writeKeyValue('comments', Scratch.app.getPaletteBuilder().comments);
+        // jw3564: add time
+        json.writeKeyValue('timeInSecond', Scratch.app.getPaletteBuilder().getInputTimeInSeconds());
         json.writeKeyValue('maxScore', Scratch.app.maxScore);
         json.writeKeyValue('cutoff1', Scratch.app.cutoff1);
         json.writeKeyValue('cutoff2', Scratch.app.cutoff2);
@@ -871,7 +873,6 @@ public class ScratchStage extends ScratchObj {
 				}
 			}
 		}
-
 		// instantiate lists, variables, scripts, costumes, and sounds
 		for each (var scratchObj:ScratchObj in allObjects()) {
 			scratchObj.instantiateFromJSON(this);

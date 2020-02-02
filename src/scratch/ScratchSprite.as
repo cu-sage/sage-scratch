@@ -40,6 +40,11 @@ import flash.utils.*;
 
 public class ScratchSprite extends ScratchObj {
 
+	public var initX:Number;
+	public var initY:Number;
+	public var initDirection:Number;
+	public var initRotationStyle:String;
+
 	public var scratchX:Number;
 	public var scratchY:Number;
 	public var direction:Number = 90;
@@ -177,6 +182,19 @@ public class ScratchSprite extends ScratchObj {
 		x = 240 + Math.round(scratchX);
 		y = 180 - Math.round(scratchY);
 		updateBubble();
+	}
+
+	public function setInitSprite():void{
+		setScratchXY(initX, initY);
+		setRotationStyle(initRotationStyle);
+		setDirection(initDirection);
+	}
+
+	public function setInitXY(newX:Number, newY:Number, theDirection:Number, rotationStyle:String):void {
+		initX = newX;
+		initY = newY;
+		initRotationStyle = rotationStyle;
+		initDirection = theDirection;
 	}
 
 	static private var stageRect:Rectangle = new Rectangle(0, 0, 480, 360);
@@ -659,9 +677,13 @@ public class ScratchSprite extends ScratchObj {
 
 	public override function readJSON(jsonObj:Object):void {
 		super.readJSON(jsonObj);
+		initX = jsonObj.scratchX;
+		initY = jsonObj.scratchY;
 		scratchX = jsonObj.scratchX;
 		scratchY = jsonObj.scratchY;
 		scaleX = scaleY = jsonObj.scale;
+		initDirection = jsonObj.direction;
+		initRotationStyle = jsonObj.rotationStyle;
 		direction = jsonObj.direction;
 		rotationStyle = jsonObj.rotationStyle;
 		isDraggable = jsonObj.isDraggable;

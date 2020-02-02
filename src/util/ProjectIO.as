@@ -32,6 +32,8 @@ import flash.events.*;
 import flash.net.URLLoader;
 import flash.utils.*;
 
+import mx.logging.Log;
+
 import scratch.*;
 
 import sound.WAVFile;
@@ -152,9 +154,13 @@ public class ProjectIO {
 			if (fName.slice(-4) == '.mp3') sounds[fIndex] = contents;
 			if (fName.slice(-5) == '.json') jsonData = contents.readUTFBytes(contents.length);
 		}
+		// uncomment it to see what is loading in the scratch
+		// Logger.logBrowser(jsonData)
 		if (jsonData == null) return null;
 		var jsonObj:Object = util.JSON.parse(jsonData);
-		if (jsonObj['children']) { // project JSON
+        trace("the content of jsonObject"+jsonObj['children']);
+		if (jsonObj['children']) { // project JSON /
+            Logger.logBrowser("first branch decode zipfile")
 			var proj:ScratchStage = new ScratchStage();
 			proj.readJSON(jsonObj);
 			if (proj.penLayerID >= 0) proj.penLayerPNG = images[proj.penLayerID]
@@ -163,13 +169,14 @@ public class ProjectIO {
 			return proj;
 		}
 		if (jsonObj['direction'] != null) { // sprite JSON
+            Logger.logBrowser("second branch decode zipfile")
 			var sprite:ScratchSprite = new ScratchSprite();
 			sprite.readJSON(jsonObj);
 			sprite.instantiateFromJSON(app.stagePane)
 			installImagesAndSounds([sprite]);
 			return sprite;
 		}
-		return null;
+		return null; // possible cause
 	}
 
 	private function integerName(s:String):String {
@@ -203,6 +210,7 @@ public class ProjectIO {
 
 	public function decodeAllImages(objList:Array, whenDone:Function, fail:Function = null):void {
 		// Load all images in all costumes from their image data, then call whenDone.
+        Logger.logBrowser("decoding images");
 		function imageDecoded():void {
 			for each (var o:* in imageDict) {
 				if (o == 'loading...') return; // not yet finished loading
@@ -243,6 +251,7 @@ public class ProjectIO {
 			if ((c.textLayerData != null) && (c.textLayerBitmap == null)) decodeImage(c.textLayerData, imageDict, imageDecoded, decodeError);
 		}
 		imageDecoded(); // handles case when there were no images to load
+        Logger.logBrowser("end of image loading")
 	}
 
 	private function decodeImage(imageData:ByteArray, imageDict:Dictionary, doneFunction:Function, fail:Function):void {

@@ -33,6 +33,7 @@ package uiwidgets {
 	import flash.geom.Rectangle;
 
 import ui.Hints;
+import ui.PaletteSelector;
 import ui.media.MediaInfo;
 
 public class ScriptsPane extends ScrollFrameContents {
@@ -56,6 +57,7 @@ public class ScriptsPane extends ScrollFrameContents {
 	private var nearestTarget:Array = [];
 	private var feedbackShape:BlockShape;
 	public var hints:Hints = new Hints();
+	private var selector:PaletteSelector;
 
 	public function ScriptsPane(app:Scratch) {
 		this.app = app;
@@ -93,6 +95,12 @@ public class ScriptsPane extends ScrollFrameContents {
 		addChild(commentLines);
 		viewedObj = obj;
 		if (viewedObj != null) {
+
+			if(app.interp.sagePlayMode){
+				viewedObj.scripts = []
+				viewedObj.scriptComments = []
+			}
+
 			var blockList:Array = viewedObj.allBlocks();
 			for each (var b:Block in viewedObj.scripts) {
 				b.cacheAsBitmap = true;
@@ -370,6 +378,11 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 	/* Dropping */
 
 	public function handleDrop(obj:*):Boolean {
+
+		viewedObj.fromPalette = false;
+		viewedObj.recentBlock = null;
+
+
 		trace("scriptspane.handledropped called")
 		var localP:Point = globalToLocal(new Point(obj.x, obj.y));
 
@@ -385,6 +398,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		var b:Block = obj as Block;
 
 		if (b) {
+	        viewedObj.recentBlock = b;
 			// update latest block to account for new block added
 			var latestBlock:Block = b.updateLatest(b.bottomBlock());
 			// see if a hint can be issued based on the current latest block
@@ -393,10 +407,29 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 			latestHint.checkHint();
 
 			// yc2937 if block was dragged from palette to scripts pane, increment points
-			if (app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_PALETTE) {
+			if ( (!app.interp.studentParsonsMode && app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_PALETTE )
+				 || (app.interp.studentParsonsMode && app.blockDraggedFrom == Scratch.K_DRAGGED_FROM_PALETTE && app.scriptsPart.getPaletteSelector().selectedCategory == Specs.parsonsCategory)){
 
+		        viewedObj.fromPalette = true;
+				// trace(viewedObj.allBlocks().toString());
 				b.allBlocksDo(function (b:Block):void {
 					trace("dragged from palette to scripts pane: " + b.spec);
+
+					// pz2244
+					// TODO: need to modify for multiple blocks
+					if (app.interp.preciseMode && app.scriptsPart.getPaletteSelector().selectedCategory == Specs.parsonsCategory) {
+						for (var i = 0; i < 100; i++) {
+							try {
+								var vb:Block = app.palette.getChildAt(i) as Block;
+								if (vb.spec == b.spec && vb.visible) {
+									trace("We are going to set " + i + " invisible");
+									vb.visible = false;
+									break;
+								}
+							} catch (e) {
+							}
+						}
+					}
 
 					//Scratch.app.incrementPoints(b.pointValue);
 					//b.changePointArgToLabel();
@@ -423,13 +456,15 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		}
 		saveScripts();
 		//sm4241 - parsons logic here
-		app.parsonsLogic();
+		if(app.interp.sagePlayMode){
+			app.parsonsLogic(true);
+		}
+
 		//b.changePointArgToLabel()
 		updateSize();
 		if (c) fixCommentLayout();
 		return true;
 	}
-
 
 
 	private function addStacksFromBackpack(info:MediaInfo, dropP:Point):void {

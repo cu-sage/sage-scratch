@@ -30,6 +30,7 @@ package ui {
 	import translation.Translator;
 	import scratch.PaletteBuilder;
 	import uiwidgets.*;
+	import util.*;
 
 public class PaletteSelector extends Sprite {
 
@@ -41,11 +42,11 @@ public class PaletteSelector extends Sprite {
 		true, // placeholder
 		true, true, true, true, true, // column 1
 		true, true, true, true, true, true, true, true]; // column 2
-		
+
 	public var sageBlockIncludes:Dictionary;
 
 	public var selectedCategory:int = 0;
-	
+
 	private var app:Scratch;
 	private var paletteItems:Array;
 
@@ -57,26 +58,32 @@ public class PaletteSelector extends Sprite {
 	}
 
 	public static function strings():Array { return categories }
-	
-	public function updateTranslation():void { 
+
+	public function updateTranslation():void {
 		initCategories();
-		updateCategorySelection(); 
+		updateCategorySelection();
 	}
-	
-	// update palette selected if entering play mode on unSageSelected palette 
+
+	// update palette selected if entering play mode on unSageSelected palette
 	private function updateCategorySelection():void {
-		if(app.interp.sagePlayMode && !sageCategories[selectedCategory])
-		{
-			for(var i:int=1; i<sageCategories.length; ++i)
-				if(sageCategories[i])
-				{
-					select(i);
-					break;
-				}
+		if (app.interp.studentParsonsMode && app.interp.gameType == "parsons" && !app.interp.isCvg) {
+			select(Specs.parsonsCategory);
+			return;
 		}
+		if(app.interp.sagePlayMode && !sageCategories[selectedCategory]) {
+            for (var i:int = 1; i < sageCategories.length; ++i) {
+                if (sageCategories[i]) {
+                    select(i);
+                    break;
+                }
+            }
+        }
 	}
 
 	public function select(id:int, shiftKey:Boolean = false):void {
+		if (app.interp.isStudent && app.interp.gameType == "parsons") {
+			id = Specs.parsonsCategory;
+        }
 		for (var i:int = 0; i < numChildren; i++) {
 			var item:PaletteSelectorItem = getChildAt(i) as PaletteSelectorItem;
 			item.setSelected(item.categoryID == id);
@@ -85,23 +92,24 @@ public class PaletteSelector extends Sprite {
 		selectedCategory = id;
 		app.getPaletteBuilder().showBlocksForCategory(selectedCategory, (id != oldID), shiftKey);
 	}
-	
+
 	public function sageSelect(pLabel:String, checkbox:IconButton):void {
 		var entry:Array = Specs.entryForCategory(pLabel);
 		sageCategories[entry[0]] = !sageCategories[entry[0]];
 		var offCount:int = 0;
-		for(var i:int=0; i<sageCategories.length; ++i)
-			if(!sageCategories[i])
-				++offCount;
-		if(offCount == sageCategories.length)
-		{
+		for (var i:int=0; i<sageCategories.length; ++i) {
+            if (!sageCategories[i]) {
+                ++offCount;
+            }
+        }
+		if (offCount == sageCategories.length) {
 			sageCategories[entry[0]] = !sageCategories[entry[0]];
 			checkbox.turnOn();
 			DialogBox.notify('SAGE Alert', 'At least one palette must be selected');
 		}
 		else { // update BlockPalette & ScriptsPane
 			app.getStage().refresh();
-			app.getViewedObject().updateScriptsAfterTranslation(); // resest ScriptsPane
+			app.getViewedObject().updateScriptsAfterTranslation(); // reset ScriptsPane
 		}
 	}
 
@@ -116,21 +124,22 @@ public class PaletteSelector extends Sprite {
 		while (numChildren > 0) removeChildAt(0); // remove old contents
 
 		var paletteItems:Array = []; // for hinting
-
-//		if(app.interp.sagePlayMode){
-//			sageCategories[13] = true;
-//			for(var i:int=1; i<sageCategories.length-1; ++i){
-//				sageCategories[i] = false;
-//			}
-//		}
-
-		for (i = 0; i < categories.length; i++) {
+		var categoriesNum:Number = categories.length;
+		if (app.interp.isCvg) categoriesNum -= 1;
+		for (i = 0; i < categoriesNum; i++) {
 			if (i == numberOfRows) {
 				x = (w / 2) - 3;
 				y = startY;
 			}
 			var entry:Array = Specs.entryForCategory(categories[i]);
-			var item:PaletteSelectorItem = new PaletteSelectorItem(entry[0], Translator.map(entry[1]), entry[2], app.interp.sageDesignMode, app.interp.sagePlayMode, sageCategories[entry[0]]);
+			var canBeSelected:Boolean = true;
+			if (!app.interp.sageDesignMode && app.interp.studentParsonsMode && i != categoriesNum - 1 && !app.interp.isCvg) {
+				canBeSelected = false;
+			}
+			if (app.interp.freeMode && i == categoriesNum - 1 && !app.interp.isCvg) {
+				canBeSelected = false;
+			}
+			var item:PaletteSelectorItem = new PaletteSelectorItem(entry[0], Translator.map(entry[1]), entry[2], app.interp.sageDesignMode, app.interp.sagePlayMode, sageCategories[entry[0]], app.interp.gameType == "parsons", canBeSelected);
 			itemH = item.height;
 			item.x = x;
 			item.y = y;
@@ -150,11 +159,11 @@ public class PaletteSelector extends Sprite {
 		g.beginFill(0xFFFF00, 0); // invisible (alpha = 0) rectangle used to set size
 		g.drawRect(0, 0, w, h);
 	}
-	
-	
+
+
 
 	// return PaletteItems for use in hinting
-	public function getPaletteItems() {
+	public function getPaletteItems():Array {
 		return this.paletteItems;
 	}
 

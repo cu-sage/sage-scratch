@@ -72,7 +72,7 @@ public class JSON {
 		skipWhiteSpaceAndComments();
 		var ch:String = src.peek();
 		if (("0" <= ch) && (ch <= "9")) return readNumber(); // common case
-
+//		trace(ch);
 		switch(ch) {
 		case '"': return readString();
 		case "[": return readArray();

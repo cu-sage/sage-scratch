@@ -59,15 +59,15 @@ public class Hints extends ScrollFrameContents {
 
 	private static var toHintOn:Block; // left-column block (used to generate hint)
 
-	private var pb:PaletteBuilder = Scratch.app.paletteBuilder;
-	private static var catToShake:PaletteSelectorItem;
-	private static var blockToShake:Block;
+	private var pb:PaletteBuilder = Scratch.app.getPaletteBuilder();
+	private var catToShake:PaletteSelectorItem;
+	private var blockToShake:Block;
 
-	private static var blocksToSuggest:Array = [];
+	private var blocksToSuggest:Array = [];
 	// 5-second delay before category hint is issued (if available)
-	private static var categoryTimer:Timer = new Timer(5000);
+	private var categoryTimer:Timer = new Timer(5000);
 	// 5-second delay before block hint is issued (if available)
-	private static var blockTimer:Timer = new Timer(5000);
+	private var blockTimer:Timer = new Timer(5000);
 	private var catPos:Point = null;
 	private var blockPos:Point = null;
 
@@ -146,7 +146,82 @@ public class Hints extends ScrollFrameContents {
 		return str.substring(1, str.length - 1);
 	}
 
-	public function checkHint() {
+    /*
+ 	 * Stops categoryTimer and blockTimer.
+	 * yli Nov, 2018
+ 	 */
+    public function stopTimer():void {
+        if (categoryTimer && categoryTimer.hasEventListener(TimerEvent.TIMER)) {
+            categoryTimer.stop();
+            categoryTimer.reset();
+            categoryTimer.removeEventListener(TimerEvent.TIMER, afterCategoryTimer);
+        }
+		if (blockTimer && blockTimer.hasEventListener(TimerEvent.TIMER)) {
+            blockTimer.stop();
+            blockTimer.reset();
+            blockTimer.removeEventListener(TimerEvent.TIMER, afterBlockTimer);
+		}
+    }
+
+	/*
+	 * Sets delay of categoryTimer.
+	 * The shake event will take place after delay milliseconds if hints are available.
+	 * Note if delay is lower than 100 milliseconds, this will start shaking categories/blocks
+	 * right away instead of starting a timer, because a delay lower than 16.6 milliseconds
+	 * causes runtime problems.
+	 * yli Nov, 2018
+	 */
+    public function startTimer(delay:Number):void {
+        if (blocksToSuggest && blocksToSuggest.length > 0) {
+            if (delay < 100) {
+                // start shaking immediately
+                shakeCategory();
+            }
+            else {
+                // set timer and then call shake event
+                startCategoryTimerWithDelay(delay);
+            }
+        }
+    }
+
+    /*
+ 	 * Show hints immediately if there are any blocksToSuggest.
+ 	 * yli Nov, 2018
+ 	 */
+    public function showHints():void {
+        startTimer(0);
+    }
+
+    /*
+ 	 * Returns blocksToSuggest.
+ 	 */
+	public function getBlocksToSuggest():Array {
+		return blocksToSuggest;
+	}
+    /*
+ 	 * Sets blocksToSuggest.
+  	 */
+    public function setBlocksToSuggest(blocksToSuggest:Array):void {
+        if (blocksToSuggest && blocksToSuggest.length > 0) {
+            this.blocksToSuggest = blocksToSuggest;
+        }
+        else {
+            this.blocksToSuggest = [];
+        }
+    }
+
+    /*
+     * Starts the category timer. The timer will go off in delay milliseconds.
+     * yli Nov, 2018
+     */
+    private function startCategoryTimerWithDelay(delay:Number):void {
+        stopTimer();
+        categoryTimer = new Timer(delay);
+        categoryTimer.addEventListener(TimerEvent.TIMER, afterCategoryTimer);
+        categoryTimer.start();
+    }
+
+	public function checkHint():void {
 		// reset hinting timers if user takes any action
 		if (!Scratch.app.stage.hasEventListener(MouseEvent.CLICK)) Scratch.app.stage.addEventListener(MouseEvent.CLICK, stopCatHinting);
 		if (!Scratch.app.stage.hasEventListener((MouseEvent.MOUSE_DOWN))) Scratch.app.stage.addEventListener(MouseEvent.MOUSE_DOWN, stopCatHinting);
@@ -177,7 +252,7 @@ public class Hints extends ScrollFrameContents {
 		categoryTimer.start();
 	}
 
-	private function stopCatHinting(evt:MouseEvent) {
+	private function stopCatHinting(evt:MouseEvent):void {
 		if (categoryTimer && categoryTimer.hasEventListener(TimerEvent.TIMER)) {
 			categoryTimer.stop();
 			categoryTimer.reset();
@@ -266,7 +341,7 @@ public class Hints extends ScrollFrameContents {
 	/* If hint has to be issued in a category different from the current one,
 	 *  wait until the user clicks on the appropriate category for the hint and then
 	 *  shake the relevant block. */
-	private function shakeBlock() {
+	private function shakeBlock():void {
 		for each (var opStr:String in blocksToSuggest) {
 			blockToShake = pb.getBlockByOp(opStr);
 			if (blockToShake) {

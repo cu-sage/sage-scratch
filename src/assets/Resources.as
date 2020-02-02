@@ -141,6 +141,7 @@ public class Resources {
 	[Embed(source='UI/misc/removeItem.png')] private static const removeItem:Class;
 	[Embed(source='UI/misc/speakerOff.png')] private static const speakerOff:Class;
 	[Embed(source='UI/misc/speakerOn.png')] private static const speakerOn:Class;
+    [Embed(source='UI/misc/star.png')] private static const star:Class;
 
 	// New Backdrop Buttons
 	[Embed(source='UI/newbackdrop/cameraSmallOff.png')] private static const cameraSmallOff:Class;

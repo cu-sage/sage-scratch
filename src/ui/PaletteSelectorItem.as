@@ -41,17 +41,18 @@ public class PaletteSelectorItem extends Sprite {
 	private var color:uint;
 	private var enabled:Boolean;
 
-	public function PaletteSelectorItem(id: int, s:String, c:uint, sageDesignMode:Boolean, sagePlayMode:Boolean, sageSelected:Boolean) {
+	public function PaletteSelectorItem(id: int, s:String, c:uint, sageDesignMode:Boolean, sagePlayMode:Boolean, sageSelected:Boolean, isParsons:Boolean, canBeSelected:Boolean=true) {
 		isSageSelected = sageSelected;
 		enabled = !(sagePlayMode && !isSageSelected);
 		categoryID = id;
 		addLabel(s);
 		
-		if(sageDesignMode)
+		if(sageDesignMode && !isParsons){
 			addCheckbox();
+		}
 		color = c;
-		
-		if(enabled)
+
+		if(enabled && canBeSelected)
 		{
 			addEventListener(MouseEvent.MOUSE_OVER, mouseOver);
 			addEventListener(MouseEvent.MOUSE_OUT, mouseOut);

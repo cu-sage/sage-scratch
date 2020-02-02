@@ -491,7 +491,7 @@ public class ExtensionManager {
 
 	public function step():void {
 		// Poll all extensions.
-		for each (var ext:ScratchExtension in extensionDict) {
+			for each (var ext:ScratchExtension in extensionDict) {
 			if (ext.showBlocks) {
 				if (!ext.isInternal && ext.port > 0) {
 					if (ext.blockSpecs.length == 0) httpGetSpecs(ext);

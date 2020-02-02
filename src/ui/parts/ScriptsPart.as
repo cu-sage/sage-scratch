@@ -39,6 +39,7 @@ public class ScriptsPart extends UIPart {
 	private var paletteFrame:ScrollFrame;
 	private var scriptsFrame:ScrollFrame;
 	private var zoomWidget:ZoomWidget;
+    private var onDemandHint:Button;
 
 	private const readoutLabelFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor, true);
 	private const readoutFormat:TextFormat = new TextFormat(CSS.font, 12, CSS.textColor);
@@ -75,13 +76,23 @@ public class ScriptsPart extends UIPart {
 		app.scriptsPane = scriptsPane;
 
 		addChild(zoomWidget = new ZoomWidget(scriptsPane));
+
+		// Added a hint button for requesting on-demand hints -- yli 12/2018
+        addChild(onDemandHint = new Button("Hint", palette.requestHints));
+		if (!app.interp.freeMode) {
+			onDemandHint.visible = false;
+		}
 	}
 
 	public function resetCategory():void { selector.select(Specs.motionCategory) }
 
 	public function updatePalette():void {
 		selector.updateTranslation();
-		selector.select(selector.selectedCategory);
+		if (app.interp.studentParsonsMode) {
+			selector.select(Specs.parsonsCategory);
+		} else {
+			selector.select(selector.selectedCategory);
+		}
 	}
 	
 	public function getSagePalettes():Array {
@@ -156,6 +167,8 @@ public class ScriptsPart extends UIPart {
 		xyDisplay.y = spriteWatermark.y + 43;
 		zoomWidget.x = w - zoomWidget.width - 15;
 		zoomWidget.y = h - zoomWidget.height - 15;
+		onDemandHint.x = onDemandHint.width + 175;
+        onDemandHint.y = h - onDemandHint.height - 15;
 	}
 
 	private function redraw():void {

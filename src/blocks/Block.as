@@ -130,7 +130,7 @@ public class Block extends Sprite {
 	//points
 	public var pointValue:int;
 	// unique block ID
-	private var id:String;
+	public var id:String;
 
 	// hinting
 	public static var latestBlock:Block;
@@ -138,11 +138,11 @@ public class Block extends Sprite {
 	public var hints:Hints = new Hints();
 
 	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null, pointsEditable:Boolean = false, id:String = null) {
-		trace("block constructor called ---------------------------------");
 
-		trace("spec: " + spec);
-		trace("type: " + type);
-		trace("color: " + color.toString());
+//		Logger.logBrowser("block constructor called ---------------------------------");
+//        Logger.logBrowser("spec: " + spec);
+//        Logger.logBrowser("type: " + type);
+//        Logger.logBrowser("color: " + color.toString());
 
 		this.spec = Translator.map(spec);
 		this.type = type;
@@ -261,7 +261,7 @@ public class Block extends Sprite {
 			if (defaultArgs) defaultArgs.reverse();
 		}
 
-		trace("from pointdict: " + Specs.pointDict[spec]);
+//		trace("from pointdict: " + Specs.pointDict[spec]);
 		var pointVal:int = Specs.pointDict[spec];
 
 		if (Scratch.app.interp.sageDesignMode && pointsEditable) {
@@ -874,14 +874,18 @@ public class Block extends Sprite {
 	}
 
 	private function makePointLabel(pointValue:Number):Sprite {
-		var pLoad:Loader = new Loader();
-		pLoad.load(new URLRequest("http://dev.cu-sage.org/public/images/star.png"))
+//		var pLoad:Loader = new Loader();
+//		pLoad.load(new URLRequest("http://dev.cu-sage.org/public/images/star.png"))
 
-		var background = new Sprite();
-		var text = makeLabel(pointValue.toString());
+        var star:* = Resources.createBmp('star');
+
+		var background:Sprite = new Sprite();
+		var text:TextField = makeLabel(pointValue.toString());
 		text.setTextFormat(pointLabelFormat);
 		//background.addChild(t);
-		background.addChild(pLoad)
+		if (star) {
+            background.addChild(star);
+        }
 		background.addChild(text);
 		text.x = 5;
 		text.y = 2;
@@ -892,7 +896,7 @@ public class Block extends Sprite {
 
 	private function makeLabel(label:String):TextField {
 
-		trace("makelabel called");
+//		trace("makelabel called");
 		var text:TextField = new TextField();
 		text.autoSize = TextFieldAutoSize.LEFT;
 		text.selectable = false;
@@ -965,6 +969,7 @@ public class Block extends Sprite {
 
 
 	public function deleteStack():Boolean {
+
 		if (op == 'proc_declaration') {
 			return (parent as Block).deleteStack();
 		}
@@ -995,7 +1000,11 @@ public class Block extends Sprite {
 		if (top != this) x += top.width + 5;
 		app.runtime.recordForUndelete(this, x, y, 0, app.viewedObj());
 		app.scriptsPane.saveScripts();
-		app.parsonsLogic();
+
+		// run when a student moves block from scriptsPane to palette
+		if(app.interp.sagePlayMode){
+			app.parsonsLogic(false);
+		}
 		SCRATCH::allow3d { app.runtime.checkForGraphicEffects(); }
 		app.updatePalette();
 		return true;
@@ -1027,6 +1036,10 @@ public class Block extends Sprite {
 	//yc2937
 	public function objToGrab(evt:MouseEvent):Block {
 		trace("block.objtograb called");
+//		if (Scratch.app.interp.studentParsonsMode &&
+//				Scratch.app.scriptsPart.getPaletteSelector().selectedCategory != Specs.parsonsCategory) {
+//			return null;
+//		}
 		//if (isEmbeddedParameter() || isInPalette()) return duplicate(false, Scratch.app.viewedObj() is ScratchStage);
 
 		if (isInPalette()) {
@@ -1217,7 +1230,7 @@ public class Block extends Sprite {
 	}
 
 	// update latest block manipulated by user (for hinting purposes)
-	public function updateLatest(newLatest:Block, inScriptsPane = false, deleting = false):Block {
+	public function updateLatest(newLatest:Block, inScriptsPane:Boolean = false, deleting:Boolean = false):Block {
 		latestBlock = newLatest;
 		if (deleting) return latestBlock; // if deleting, don't add anything to latestBlockList
 		if (inScriptsPane) { // delete previous occurrence from list before adding to end
@@ -1233,7 +1246,7 @@ public class Block extends Sprite {
 		return latestBlock;
 	}
 
-	public function printLatest() {
+	public function printLatest() :void{
 		if (latestBlock) {
 			trace("LATEST BLOCK: " + latestBlock.op);
 		} else trace("LATEST BLOCK: null");

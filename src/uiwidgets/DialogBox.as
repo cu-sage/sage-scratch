@@ -25,8 +25,6 @@ package uiwidgets {
 	import flash.utils.Dictionary;
 	import translation.Translator;
 	import ui.parts.UIPart;
-	//import spark.components;
-	//import mx.controls.*;
 
 public class DialogBox extends Sprite {
 
@@ -39,6 +37,7 @@ public class DialogBox extends Sprite {
 	private var context:Dictionary;
 	private var title:TextField;
 	protected var buttons:Array = [];
+	protected var menuButtons:Array=[];
 	private var labelsAndFields:Array = [];
 	private var booleanLabelsAndFields:Array = [];
 	private var textLines:Array = [];
@@ -192,6 +191,21 @@ public class DialogBox extends Sprite {
 		//my_cb.addItem({data:2, label:"Two"});
 	}
 
+	public function addMenuButton(label:String, action:Function):void {
+		function doAction():void {
+			remove();
+			if (action != null && action.length==0){
+                action();
+			} else if (action != null && action.length==1) {
+				action(label);
+			}
+
+		}
+		var b:uiwidgets.Button = new uiwidgets.Button(Translator.map(label), doAction);
+		addChild(b);
+		menuButtons.push(b);
+	}
+
 	public function showOnStage(stage:Stage, center:Boolean = true):void {
 		fixLayout();
 		if (center) {
@@ -242,6 +256,12 @@ public class DialogBox extends Sprite {
 		if (fields[fieldName] != null) return fields[fieldName].text;
 		if (booleanFields[fieldName] != null) return booleanFields[fieldName].isOn();
 		return null;
+	}
+
+	public function deleteAllMenuButtons():void {
+        for (var i:int = 0; i < menuButtons.length; i++) {
+            menuButtons.removeAt(i);
+        }
 	}
 
 	public function setPasswordField(fieldName:String, flag:Boolean = true):void {
@@ -305,6 +325,13 @@ public class DialogBox extends Sprite {
 			field.y = fieldY + 1;
 			fieldY += heightPerField;
 		}
+        if (menuButtons.length > 0) {
+            for each(var button:Button in menuButtons) {
+                button.x = leftJustify ? 15 : (w-button.width) / 2;
+                button.y = fieldY;
+                fieldY += button.height + 20;
+            }
+        }
 		// widget
 		if (widget != null) {
 			widget.x = (width - widget.width) / 2;
@@ -370,6 +397,12 @@ public class DialogBox extends Sprite {
 			h += heightPerField;
 		}
 		w = Math.max(w, maxLabelWidth + maxFieldWidth + 5);
+
+		for each(var button:Button in menuButtons) {
+			w = Math.max(w, button.width);
+			h += 20 + button.height;
+		}
+
 		// widget
 		if (widget != null) {
 			w = Math.max(w, widget.width);

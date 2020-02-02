@@ -32,6 +32,8 @@ package scratch {
 	import flash.utils.*;
 	import blocks.*;
 	import extensions.*;
+	import flash.events.TextEvent;
+	import util.*;
 
 
 import org.apache.flex.collections.ArrayList;
@@ -54,9 +56,13 @@ public class PaletteBuilder {
 	private var currentCategory:int;
 
 	private var parsonsBlock:ArrayList= new ArrayList();
-	private var question:String;
-	private var hint:String;
+	private var question:String="";
+	private var hint:String="";
 	private var hintCounter:int=0;
+	private var peerFeedbackCounter:int=0; 
+
+	private var DEFAULT_TIME:String="10:00";
+	private var inputTime:String=DEFAULT_TIME;
 
 	// store all blocks for use in hinting
 	private var paletteBlocks:Array = new Array();
@@ -134,10 +140,10 @@ public class PaletteBuilder {
 
 	//sm4241 - creating dictionary of blocks included in parsons palette
 	public function getParsonsIncludedBlocks():Array {
-		var parsonsBlockArr = [];
+		var parsonsBlockArr:Array = [];
 		if (parsonsBlock.length > 0) {
-			for (var i=0; i<parsonsBlock.length; i++) {
-				var currDict = new Dictionary();
+			for (var i:int=0; i<parsonsBlock.length; i++) {
+				var currDict:Dictionary = new Dictionary();
 				var pb:Block = Block (parsonsBlock.getItemAt(i));
 				currDict['spec'] = pb.spec;
 				currDict['type'] = pb.type;
@@ -154,12 +160,13 @@ public class PaletteBuilder {
         if (parsons != null) {
             parsonsBlock = new ArrayList();
 			if (parsons.length > 0) {
-				for (var i = 0; i < parsons.length; i++) {
+				for (var i:int = 0; i < parsons.length; i++) {
 					var newBlock:Block = new Block(parsons[i]['spec'], parsons[i]['type'], parsons[i]['color'], parsons[i]['cmd']);
 					parsonsBlock.addItem(newBlock);
 				}
 			}
 		}
+		updateCheckboxes();
 	}
 
 	public function getQuestion():String {
@@ -190,6 +197,25 @@ public class PaletteBuilder {
 	public function getHintCount():int {
 		return hintCounter;
 	}
+
+	public function getPeerFeedbackCount():int {
+		return peerFeedbackCounter;
+	}
+
+    public function getInputTime():String {
+        return inputTime;
+    }
+
+    public function getInputTimeInSeconds():int {
+        var timeString: String = getInputTime();
+        var arr:Array = timeString.replace(/^\s+|\s+$/g, '').split(":");
+        var min:Number = Number(arr[0]);
+        var sec:Number = Number(arr[1]);
+        var totalTime:Number = min * 60 + sec;
+
+        return totalTime;
+    }
+
 
 	public function showBlocksForCategory(selectedCategory:int, scrollToOrigin:Boolean, shiftKey:Boolean = false):void {
 		if (app.palette == null) return;
@@ -237,35 +263,31 @@ public class PaletteBuilder {
 				var label:String = spec[0];
 				if(targetObj.isStage && spec[3] == 'whenClicked') label = 'when Stage clicked';
 
-//				var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs);
-//
-//				var showReporterCheckbox:Boolean = isCheckboxReporter(spec[3]);
 
-//				var showCheckbox:Boolean = app.interp.sageDesignMode;
-//				if (showReporterCheckbox){
-//					addReporterCheckbox(block);
-//				}else if(app.interp.sageDesignMode){
-//					addParsonsCheckbox(block);
-//				}
-//				addItem(block, true);
 
-				//sm4241- to restrict showing checkbox in play mode
 				//yc2937 make points editable if we're in design mode
+				var block:Block;
 				if (app.interp.sageDesignMode == true) {
-					var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs, true);
+					block = new Block(label, spec[1], blockColor, spec[3], defaultArgs, true);
 				}
 				else {
-					var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs);
+					block = new Block(label, spec[1], blockColor, spec[3], defaultArgs);
 				}
 				paletteBlocks.push(block); // add to array of all blocks
 
 				var showReporterCheckbox:Boolean = isCheckboxReporter(spec[3]);
 
+				//sm4241- to restrict showing checkbox in play mode
 				if (showReporterCheckbox){
 					addReporterCheckbox(block);
-				}else if(app.interp.sageDesignMode){
-					addParsonsCheckbox(block);
+				} else if(app.interp.sageDesignMode && !app.interp.freeMode){
+					if (app.interp.preciseMode) {
+						addParsonsCheckInputBox(block);
+					} else {
+						addParsonsCheckbox(block);
+					}
 				}
+
 				addItem(block, true);
 				cmdCount++;
 			} else {
@@ -327,20 +349,22 @@ public class PaletteBuilder {
 //sm4241 - render custom parson palette
 	private function showParsonsPalette():void {
 		// show creation button, hat, and call blocks
-		if(app.interp.sagePlayMode) { // we call the parsons logic
-			addItem(new Button(Translator.map('Question'), showQuestion, false, ''));
-			addItem(new Button(Translator.map('Hint'), showHint, false, ''));
-		}
+
+		// these buttons are showing on the front-end instead
+//		if(app.interp.sagePlayMode) { // we call the parsons logic
+//			addItem(new Button(Translator.map('Question'), showQuestion, false, ''));
+//			addItem(new Button(Translator.map('Hint'), showHint, false, ''));
+//		}
 
 		if(app.interp.sageDesignMode) { // we call the save project function
-			addItem(new Button(Translator.map('Question/Hint'), makeQuestion, false, ''));
+			addItem(new Button(Translator.map('Question/Hint/Time'), makeQuestion, false, ''));
 		}
 
 		var catColor:int = Specs.blockColor(Specs.parsonsColor);
 
 		if (parsonsBlock.length > 0) {
 			nextY += 5;
-			for (var i=0; i<parsonsBlock.length; i++) {
+			for (var i:int=0; i<parsonsBlock.length; i++) {
 				var pb:Block = Block (parsonsBlock.getItemAt(i));
 				if(sageIncludedBlocks[pb.spec] || pb.op=="readVariable"){
 					addItem(Block (parsonsBlock.getItemAt(i)));
@@ -350,13 +374,27 @@ public class PaletteBuilder {
 			//sm4241
 
 		//	addItem(new Button(Translator.map('Submit'), makeNewBlock, false, '/help/studio/tips/blocks/make-a-block/'));
-			if(app.interp.sageDesignMode) { // we call the save project function
-				addItem(new Button(Translator.map('Submit'), app.getCutoffScores, false, ''));
+			if(app.interp.sageDesignMode ) { // we call the save project function
+				addItem(new Button(Translator.map('Set Proficiency Scores'), app.getCutoffScores, false, ''));
+				
+				var count:int = 0;
+				if(app.viewedObj().scripts.length >= 1){
+					var currBlock:Block = app.viewedObj().scripts[0] as Block;
+					while(currBlock != null){
+						currBlock = currBlock.nextBlock;
+						count++;
+					}
+				}
+
+				if (count >= 2){
+					addItem(new Button(Translator.map('Add feedback for wrong block'), app.getInstructorFeedback, false, ''));
+				}
+//				addItem(new Button(Translator.map('Save Project'), app.submitProject, false, ''));
 			}
 			else // we call submission for Parsons function
 			{
-				//addItem(new Button(Translator.map('Comments'), getComments, false, ''));
-				addItem(new Button(Translator.map('Submit'), app.getSelfExplanation, false, ''));
+				// remove submit button in the scratch. Now the submit button is on the front-end
+//				addItem(new Button(Translator.map('Submit'), app.getSelfExplanation, false, ''));
 			}
 			nextY += 5;
 
@@ -370,6 +408,9 @@ public class PaletteBuilder {
 
 		updateCheckboxes();
 
+		if(app.getFeedback && app.interp.sagePlayMode){
+			addItem(new Button(Translator.map('explain step'), app.sendStudentFeedback, false, ''));
+		}
 	}
 
 	protected function addExtensionButtons():void {
@@ -448,21 +489,47 @@ public class PaletteBuilder {
 	}
 
 	//sm4241
-	private function makeQuestion():void {
-		function ok():void {
-			question = d.getField("Enter Question");
-			hint = d.getField("Enter Hint");
+    private function makeQuestion():void {
+        function ok():void {
+            inputTime = d.getField("Enter Time (The format should be MM:SS)");
+            var arr:Array = inputTime.replace(/^\s+|\s+$/g, '').split(":");
+            var message:DialogBox = new DialogBox(null);
+            if (arr.length != 2
+                    || (isNaN(Number(arr[0])) || Number(arr[0]) < 0 || Number(arr[0]) > 99)
+                    || (isNaN(Number(arr[1])) || Number(arr[1]) < 0 || Number(arr[1]) > 59)) {
+                message.addTitle("Setting question failed!");
+                message.addText("Invalid time input!");
+                message.addText(inputTime);
+                message.addButton("Close", null);
+                message.showOnStage(app.stage);
+				question="";
+				hint="";
+				inputTime=DEFAULT_TIME;
+            }
+            else {
+                question = d.getField("Enter Question");
+                hint = d.getField("Enter Hint");
+                message.addTitle("Setting question succeeded!");
+                var minuteString:String = arr[0] > 1 ? " minutes " : " minute ";
+                var secondString:String = arr[1] > 1 ? " seconds " : " second ";
+                message.addText("Your question is: " + question + ".\n Your hint is: " + hint +
+                        ".\n Time set for this question is: " + arr[0] + minuteString + arr[1] + secondString);
+                message.addButton("Close", null);
+				trace("Timer set correctly. The remaining time is " + getInputTimeInSeconds())
+                message.showOnStage(app.stage);
+            }
+        }
 
-		}
+        var d:DialogBox = new DialogBox(null);
+        d.addTitle('Question/Hint');
+        d.addField('Enter Question', 350, question);
+        d.addField('Enter Hint', 350, hint);
+        d.addField('Enter Time (The format should be MM:SS)', 350, inputTime);
+        d.addButton('Ok', ok);
+        d.addButton('Cancel',null);
+        d.showOnStage(app.stage);
+    }
 
-		var d:DialogBox = new DialogBox(null);
-		d.addTitle('Question/Hint');
-		d.addField('Enter Question', 350, question);
-		d.addField('Enter Hint', 350, hint);
-		d.addButton('Ok', ok);
-		d.addButton('Cancel',null);
-		d.showOnStage(app.stage);
-	}
 	//sm4241
 //	private function getComments():void {
 //		function ok():void {
@@ -493,6 +560,9 @@ public class PaletteBuilder {
 	private function showHint():void {
 		function ok():void {
 			hintCounter++;
+            Scratch.app.decrementPoints(1);
+            Scratch.app.getStage().updatePointsLabel();
+			Scratch.app.sendUpdatedPointsToServer();
 			trace(hintCounter);
 		}
 		var d:DialogBox = new DialogBox(null);
@@ -501,6 +571,18 @@ public class PaletteBuilder {
 		d.addButton('Ok', ok);
 		d.showOnStage(app.stage);
 	}
+
+	//jw3564
+	public function incrementHintCounter(numberToAdd:int = 1):void {
+		hintCounter++;
+		trace(hintCounter);
+	}
+
+	public function incrementPeerFeedbackCounter(numberToAdd:int = 1):void {
+		peerFeedbackCounter++;
+		trace(peerFeedbackCounter);
+	}
+
 
 	private function makeList():void {
 		function makeList2(d:DialogBox):void {
@@ -576,7 +658,8 @@ public class PaletteBuilder {
 		b.y = nextY + 5;
 		app.palette.addChild(b);
 	}
-	//sm4241 - seperate checkbox for parsons
+
+	//sm4241 - checkbox for parsons, before the block
 	protected function addParsonsCheckbox(block:Block):void {
 		var b:IconButton = new IconButton(parsonsToggleWatcher, 'checkbox');
 		b.disableMouseover();
@@ -591,6 +674,99 @@ public class PaletteBuilder {
 		b.x = 6;
 		b.y = nextY + 5;
 		app.palette.addChild(b);
+	}
+
+	// pz2244
+	protected function addParsonsCheckInputBox(block:Block):void {
+		var p:TextPane = new TextPane(typeFunction);
+		var targetObj:ScratchObj = isSpriteSpecific(block.op) ? app.viewedObj() : app.stagePane;
+		p.scrollbar.visible = false;
+		p.textField.restrict = "0-9";
+
+		// TODO show previous data?
+		var cnt:Number = 0;
+		for (var i = 0; i < parsonsBlock.length; i ++) {
+			var bl:Block = Block (parsonsBlock.getItemAt(i));
+			if(block.op == bl.op) {
+				cnt ++;
+			}
+		}
+		p.setText(cnt.toString());
+
+		p.setWidthHeight(25,18);
+		p.clientData = {
+			type: 'parsons',
+			targetObj: targetObj,
+			num: cnt,
+			cmd: block.op,
+			block: block,
+			color: block.base.color
+		};
+
+		p.x = 4;
+		p.y = nextY + 5;
+		app.palette.addChild(p);
+	}
+
+	// TODO: keep the number of the parson's block in non-parson's palette
+	protected function typeFunction(p:TextPane):void {
+		var data:Object = p.clientData;
+		if (data.block) {
+			switch (data.block.op) {
+				case 'senseVideoMotion':
+					data.targetObj = getBlockArg(data.block, 1) == 'Stage' ? app.stagePane : app.viewedObj();
+				case 'sensor:':
+				case 'sensorPressed:':
+				case 'timeAndDate':
+					data.param = getBlockArg(data.block, 0);
+					break;
+			}
+		}
+
+		var showFlag:Boolean = !app.runtime.watcherShowing(data);
+		trace(data.num);
+		app.runtime.showWatcher(data, showFlag);
+		app.setSaveNeeded();
+
+		// remove previous blocks
+		for (var i = parsonsBlock.length - 1; i >= 0; i --) {
+			var bl:Block = Block (parsonsBlock.getItemAt(i));
+			if(data.block.op == bl.op){
+				var index:int = parsonsBlock.getItemIndex(parsonsBlock.getItemAt(i));
+				parsonsBlock.removeItemAt(index);
+			}
+		}
+
+		for (var i = 0; i < data.num; i ++) {
+			var newBlock:Block;
+			if(data.block){
+				newBlock = new Block(data.block.spec, data.block.type, data.color, data.cmd);
+			}else{
+				newBlock = new Block(data.varName, 'r', Specs.variableColor, Specs.GET_VAR);
+				sageIncludedBlocks[data.varName] = true;
+			}
+
+			parsonsBlock.addItem(newBlock);
+		}
+
+//		if((data.type == "variable" && b.isOn()) || b.isOn() && sageIncludedBlocks[data.block.spec]){
+//			parsonsBlock.addItem(newBlock);
+//		}else{
+//			for (var i:int=0; i<parsonsBlock.length; i++) {
+//				var bl:Block = Block (parsonsBlock.getItemAt(i));
+//				if(data.block.op == bl.op){
+//					var index:int = parsonsBlock.getItemIndex(parsonsBlock.getItemAt(i));
+//					parsonsBlock.removeItemAt(index);
+//				}
+//			}
+//			app.getStage().refresh();
+//		}
+
+		if(data.type=="parsons"){
+			var showFlag:Boolean = !app.runtime.watcherShowing(data);
+			app.runtime.showWatcher(data, showFlag);
+			app.setSaveNeeded();
+		}
 	}
 
 	protected function isCheckboxReporter(op:String):Boolean {
@@ -669,13 +845,14 @@ public class PaletteBuilder {
 		if((data.type == "variable" && b.isOn()) || b.isOn() && sageIncludedBlocks[data.block.spec]){
 			parsonsBlock.addItem(newBlock);
 		}else{
-			for (var i=0; i<parsonsBlock.length; i++) {
+			for (var i:int=0; i<parsonsBlock.length; i++) {
 				var bl:Block = Block (parsonsBlock.getItemAt(i));
 				if(data.block.op == bl.op){
 					var index:int = parsonsBlock.getItemIndex(parsonsBlock.getItemAt(i));
 					parsonsBlock.removeItemAt(index);
 				}
 			}
+			app.getStage().refresh();
 		}
 
 		if(data.type=="parsons"){
@@ -692,9 +869,19 @@ public class PaletteBuilder {
 		for (var i:int = 0; i < app.palette.numChildren; i++) {
 			var b:IconButton = app.palette.getChildAt(i) as IconButton;
 			if (b && b.clientData) {
-				b.setOn(app.runtime.watcherShowing(b.clientData));
+				b.setOn(app.runtime.watcherShowing(b.clientData) || parsonsBlocksContains(b.clientData.cmd));
 			}
 		}
+	}
+
+	private function parsonsBlocksContains(op:String):Boolean {
+        for (var i:int = 0; i < parsonsBlock.length; i++) {
+            var bl:Block = Block (parsonsBlock.getItemAt(i));
+            if(op == bl.op){
+                return true;
+            }
+        }
+		return false;
 	}
 
 	protected function getExtensionMenu(ext:ScratchExtension):Menu {
@@ -785,7 +972,7 @@ public class PaletteBuilder {
 
 	/* Functions for hinting */
 
-	public function getCurrentCategory() {
+	public function getCurrentCategory():int {
 		return this.currentCategory;
 	}
 

@@ -472,6 +472,7 @@ spriteFeaturesFilter.visible = false; // disable features filter for now
 				var file:FileReference = FileReference(files.fileList[j]);
 				file.addEventListener(Event.COMPLETE, fileLoaded);
 				file.load();
+                app.setDoSave(false);
 			}
 		}
 		function fileLoaded(e:Event):void {
@@ -483,8 +484,11 @@ spriteFeaturesFilter.visible = false; // disable features filter for now
 		files.addEventListener(Event.SELECT, fileSelected);
 		try {
 			// Ignore the exception that happens when you call browse() with the file browser open
+			app.setDoSave(true);
 			files.browse();
-		} catch(e:*) {}
+		} catch(e:*) {
+			trace(e)
+		}
 	}
 
 	protected function uploadCostume(costume:ScratchCostume, whenDone:Function):void {
@@ -626,6 +630,7 @@ spriteFeaturesFilter.visible = false; // disable features filter for now
 				var file:FileReference = FileReference(files.fileList[j]);
 				file.addEventListener(Event.COMPLETE, fileLoaded);
 				file.load();
+				app.setDoSave(false);
 			}
 		}
 		function fileLoaded(e:Event):void {
@@ -635,8 +640,11 @@ spriteFeaturesFilter.visible = false; // disable features filter for now
 		files.addEventListener(Event.SELECT, fileSelected);
 		try {
 			// Ignore the exception that happens when you call browse() with the file browser open
+			app.setDoSave(true);
 			files.browse();
-		} catch(e:*) {}
+		} catch(e:*) {
+			trace(e)
+		}
 	}
 
 	protected function startSoundUpload(sndToUpload:ScratchSound, origName:String, whenDone:Function):void {
